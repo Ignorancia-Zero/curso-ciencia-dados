@@ -13,3 +13,7 @@ class TestTemplate(unittest.TestCase):
 
     def test_nada(self) -> None:
         self.assertEqual(True, True)
+
+
+if __name__ == "__main__":
+    unittest.main()

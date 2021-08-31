@@ -1,6 +1,7 @@
 import abc
-from pathlib import Path
 import typing
+from pathlib import Path
+
 import pandas as pd
 
 
@@ -9,6 +10,7 @@ class BaseETL(abc.ABC):
     Classe que estrutura como qualquer objeto de ETL
     deve funcionar
     """
+
     caminho_entrada: Path
     caminho_saida: Path
     _dados_entrada: typing.Dict[str, pd.DataFrame]
@@ -83,4 +85,3 @@ class BaseETL(abc.ABC):
         self.extract()
         self.transform()
         self.load()
-

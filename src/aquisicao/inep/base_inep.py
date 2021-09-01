@@ -62,7 +62,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
         """
         Realiza o download dos dados INEP para uma pasta local
         """
-        for arq, link in self.dicionario_para_baixar():
+        for arq, link in self.dicionario_para_baixar().items():
             caminho_arq = self.caminho_saida / arq
             download_dados_web(caminho_arq, link)
 

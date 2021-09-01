@@ -19,6 +19,8 @@ class BaseINEPETL(BaseETL, abc.ABC):
         "https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/"
     )
 
+    _url: str
+
     def __init__(
         self, entrada: str, saida: str, base: str, criar_caminho: bool = True
     ) -> None:

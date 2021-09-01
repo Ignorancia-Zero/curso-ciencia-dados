@@ -4,6 +4,5 @@
 
 ## Requisitos
 * Python 3.8 64-bit
-  * Windows: https://www.python.org/downloads/windows/ or anaconda.com
-  * Mac: https://www.python.org/downloads/mac-osx/
-    (HomeBrew https://docs.brew.sh/Homebrew-and-Python não possuía Python 3.8 em 17 Set. 2020)
+  * Windows: https://www.python.org/downloads/windows/ ou https://docs.anaconda.com/anaconda/install/windows/
+  * Mac: https://www.python.org/downloads/mac-osx/ ou https://docs.anaconda.com/anaconda/install/mac-os/ ou https://formulae.brew.sh/formula/python@3.8

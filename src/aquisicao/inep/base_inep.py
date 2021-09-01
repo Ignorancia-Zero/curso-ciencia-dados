@@ -6,6 +6,7 @@ import urllib
 from bs4 import BeautifulSoup
 
 from src.aquisicao.base_etl import BaseETL
+from src.utils.web import download_dados_web
 
 
 class BaseINEPETL(BaseETL, abc.ABC):
@@ -56,6 +57,14 @@ class BaseINEPETL(BaseETL, abc.ABC):
         para_baixar = self.le_pagina_inep()
         baixados = os.listdir(str(self.caminho_entrada))
         return {arq: link for arq, link in para_baixar.items() if arq not in baixados}
+
+    def download_conteudo(self) -> None:
+        """
+        Realiza o download dos dados INEP para uma pasta local
+        """
+        for arq, link in self.dicionario_para_baixar():
+            caminho_arq = self.caminho_saida / arq
+            download_dados_web(caminho_arq, link)
 
     @abc.abstractmethod
     def extract(self) -> None:

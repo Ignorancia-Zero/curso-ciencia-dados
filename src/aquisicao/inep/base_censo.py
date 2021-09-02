@@ -1,14 +1,9 @@
 import abc
-import os
-import typing
-import urllib
 import zipfile
 
 import pandas as pd
-from bs4 import BeautifulSoup
 
 from src.aquisicao.inep.base_inep import BaseINEPETL
-from src.utils.web import download_dados_web
 
 
 class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):

@@ -24,7 +24,7 @@ class EscolaETL(BaseCensoEscolarETL):
         :param saida: string com caminho para pasta de saída
         :param criar_caminho: flag indicando se devemos criar os caminhos
         """
-        super().__init__(entrada, saida, "escola", criar_caminho)
+        super().__init__(entrada, saida, "escolas", criar_caminho)
         self._configs = carrega_yaml("aquis_censo_escola.yml")
 
     def renomeia_colunas(self) -> None:
@@ -59,7 +59,7 @@ class EscolaETL(BaseCensoEscolarETL):
         """
         Realiza o processamento das colunas de quantidades
         """
-        for k, base in tqdm(self.dados_entrada.values()):
+        for k, base in tqdm(self.dados_entrada.items()):
             if k >= "2019.zip":
                 for c in self._configs["COLS_88888"]:
                     if c in base:
@@ -117,6 +117,8 @@ class EscolaETL(BaseCensoEscolarETL):
 
             # corrige a coluna IN_BIBLIOTECA
             if "IN_SALA_LEITURA" not in base and "IN_BIBLIOTECA" in base:
+                if "IN_BIBLIOTECA_SALA_LEITURA" in base:
+                    base.drop(columns=["IN_BIBLIOTECA_SALA_LEITURA"], inplace=True)
                 base.rename(
                     columns={"IN_BIBLIOTECA": "IN_BIBLIOTECA_SALA_LEITURA"},
                     inplace=True,
@@ -231,6 +233,8 @@ class EscolaETL(BaseCensoEscolarETL):
         """
         Concatena as bases de dados nas saídas temporal e atemporal
         """
+        self._dados_saida = dict()
+
         # cria a base de dados temporal
         self._dados_saida["escola_temp"] = pd.concat(
             [

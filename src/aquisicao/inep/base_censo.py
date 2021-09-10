@@ -51,17 +51,17 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         :return: função que compara soma de colunas ao valor 0
         """
         if op == "=":
-            return lambda f, c: f.reindex(colums=c).sum(axis=1) == 0
+            return lambda f, c: f.reindex(columns=c).sum(axis=1) == 0
         elif op == ">":
-            return lambda f, c: f.reindex(colums=c).sum(axis=1) > 0
+            return lambda f, c: f.reindex(columns=c).sum(axis=1) > 0
         elif op == "<":
-            return lambda f, c: f.reindex(colums=c).sum(axis=1) < 0
+            return lambda f, c: f.reindex(columns=c).sum(axis=1) < 0
         elif op == ">=":
-            return lambda f, c: f.reindex(colums=c).sum(axis=1) >= 0
+            return lambda f, c: f.reindex(columns=c).sum(axis=1) >= 0
         elif op == "<=":
-            return lambda f, c: f.reindex(colums=c).sum(axis=1) <= 0
+            return lambda f, c: f.reindex(columns=c).sum(axis=1) <= 0
         elif op == "!=":
-            return lambda f, c: f.reindex(colums=c).sum(axis=1) != 0
+            return lambda f, c: f.reindex(columns=c).sum(axis=1) != 0
         else:
             raise ValueError(
                 f"O operador {op} não faz parte da lista de operações disponíveis"
@@ -70,7 +70,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
     @staticmethod
     def gera_coluna_por_comparacao(
         base: pd.DataFrame,
-        colunas_a_tratar: typing.Dict[str, typing.List[str, str]],
+        colunas_a_tratar: typing.Dict[str, typing.List[str]],
     ) -> None:
         """
         Realiza a criação de novas colunas na base passada a partir

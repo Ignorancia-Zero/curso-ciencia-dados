@@ -1,8 +1,9 @@
 import click
 
 import src.configs as conf_geral
-from src.aquisicao.opcoes import ETL_DICT
 from src.aquisicao.opcoes import EnumETL
+from src.aquisicao.opcoes import executa_etl
+from src.utils.logs import configura_logs
 
 
 @click.group()
@@ -46,8 +47,8 @@ def processa_dado(etl: str, entrada: str, saida: str, criar_caminho: bool) -> No
     :param saida: string com caminho para pasta de saída
     :param criar_caminho: flag indicando se devemos criar os caminhos
     """
-    objeto = ETL_DICT[EnumETL(etl)](entrada, saida, criar_caminho)
-    objeto.pipeline()
+    configura_logs()
+    executa_etl(etl, entrada, saida, criar_caminho)
 
 
 if __name__ == "__main__":

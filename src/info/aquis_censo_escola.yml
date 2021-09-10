@@ -303,6 +303,12 @@ TRATAMENTO_IN:
   IN_DESKTOP:
     - "^(QT_DESKTOP_ADM)"
     - ">"
+  IN_BIBLIOTECA_SALA_LEITURA:
+    - "^(IN_)(BIBLIOTECA|SALA_LEITURA)"
+    - ">"
+  IN_QUADRA_ESPORTES:
+    - "^(IN_QUADRA_ESPORTES_)(COBERTA|DESCOBERTA)"
+    - ">"
   IN_LOCAL_FUNC_PREDIO_ESCOLAR:
     - "^(TP_OCUPACAO_PREDIO_ESCOLAR)"
     - ">"
@@ -414,7 +420,6 @@ COLS_PARTICULAR:
   - "IN_MANT_ESCOLA_PRIVADA_SIND"
   - "IN_MANT_ESCOLA_PRIVADA_SIST_S"
   - "IN_MANT_ESCOLA_PRIVADA_S_FINS"
-  - "TP_CATEGORIA_ESCOLA_PRIVADA"
 
 # Colunas de quantidades que foram preenchidas com os valores
 # de 88888 caso o valor do censo não fosse considerado razoável
@@ -530,3 +535,15 @@ COLS_FBFILL:
   - "IN_LAVANDERIA" # só existe de 2012 a 2018
   - "IN_EQUIP_IMPRESSORA_MULT" # só existe de 2015 em diante
   - "TP_OCUPACAO_GALPAO" # só existe de 2012 em diante
+
+# Lista de colunas que devem ser removidas na base consolidada porque
+# são reduntantes com relação a outras criadas ao longo do processo
+# de transformação de dados
+REMOVER_COLS:
+  - "IN_AGUA_FILTRADA"
+  - "IN_LINGUA_INDIGENA"
+  - "IN_LINGUA_PORTUGUESA"
+
+# Dicionário de valores de preenchimento fixo de colunas
+PREENCHER_NULOS:
+  "TP_INDIGENA_LINGUA": "SEM EDUCAÇÃO INDÍGENA"

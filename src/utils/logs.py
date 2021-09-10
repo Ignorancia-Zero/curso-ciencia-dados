@@ -40,7 +40,7 @@ def configura_logs(
     # configura o objeto para saída para um arquivo
     if arquivo:
         # cria uma pasta com a saída dos logs
-        log_dir = Path(__file__).parent.parent / "logs"
+        log_dir = Path(__file__).parent.parent.parent / "logs"
         log_dir.mkdir(parents=True, exist_ok=True)
 
         # configura o objeto de saída para o arquivo

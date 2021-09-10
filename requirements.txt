@@ -8,3 +8,4 @@ tqdm==4.62.1
 pyunpack==0.2.2
 rarfile==4.0
 patool==1.12
+pyarrow==5.0.0

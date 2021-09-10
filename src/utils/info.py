@@ -3,7 +3,7 @@ import typing
 from pathlib import Path
 
 
-CAMINHO_INFO = Path(__file__).parent / "info"
+CAMINHO_INFO = Path(__file__).parent.parent / "info"
 
 
 def carrega_yaml(nome_yaml: str) -> typing.Dict[str, typing.Any]:
@@ -14,5 +14,5 @@ def carrega_yaml(nome_yaml: str) -> typing.Dict[str, typing.Any]:
     :return: dicionário com conteúdo do arquivo
     """
     global CAMINHO_INFO
-    with open(CAMINHO_INFO / f"{nome_yaml}", "r") as f:
-        return yaml.load(f)
+    with open(CAMINHO_INFO / f"{nome_yaml}", "r", encoding="UTF-8") as f:
+        return yaml.load(f, Loader=yaml.FullLoader)

@@ -198,7 +198,7 @@ RENOMEIA_COLUNAS:
   "ID_MOD_ENS_ESP": "IN_ESPECIAL_EXCLUSIVA"
   "ID_QUADRA_ESPORTES": "IN_QUADRA_ESPORTES"
   "ID_REG_MEDIO_PROF": "IN_COMUM_PROF"
-  
+
 # Lista de colunas que serão dropadas entre todas as bases
 DROPAR_COLUNAS:
   # colunas que estão contidas na base de turmas

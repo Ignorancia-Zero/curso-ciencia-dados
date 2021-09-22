@@ -69,12 +69,18 @@ class EscolaETL(BaseCensoEscolarETL):
         """
         Realiza o processamento das colunas indicadoras
         """
+        # gera a lista de todas as colunas existentes
+        cols = set([c for d in self.dados_entrada.values() for c in d])
+
         for base in tqdm(self.dados_entrada.values()):
             # preenche bases com colunas IN quando há uma coluna QT
             for col in base:
-                if col[:2] == "QT" and f"IN{col[2:]}" in base:
-                    if f"IN{col[2:]}" not in base and col in base:
-                        base[f"IN{col[2:]}"] = (base[col] > 0).astype("int")
+                if (
+                    col[:2] == "QT"
+                    and f"IN{col[2:]}" in cols
+                    and f"IN{col[2:]}" not in base
+                ):
+                    base[f"IN{col[2:]}"] = (base[col] > 0).astype("int")
 
             # realiza o tratamento das colunas IN_ a partir das configurações
             self.gera_coluna_por_comparacao(base, self._configs["TRATAMENTO_IN"])

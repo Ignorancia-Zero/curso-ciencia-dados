@@ -6,6 +6,7 @@ import zipfile
 
 import pandas as pd
 import pyunpack
+import rarfile
 from tqdm import tqdm
 import re
 
@@ -105,7 +106,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         self._dados_entrada = dict()
 
         # para cada arquivo do censo demográfico
-        for censo in tqdm(os.listdir(self.caminho_entrada)):
+        for censo in tqdm(self.inep):
             # abre o arquivo zip com o conteúdo do censo
             with zipfile.ZipFile(self.caminho_entrada / f"{censo}") as z:
                 # lista os conteúdos dos arquivos zip que contém o nome tabela
@@ -133,27 +134,11 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
 
                     # caso seja um arquivo winrar
                     elif ".rar" in arq.lower():
-                        # extraí o conteúdo do arquivo
-                        z.extract(arq, path=self.caminho_entrada)
-                        (
-                            pyunpack.Archive(
-                                self.caminho_entrada / f"{arq}"
-                            ).extractall(self.caminho_entrada)
-                        )
-
-                        # lê os dados do disco
-                        csv = [
-                            f
-                            for f in os.listdir(self.caminho_entrada)
-                            if f"{self._tabela}." in f.lower()
-                        ][0]
-                        self._dados_entrada[censo] = pd.read_csv(
-                            self.caminho_entrada / f"{csv}", encoding="latin-1", sep="|"
-                        )
-
-                        # excluí os conteúdos extraídos
-                        shutil.rmtree(self.caminho_entrada / f"{arq.split('/')[0]}")
-                        os.remove(self.caminho_entrada / f"{csv}")
+                        with rarfile.RarFile(z.open(arq)) as z2:
+                            arq = z2.namelist()[0]
+                            self._dados_entrada[censo] = pd.read_csv(
+                                z2.open(arq), encoding="latin-1", sep="|"
+                            )
 
     @abc.abstractmethod
     def transform(self) -> None:

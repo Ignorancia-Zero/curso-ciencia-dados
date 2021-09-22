@@ -20,6 +20,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
     )
 
     _url: str
+    _inep: typing.Dict[str, str]
 
     def __init__(
         self, entrada: str, saida: str, base: str, criar_caminho: bool = True
@@ -35,19 +36,23 @@ class BaseINEPETL(BaseETL, abc.ABC):
         super().__init__(entrada, saida, criar_caminho)
 
         self._url = f"{self.URL}/{base}"
+        self._inep = None
 
-    def le_pagina_inep(self) -> typing.Dict[str, str]:
+    @property
+    def inep(self) -> typing.Dict[str, str]:
         """
         Realiza o web-scraping da página de dados do INEP
 
         :return: dicionário com nome do arquivo e link para a página
         """
-        html = urllib.request.urlopen(self._url).read()
-        soup = BeautifulSoup(html, features="html.parser")
-        return {
-            tag["href"].split("_")[-1]: tag["href"]
-            for tag in soup.find_all("a", {"class": "external-link"})
-        }
+        if self._inep is None:
+            html = urllib.request.urlopen(self._url).read()
+            soup = BeautifulSoup(html, features="html.parser")
+            self._inep = {
+                tag["href"].split("_")[-1]: tag["href"]
+                for tag in soup.find_all("a", {"class": "external-link"})
+            }
+        return self._inep
 
     def dicionario_para_baixar(self) -> typing.Dict[str, str]:
         """
@@ -56,9 +61,8 @@ class BaseINEPETL(BaseETL, abc.ABC):
 
         :return: dicionário com nome do arquivo e link para a página
         """
-        para_baixar = self.le_pagina_inep()
         baixados = os.listdir(str(self.caminho_entrada))
-        return {arq: link for arq, link in para_baixar.items() if arq not in baixados}
+        return {arq: link for arq, link in self.inep.items() if arq not in baixados}
 
     def download_conteudo(self) -> None:
         """

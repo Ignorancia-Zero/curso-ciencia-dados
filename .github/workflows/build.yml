@@ -28,6 +28,9 @@ jobs:
           pip install pytest
           pip install flake8-black==0.2.1
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Install tools
+        run: sudo apt-get install unrar
       
       - name: Unit Test
         run: |

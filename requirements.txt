@@ -4,3 +4,10 @@ black==21.8b0
 beautifulsoup4==4.9.3
 jupyter==1.0.0
 lxml==4.6.1
+tqdm==4.62.1
+pyunpack==0.2.2
+rarfile==4.0
+patool==1.12
+pyarrow==5.0.0
+requests==2.24.0
+PyYAML==5.4.1

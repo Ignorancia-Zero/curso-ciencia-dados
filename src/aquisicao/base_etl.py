@@ -1,4 +1,5 @@
 import abc
+import logging
 import typing
 from pathlib import Path
 
@@ -15,6 +16,7 @@ class BaseETL(abc.ABC):
     caminho_saida: Path
     _dados_entrada: typing.Dict[str, pd.DataFrame]
     _dados_saida: typing.Dict[str, pd.DataFrame]
+    logger: logging.Logger
 
     def __init__(self, entrada: str, saida: str, criar_caminho: bool = True) -> None:
         """
@@ -33,6 +35,14 @@ class BaseETL(abc.ABC):
 
         self._dados_entrada = None
         self._dados_saida = None
+
+        self.logger = logging.getLogger(__name__)
+
+    def __str__(self) -> str:
+        """
+        Representação de texto da classe
+        """
+        return self.__class__.__name__
 
     @property
     def dados_entrada(self) -> typing.Dict[str, pd.DataFrame]:
@@ -76,12 +86,17 @@ class BaseETL(abc.ABC):
         Exporta os dados transformados
         """
         for arq, df in self.dados_saida.items():
-            df.to_parquet(self.caminho_saida / arq, index=False)
+            df.to_parquet(self.caminho_saida / f"{arq}.parquet", index=False)
 
     def pipeline(self) -> None:
         """
         Executa o pipeline completo de tratamento de dados
         """
+        self.logger.info(f"EXTRAINDO DADOS {self}")
         self.extract()
+
+        self.logger.info(f"TRANSFORMANDO DADOS {self}")
         self.transform()
+
+        self.logger.info(f"CARREGANDO DADOS {self}")
         self.load()

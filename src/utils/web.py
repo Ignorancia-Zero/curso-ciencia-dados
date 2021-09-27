@@ -1,6 +1,3 @@
-import requests
-from pathlib import Path
-import typing
 import typing
 from pathlib import Path
 

@@ -130,3 +130,7 @@ dmypy.json
 
 # Remove pastas
 /dados/
+/logs/
+/saida/
+/.idea/
+/docs/apidoc/

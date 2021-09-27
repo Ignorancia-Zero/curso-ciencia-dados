@@ -1,14 +1,11 @@
 import abc
-import os
-import shutil
+import re
 import typing
 import zipfile
 
 import pandas as pd
-import pyunpack
 import rarfile
 from tqdm import tqdm
-import re
 
 from src.aquisicao.inep.base_inep import BaseINEPETL
 
@@ -87,7 +84,9 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             padrao, operacao = tratamento
 
             # obtém a lista de colunas de origem que devem ser utilizadas
-            colunas_origem = [c for c in base.columns if re.search(padrao, c) is not None]
+            colunas_origem = [
+                c for c in base.columns if re.search(padrao, c) is not None
+            ]
 
             # se a coluna não existir na base e se nós temos colunas de origem
             if (coluna not in base.columns) and len(colunas_origem) > 0:

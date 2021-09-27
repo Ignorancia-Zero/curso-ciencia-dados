@@ -1,6 +1,7 @@
 from enum import Enum
-from src.utils.logs import log_erros
+
 from src.aquisicao.inep.censo_escola import EscolaETL
+from src.utils.logs import log_erros
 
 
 class EnumETL(Enum):
@@ -9,9 +10,7 @@ class EnumETL(Enum):
 
 # chave = Enum
 # valor = Classe de objeto ETL
-ETL_DICT = {
-    EnumETL.ESCOLA: EscolaETL
-}
+ETL_DICT = {EnumETL.ESCOLA: EscolaETL}
 
 
 @log_erros

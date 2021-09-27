@@ -32,6 +32,8 @@ def escola_etl(dados_path, saida_path):
         entrada=str(dados_path),
         saida=str(saida_path / "aquisicao"),
     )
-    etl._inep = {k: "" for k in os.listdir(dados_path / "censo_escolar") if int(k[3]) % 2 == 0}
+    etl._inep = {
+        k: "" for k in os.listdir(dados_path / "censo_escolar") if int(k[3]) % 2 == 0
+    }
 
     return etl

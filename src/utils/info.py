@@ -1,7 +1,7 @@
-import yaml
 import typing
 from pathlib import Path
 
+import yaml
 
 CAMINHO_INFO = Path(__file__).parent.parent / "info"
 

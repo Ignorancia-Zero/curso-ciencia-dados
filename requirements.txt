@@ -10,4 +10,4 @@ rarfile==4.0
 patool==1.12
 pyarrow==5.0.0
 requests==2.24.0
-yaml==0.2.5
+PyYAML==5.4.1

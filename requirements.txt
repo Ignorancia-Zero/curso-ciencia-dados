@@ -9,3 +9,4 @@ pyunpack==0.2.2
 rarfile==4.0
 patool==1.12
 pyarrow==5.0.0
+requests==2.23.0

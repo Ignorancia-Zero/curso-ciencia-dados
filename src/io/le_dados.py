@@ -9,42 +9,14 @@ from io import StringIO
 from pathlib import Path
 from zipfile import ZipFile
 
-import geopandas as gpd
 import pandas as pd
 import pyunpack
 import yaml
 from charamel import Detector
 from rarfile import RarFile
 
+from src.io.configs import EXTENSAO_DF, LEITOR_PANDAS, LEITOR_GEOPANDAS, EXTENSOES_TEXTO
 from src.utils.interno import obtem_argumentos_objeto, obtem_extencao
-
-# lista de extensões que devem ser nativamente interpretadas como data frames
-EXTENSAO_DF = {"csv", "tsv", "parquet", "hdf", "xls", "xlsx", "ods", "feather"}
-
-# dicionário de extensões e funções do pandas para ler conteúdos
-LEITOR_PANDAS: typing.Dict[str, typing.Callable[..., pd.DataFrame]] = {
-    "csv": pd.read_csv,
-    "tsv": pd.read_csv,
-    "parquet": pd.read_parquet,
-    "feather": pd.read_feather,
-    "hdf": pd.read_hdf,
-    "xls": pd.read_excel,
-    "xlsx": pd.read_excel,
-    "ods": pd.read_excel,
-    "json": pd.read_json,
-    "pkl": pd.read_pickle,
-    "html": pd.read_html,
-    "xml": pd.read_xml,
-}
-
-# dicionário de extensões e funções do pandas para ler conteúdos no geopandas
-LEITOR_GEOPANDAS: typing.Dict[str, typing.Callable[..., pd.DataFrame]] = {
-    "parquet": gpd.read_parquet,
-    "feather": gpd.read_feather,
-    "shp": gpd.read_file,
-    "geojson": gpd.read_file,
-    "topojson": gpd.GeoDataFrame.to_file,
-}
 
 
 def le_como_df(dados: typing.BinaryIO, ext: str, **kwargs: typing.Any) -> pd.DataFrame:
@@ -92,7 +64,7 @@ def converte_em_objeto(
     :return: objeto python
     """
     if "conv_df" in kwargs or ext in EXTENSAO_DF:
-        le_como_df(dados, ext, **kwargs)
+        return le_como_df(dados, ext, **kwargs)
     elif ext == "json":
         return json.load(dados)
     elif ext == "yml":
@@ -109,7 +81,7 @@ def converte_em_objeto(
             return objs
         else:
             return objs[0]
-    elif ext in ["txt", "xml", "html"]:
+    elif ext in EXTENSOES_TEXTO:
         if "encoding" in kwargs:
             return dados.read().decode(kwargs["encoding"])
         else:
@@ -231,7 +203,7 @@ def carrega_arquivo(
             except ValueError:
                 pass
 
-        with open(arquivo, "rb") as f:
+        with open(str(arquivo), "rb") as f:
             return converte_em_objeto(f, ext, **kwargs)
 
     # se já for um arquivo de IO extraí diretamente

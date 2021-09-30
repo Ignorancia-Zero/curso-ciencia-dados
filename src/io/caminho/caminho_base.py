@@ -3,8 +3,12 @@ from __future__ import annotations
 import abc
 import typing
 
-from src.utils.interno import obtem_extencao
+import geopandas as gpd
+import pandas as pd
+
+from src.io.escreve_dados import escreve_para_buffer
 from src.io.le_dados import carrega_arquivo
+from src.utils.interno import obtem_extencao
 
 
 class _CaminhoBase(abc.ABC):
@@ -155,7 +159,7 @@ class _CaminhoBase(abc.ABC):
         self._apaga_conteudo(nome_arquivo)
 
     @abc.abstractmethod
-    def _gera_buffer_para_download(
+    def _gera_buffer_carregar(
         self, nome_arquivo: str, **kwargs: typing.Any
     ) -> typing.Any:
         """
@@ -167,7 +171,7 @@ class _CaminhoBase(abc.ABC):
         """
         raise NotImplementedError("É preciso implementar o método")
 
-    def download_arquivo(self, nome_arquivo: str, **kwargs: typing.Any) -> typing.Any:
+    def carrega_arquivo(self, nome_arquivo: str, **kwargs: typing.Any) -> typing.Any:
         """
         Carrega o arquivo contido no caminho
 
@@ -180,11 +184,23 @@ class _CaminhoBase(abc.ABC):
             ext = kwargs["ext"]
             del kwargs["ext"]
         return carrega_arquivo(
-            self._gera_buffer_para_download(nome_arquivo, **kwargs), ext, **kwargs
+            self._gera_buffer_carregar(nome_arquivo, **kwargs), ext, **kwargs
         )
 
     @abc.abstractmethod
-    def upload_arquivo(
+    def _gera_buffer_salvar(
+        self, nome_arquivo: str, **kwargs: typing.Any
+    ) -> typing.Any:
+        """
+        Gera um buffer para os dados a serem salvos em algum local que serão
+        usados como parte do método de salvar
+
+        :param nome_arquivo: nome do arquivo a ser salvo
+        :param kwargs: argumentos específicos para a função de salvamento
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def salva_arquivo(
         self, dados: typing.Any, nome_arquivo: str, **kwargs: typing.Any
     ) -> None:
         """
@@ -193,5 +209,364 @@ class _CaminhoBase(abc.ABC):
         :param dados: bytes, data frame, string, etc. a ser salvo
         :param nome_arquivo: nome do arquivo a ser salvo
         :param kwargs: argumentos específicos para a função de salvamento
+        """
+        if "ext" not in kwargs:
+            ext = obtem_extencao(nome_arquivo)
+        else:
+            ext = kwargs["ext"]
+            del kwargs["ext"]
+        buffer = self._gera_buffer_salvar(nome_arquivo, **kwargs)
+        escreve_para_buffer(dados=dados, buffer=buffer, ext=ext, **kwargs)
+        buffer.close()
+
+    def read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_feather(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_csv(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_hdf(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_excel(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_html(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_json(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_xml(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def read_pickle(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def gpd_read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função geopandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def gpd_read_feather(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função geopandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def gpd_read_file(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função geopandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def load_yaml(self, nome_arq: str, **kwargs: typing.Any) -> dict:
+        """
+        Carrega o arquivo yaml como um dicionário
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: dicionário com dados yaml
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def load_json(self, nome_arq: str, **kwargs: typing.Any) -> dict:
+        """
+        Carrega o arquivo json como um dicionário
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: dicionário com dados json
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def load_pickle(self, nome_arq: str, **kwargs: typing.Any) -> list:
+        """
+        Carrega os objetos armazenados num arquivo pickle
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: lista de objetos serializados
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def load_txt(self, nome_arq: str, **kwargs: typing.Any) -> str:
+        """
+        Carrega os objetos armazenados num arquivo de texto
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: texto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_parquet(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_feather(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_csv(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_hdf(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_excel(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_html(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_json(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_xml(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def to_pickle(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def gpd_to_parquet(
+        self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o geo data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def gpd_to_feather(
+        self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o geo data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def gpd_to_file(
+        self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o geo data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def save_yaml(self, dados: dict, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o dicionário para o arquivo dentro do caminho selecionado
+
+        :param dados: dicionário a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def save_json(self, dados: dict, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o dicionário para o arquivo dentro do caminho selecionado
+
+        :param dados: dicionário a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def save_pickle(
+        self, dados: typing.Any, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o objeto para o arquivo dentro do caminho selecionado
+
+        :param dados: objeto python a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def save_txt(self, dados: str, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o texto para o arquivo dentro do caminho selecionado
+
+        :param dados: texto a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: data frame com objeto carregado
         """
         raise NotImplementedError("É preciso implementar o método")

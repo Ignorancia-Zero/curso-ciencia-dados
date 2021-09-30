@@ -9,7 +9,7 @@ from io import StringIO
 from pathlib import Path
 from zipfile import ZipFile
 
-import geopandas
+import geopandas as gpd
 import pandas as pd
 import pyunpack
 import yaml
@@ -39,10 +39,11 @@ LEITOR_PANDAS: typing.Dict[str, typing.Callable[..., pd.DataFrame]] = {
 
 # dicionário de extensões e funções do pandas para ler conteúdos no geopandas
 LEITOR_GEOPANDAS: typing.Dict[str, typing.Callable[..., pd.DataFrame]] = {
-    "parquet": geopandas.read_parquet,
-    "feather": geopandas.read_feather,
-    "shp": geopandas.read_file,
-    "geojson": geopandas.read_file,
+    "parquet": gpd.read_parquet,
+    "feather": gpd.read_feather,
+    "shp": gpd.read_file,
+    "geojson": gpd.read_file,
+    "topojson": gpd.GeoDataFrame.to_file,
 }
 
 
@@ -235,4 +236,6 @@ def carrega_arquivo(
 
     # se já for um arquivo de IO extraí diretamente
     else:
-        return converte_em_objeto(arquivo, ext, **kwargs)
+        dados = converte_em_objeto(arquivo, ext, **kwargs)
+        arquivo.close()
+        return dados

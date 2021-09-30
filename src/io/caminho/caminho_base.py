@@ -3,6 +3,9 @@ from __future__ import annotations
 import abc
 import typing
 
+from src.utils.interno import obtem_extencao
+from src.io.le_dados import carrega_arquivo
+
 
 class _CaminhoBase(abc.ABC):
     """
@@ -68,6 +71,17 @@ class _CaminhoBase(abc.ABC):
         Lista as pastas e arquivos dentro do caminho selecionado
 
         :return: lista de pastas e arquivos
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @abc.abstractmethod
+    def verifica_se_arquivo(self, nome_conteudo: str) -> bool:
+        """
+        Verifica se um determinado arquivo contido dentro
+        do caminho é um arquivo
+
+        :param nome_conteudo: nome do conteúdo a ser verificado
+        :return: True se for um arquivo
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -141,17 +155,36 @@ class _CaminhoBase(abc.ABC):
         self._apaga_conteudo(nome_arquivo)
 
     @abc.abstractmethod
-    def carrega_arquivo(self, nome_arquivo: str, **kwargs: typing.Any) -> typing.Any:
+    def _gera_buffer_para_download(
+        self, nome_arquivo: str, **kwargs: typing.Any
+    ) -> typing.Any:
         """
-        Carrega o arquivo contido no caminho
+        Gera um buffer para os dados a serem carregados para que
+        isto possa ser passado para a função de carregamento interna
 
         :param nome_arquivo: nome do arquivo a ser carregado
         :param kwargs: argumentos específicos para a função de carregamento
         """
         raise NotImplementedError("É preciso implementar o método")
 
+    def download_arquivo(self, nome_arquivo: str, **kwargs: typing.Any) -> typing.Any:
+        """
+        Carrega o arquivo contido no caminho
+
+        :param nome_arquivo: nome do arquivo a ser carregado
+        :param kwargs: argumentos específicos para a função de carregamento
+        """
+        if "ext" not in kwargs:
+            ext = obtem_extencao(nome_arquivo)
+        else:
+            ext = kwargs["ext"]
+            del kwargs["ext"]
+        return carrega_arquivo(
+            self._gera_buffer_para_download(nome_arquivo, **kwargs), ext, **kwargs
+        )
+
     @abc.abstractmethod
-    def salva_arquivo(
+    def upload_arquivo(
         self, dados: typing.Any, nome_arquivo: str, **kwargs: typing.Any
     ) -> None:
         """

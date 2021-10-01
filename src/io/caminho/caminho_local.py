@@ -5,8 +5,6 @@ import shutil
 import typing
 from pathlib import Path
 
-from src.io.configs import EXTENSOES_TEXTO
-from src.utils.interno import obtem_extencao
 from .caminho_base import _CaminhoBase
 
 
@@ -83,8 +81,8 @@ class CaminhoLocal(_CaminhoBase):
         """
         os.rename(str(self.caminho / nome_origem), str(self.caminho / nome_destino))
 
-    def _copia_conteudo(
-        self, nome_conteudo: str, caminho_destino: _CaminhoBase
+    def _copia_conteudo_mesmo_caminho(
+        self, nome_conteudo: str, caminho_destino: CaminhoLocal
     ) -> None:
         """
         Copia um conteúdo contido no caminho para o caminho de destino
@@ -92,23 +90,16 @@ class CaminhoLocal(_CaminhoBase):
         :param nome_conteudo: nome do conteúdo a ser copiado
         :param caminho_destino: objeto caminho de destino
         """
-        if isinstance(caminho_destino, self.__class__):
-            if self.verifica_se_arquivo(nome_conteudo):
-                shutil.copyfile(
-                    self.obtem_caminho(nome_conteudo),
-                    caminho_destino.obtem_caminho(nome_conteudo),
-                )
-            else:
-                shutil.copytree(
-                    self.obtem_caminho(nome_conteudo),
-                    caminho_destino.obtem_caminho(nome_conteudo),
-                )
+        if self.verifica_se_arquivo(nome_conteudo):
+            shutil.copyfile(
+                self.obtem_caminho(nome_conteudo),
+                caminho_destino.obtem_caminho(nome_conteudo),
+            )
         else:
-            if self.verifica_se_arquivo(nome_conteudo):
-                dados = self.carrega_arquivo(nome_conteudo)
-                caminho_destino.salva_arquivo(dados, nome_conteudo)
-            else:
-                raise NotImplementedError
+            shutil.copytree(
+                self.obtem_caminho(nome_conteudo),
+                caminho_destino.obtem_caminho(nome_conteudo),
+            )
 
     def _apaga_conteudo(self, nome_conteudo: str) -> None:
         """
@@ -121,18 +112,20 @@ class CaminhoLocal(_CaminhoBase):
         else:
             shutil.rmtree(self.obtem_caminho(nome_conteudo))
 
-    def _gera_buffer_carregar(self, nome_arquivo: str, **kwargs: typing.Any) -> typing.Any:
+    def _gera_buffer_carregar(
+        self, nome_arquivo: str, **kwargs: typing.Any
+    ) -> typing.BinaryIO:
         """
         Carrega o arquivo contido no caminho
 
         :param nome_arquivo: nome do arquivo a ser carregado
         :param kwargs: argumentos específicos para a função de carregamento
         """
-        return self.caminho / nome_arquivo
+        return open(self.obtem_caminho(nome_arquivo), "rb")
 
     def _gera_buffer_salvar(
         self, nome_arquivo: str, **kwargs: typing.Any
-    ) -> typing.Any:
+    ) -> typing.BinaryIO:
         """
         Gera um buffer para os dados a serem salvos em algum local que serão
         usados como parte do método de salvar
@@ -140,8 +133,4 @@ class CaminhoLocal(_CaminhoBase):
         :param nome_arquivo: nome do arquivo a ser salvo
         :param kwargs: argumentos específicos para a função de salvamento
         """
-        ext = obtem_extencao(nome_arquivo)
-        if ext in EXTENSOES_TEXTO:
-            return open(self.obtem_caminho(nome_arquivo), "w")
-        else:
-            return open(self.obtem_caminho(nome_arquivo), "wb")
+        return open(self.obtem_caminho(nome_arquivo), "wb")

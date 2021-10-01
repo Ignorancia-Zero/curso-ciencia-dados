@@ -12,7 +12,7 @@ from src.utils.interno import obtem_argumentos_objeto
 
 def escreve_para_buffer(
     dados: typing.Any,
-    buffer: typing.Union[typing.BinaryIO, typing.TextIO],
+    buffer: typing.BinaryIO,
     ext: str,
     **kwargs: typing.Any,
 ) -> None:
@@ -41,7 +41,9 @@ def escreve_para_buffer(
             dados, buffer, **obtem_argumentos_objeto(ESCREVE_PANDAS[ext], kwargs)
         )
     elif isinstance(dados, str):
-        buffer.write(dados)
+        if "encoding" not in kwargs:
+            kwargs["encoding"] = "UTF-8"
+        buffer.write(dados.encode(kwargs["encoding"]))
     else:
         if ext == "json":
             json.dump(dados, buffer)

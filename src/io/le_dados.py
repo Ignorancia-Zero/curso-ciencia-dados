@@ -2,7 +2,7 @@ import json
 import os
 import pickle
 import re
-import shutil
+import tempfile
 import typing
 from io import BytesIO
 from io import StringIO
@@ -63,31 +63,46 @@ def converte_em_objeto(
     :param kwargs: parâmetros de leitura
     :return: objeto python
     """
-    if "conv_df" in kwargs or ext in EXTENSAO_DF:
-        return le_como_df(dados, ext, **kwargs)
-    elif ext == "json":
-        return json.load(dados)
-    elif ext == "yml":
-        return yaml.load(dados, Loader=yaml.FullLoader)
-    elif ext == "pkl":
-        objs = []
-        while True:
+    # se quisermos converter a saída em data frame
+    if "como_df" in kwargs:
+        # testa primeiro a possibilidade de ler o conteúdo com o geopandas
+        if ext in LEITOR_GEOPANDAS:
             try:
-                o = pickle.load(dados)
-            except EOFError:
-                break
-            objs.append(o)
-        if len(objs) > 1:
-            return objs
-        else:
-            return objs[0]
-    elif ext in EXTENSOES_TEXTO:
-        if "encoding" in kwargs:
-            return dados.read().decode(kwargs["encoding"])
-        else:
-            return dados.read().decode("UTF-8")
+                return LEITOR_GEOPANDAS[ext](
+                    dados, **obtem_argumentos_objeto(LEITOR_GEOPANDAS[ext], kwargs)
+                )
+            except ValueError:
+                pass
+
+        # depois le como data frame se a flag de leitura for específicada
+        if ext in EXTENSAO_DF:
+            return le_como_df(dados, ext, **kwargs)
+    # caso contrário
     else:
-        raise NotImplementedError(f"Não implementamos leitura de arquivos {ext}")
+        # utiliza a função de carregamento adequada de acordo com o tipo de arquivo
+        if ext == "json":
+            return json.load(dados)
+        elif ext == "yml":
+            return yaml.load(dados, Loader=yaml.FullLoader)
+        elif ext == "pkl":
+            objs = []
+            while True:
+                try:
+                    o = pickle.load(dados)
+                except EOFError:
+                    break
+                objs.append(o)
+            if len(objs) > 1:
+                return objs
+            else:
+                return objs[0]
+        elif ext in EXTENSOES_TEXTO:
+            if "encoding" in kwargs:
+                return dados.read().decode(kwargs["encoding"])
+            else:
+                return dados.read().decode("UTF-8")
+        else:
+            raise NotImplementedError(f"Não implementamos leitura de arquivos {ext}")
 
 
 def le_dados_comprimidos(
@@ -129,36 +144,32 @@ def le_dados_comprimidos(
 
     except ValueError:
         # cria um diretório temporário
-        caminho = Path(os.path.dirname(__file__))
-        temp = caminho / "temp"
-        temp.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            temp = Path(tmpdirname)
 
-        # cria um arquivo, caso tenha sido fornecido um bytes IO
-        if not isinstance(arquivo, str) and not isinstance(arquivo, Path):
-            arquivo.seek(0)
-            with open(temp / f"arq_temp.{ext}", "wb") as f:
-                f.write(arquivo.read())
-            arquivo = temp / f"arq_temp.{ext}"
+            # cria um arquivo, caso tenha sido fornecido um bytes IO
+            if not isinstance(arquivo, str) and not isinstance(arquivo, Path):
+                arquivo.seek(0)
+                with open(temp / f"arq_temp.{ext}", "wb") as f:
+                    f.write(arquivo.read())
+                arquivo = temp / f"arq_temp.{ext}"
 
-        # realiza o unpack dos conteúdos do zip
-        azip = pyunpack.Archive(arquivo)
-        azip.extractall(temp)
+            # realiza o unpack dos conteúdos do zip
+            azip = pyunpack.Archive(arquivo)
+            azip.extractall(temp)
 
-        # lista os arquivos a serem carregados
-        arqs = [
-            os.path.join(path, f)
-            for path, directories, files in os.walk(temp)
-            for f in files
-            if re.search(padrao_comp, f) is not None
-            and obtem_extencao(f) != ""
-            and f != f"arq_temp.{ext}"
-        ]
+            # lista os arquivos a serem carregados
+            arqs = [
+                os.path.join(path, f)
+                for path, directories, files in os.walk(temp)
+                for f in files
+                if re.search(padrao_comp, f) is not None
+                and obtem_extencao(f) != ""
+                and f != f"arq_temp.{ext}"
+            ]
 
-        # lê os arquivos para o dicionários
-        objs = {arq: converte_em_objeto(z.open(arq), ext, **kwargs) for arq in arqs}
-
-        # apaga o diretório temporário
-        shutil.rmtree(temp)
+            # lê os arquivos para o dicionários
+            objs = {arq: converte_em_objeto(z.open(arq), ext, **kwargs) for arq in arqs}
 
     # retorna o objeto adequado de acordo com a quantidade de arquivos
     if len(objs) > 1:
@@ -192,22 +203,10 @@ def carrega_arquivo(
 
     # se for um caminho para o arquivo converte-o para bytes e manda ler o arquivo
     elif isinstance(arquivo, str) or isinstance(arquivo, Path):
-        # para arquivos de geopandas, entretanto, não é possível ler os dados
-        # por um bytes IO, então nós iremos tentar ler-lo como um data frame
-        # deste tipo, e somente em caso de erro iremos fazer a conversão
-        if ext in LEITOR_GEOPANDAS:
-            try:
-                return LEITOR_GEOPANDAS[ext](
-                    arquivo, **obtem_argumentos_objeto(LEITOR_GEOPANDAS[ext], kwargs)
-                )
-            except ValueError:
-                pass
+        arquivo = open(str(arquivo), "rb")
 
-        with open(str(arquivo), "rb") as f:
-            return converte_em_objeto(f, ext, **kwargs)
+    # lê os dados e fecha o buffer gerado
+    dados = converte_em_objeto(arquivo, ext, **kwargs)
+    arquivo.close()
 
-    # se já for um arquivo de IO extraí diretamente
-    else:
-        dados = converte_em_objeto(arquivo, ext, **kwargs)
-        arquivo.close()
-        return dados
+    return dados

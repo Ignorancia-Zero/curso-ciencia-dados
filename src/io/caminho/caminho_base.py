@@ -42,6 +42,9 @@ class _CaminhoBase(abc.ABC):
     def _apaga_caminho(self, apaga_conteudo: bool = False) -> None:
         """
         Apaga a pasta para a string deste objeto
+
+        :param apaga_conteudo: flag se devemos apagar o diretório mesmo que
+        ele tenha algum conteúdo
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -112,8 +115,33 @@ class _CaminhoBase(abc.ABC):
             )
         self._renomeia_conteudo(nome_origem, nome_destino)
 
+    def _copia_conteudo_caminhos_distintos(
+        self, nome_conteudo: str, caminho_destino: _CaminhoBase
+    ) -> None:
+        """
+        Realiza a cópia de um determinado conteúdo dentro deste caminho para
+        um caminho distinto que seja de uma classe diferente deste objeto
+
+        :param nome_conteudo: nome do conteúdo a ser copiado
+        :param caminho_destino: objeto caminho de destino
+        """
+        if self.verifica_se_arquivo(nome_conteudo):
+            dados = self.carrega_arquivo(nome_conteudo)
+            caminho_destino.salva_arquivo(dados, nome_conteudo)
+        else:
+            caminho_origem = self.__class__(
+                caminho=self.obtem_caminho(nome_conteudo),
+                criar_caminho=False,
+            )
+            caminho_destino = caminho_destino.__class__(
+                caminho=caminho_destino.obtem_caminho(nome_conteudo),
+                criar_caminho=True,
+            )
+            for cont in caminho_origem.lista_conteudo():
+                caminho_origem._copia_conteudo_caminhos_distintos(cont, caminho_destino)
+
     @abc.abstractmethod
-    def _copia_conteudo(
+    def _copia_conteudo_mesmo_caminho(
         self, nome_conteudo: str, caminho_destino: _CaminhoBase
     ) -> None:
         """
@@ -135,7 +163,10 @@ class _CaminhoBase(abc.ABC):
             raise FileNotFoundError(
                 f"{nome_conteudo} não está contido em {self._caminho}"
             )
-        self._copia_conteudo(nome_conteudo, caminho_destino)
+        if isinstance(caminho_destino, self.__class__):
+            self._copia_conteudo_mesmo_caminho(nome_conteudo, caminho_destino)
+        else:
+            self._copia_conteudo_caminhos_distintos(nome_conteudo, caminho_destino)
 
     @abc.abstractmethod
     def _apaga_conteudo(self, nome_conteudo: str) -> None:
@@ -161,7 +192,7 @@ class _CaminhoBase(abc.ABC):
     @abc.abstractmethod
     def _gera_buffer_carregar(
         self, nome_arquivo: str, **kwargs: typing.Any
-    ) -> typing.Any:
+    ) -> typing.BinaryIO:
         """
         Gera um buffer para os dados a serem carregados para que
         isto possa ser passado para a função de carregamento interna
@@ -183,14 +214,15 @@ class _CaminhoBase(abc.ABC):
         else:
             ext = kwargs["ext"]
             del kwargs["ext"]
-        return carrega_arquivo(
-            self._gera_buffer_carregar(nome_arquivo, **kwargs), ext, **kwargs
-        )
+        buffer = self._gera_buffer_carregar(nome_arquivo, **kwargs)
+        dados = carrega_arquivo(buffer, ext, **kwargs)
+        buffer.close()
+        return dados
 
     @abc.abstractmethod
     def _gera_buffer_salvar(
         self, nome_arquivo: str, **kwargs: typing.Any
-    ) -> typing.Any:
+    ) -> typing.BinaryIO:
         """
         Gera um buffer para os dados a serem salvos em algum local que serão
         usados como parte do método de salvar

@@ -1,6 +1,7 @@
 import json
 import pickle
 import typing
+from io import StringIO
 
 import geopandas as gpd
 import pandas as pd
@@ -30,6 +31,10 @@ def escreve_para_buffer(
             kwargs["driver"] = "GeoJSON"
         elif ext == "topojson":
             kwargs["driver"] = "TopoJSON"
+        elif ext == "shp":
+            raise ValueError(
+                "Nós não implementamos uma maneira de exportar os dados de shp para um buffer"
+            )
         ESCREVE_GEOPANDAS[ext](
             dados, buffer, **obtem_argumentos_objeto(ESCREVE_GEOPANDAS[ext], kwargs)
         )
@@ -46,7 +51,10 @@ def escreve_para_buffer(
         buffer.write(dados.encode(kwargs["encoding"]))
     else:
         if ext == "json":
-            json.dump(dados, buffer)
+            up = StringIO()
+            json.dump(dados, up)
+            up.seek(0)
+            buffer.write(up.read().encode("UTF-8"))
         elif ext == "yml":
             yaml.dump(dados, buffer)
         elif ext == "pkl":

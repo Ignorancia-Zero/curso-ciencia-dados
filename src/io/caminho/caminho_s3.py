@@ -32,8 +32,10 @@ class S3IO(FileIO):
 
     def close(self) -> None:
         super().close()
-        self.client.put_object(Bucket=self.bucket, Body=self.name, Key=self.prefixo)
-        os.remove(self.name)
+        title = os.path.basename(self.name)
+        self.client.put_object(
+            Bucket=self.bucket, Body=self.name, Key=f"{self.prefixo}/{title}"
+        )
 
 
 # TODO: É preciso testar esse objeto com uma instância S3 para garantir que está funcionando
@@ -61,7 +63,6 @@ class CaminhoS3(_CaminhoBase):
         Inicializa o objeto caminho local
 
         :param caminho: string com o caminho desejado dentro do bucket
-        :param bucket: nome do bucket AWS
         :param criar_caminho: flag se o caminho deve ser criado
         """
         # cria o cliente s3 e o diretório temporário para download de arquivos

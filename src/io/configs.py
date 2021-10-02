@@ -5,7 +5,7 @@ import pandas as pd
 
 EXTENSOES_TEXTO = ["txt", "html", "xml"]
 
-ESCREVE_PANDAS: typing.Dict[str, typing.Callable[[pd.DataFrame, ...], None]] = {
+ESCREVE_PANDAS: typing.Dict[str, typing.Callable] = {
     "csv": pd.DataFrame.to_csv,
     "tsv": pd.DataFrame.to_csv,
     "parquet": pd.DataFrame.to_parquet,
@@ -20,7 +20,7 @@ ESCREVE_PANDAS: typing.Dict[str, typing.Callable[[pd.DataFrame, ...], None]] = {
     "xml": pd.DataFrame.to_xml,
 }
 
-ESCREVE_GEOPANDAS: typing.Dict[str, typing.Callable[[gpd.GeoDataFrame, ...], None]] = {
+ESCREVE_GEOPANDAS: typing.Dict[str, typing.Callable] = {
     "parquet": gpd.GeoDataFrame.to_parquet,
     "feather": gpd.GeoDataFrame.to_feather,
     "shp": gpd.GeoDataFrame.to_file,
@@ -33,7 +33,7 @@ ESCREVE_GEOPANDAS: typing.Dict[str, typing.Callable[[gpd.GeoDataFrame, ...], Non
 EXTENSAO_DF = {"csv", "tsv", "parquet", "hdf", "xls", "xlsx", "ods", "feather"}
 
 # dicionário de extensões e funções do pandas para ler conteúdos
-LEITOR_PANDAS: typing.Dict[str, typing.Callable[..., pd.DataFrame]] = {
+LEITOR_PANDAS: typing.Dict[str, typing.Callable] = {
     "csv": pd.read_csv,
     "tsv": pd.read_csv,
     "parquet": pd.read_parquet,
@@ -49,7 +49,7 @@ LEITOR_PANDAS: typing.Dict[str, typing.Callable[..., pd.DataFrame]] = {
 }
 
 # dicionário de extensões e funções do pandas para ler conteúdos no geopandas
-LEITOR_GEOPANDAS: typing.Dict[str, typing.Callable[..., pd.DataFrame]] = {
+LEITOR_GEOPANDAS: typing.Dict[str, typing.Callable] = {
     "parquet": gpd.read_parquet,
     "feather": gpd.read_feather,
     "shp": gpd.read_file,

@@ -187,7 +187,7 @@ class _CaminhoBase(abc.ABC):
             raise FileNotFoundError(
                 f"{nome_conteudo} não está contido em {self._caminho}"
             )
-        self._apaga_conteudo(nome_arquivo)
+        self._apaga_conteudo(nome_conteudo)
 
     @abc.abstractmethod
     def _gera_buffer_carregar(

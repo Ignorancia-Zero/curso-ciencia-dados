@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import pickle
 import re
@@ -72,11 +73,13 @@ def converte_em_objeto(
                     dados, **obtem_argumentos_objeto(LEITOR_GEOPANDAS[ext], kwargs)
                 )
             except ValueError:
-                pass
+                logging.debug("Falha ao ler como Geopandas. Tentando ler como pandas")
+                return le_como_df(dados, ext, **kwargs)
 
         # depois le como data frame se a flag de leitura for específicada
-        if ext in EXTENSAO_DF:
+        if ext in LEITOR_PANDAS:
             return le_como_df(dados, ext, **kwargs)
+
     # caso contrário
     else:
         # utiliza a função de carregamento adequada de acordo com o tipo de arquivo

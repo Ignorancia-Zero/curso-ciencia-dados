@@ -1,5 +1,3 @@
-
-
 class Data:
     """
     Representa a interface com os dados que podem ser acessados

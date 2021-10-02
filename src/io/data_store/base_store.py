@@ -4,7 +4,6 @@ from src.io.data_store.data import Data
 
 
 class BaseDataStore(abc.ABC):
-
     def __init__(self):
         self.pasta_dados = "dados"
 

@@ -1,10 +1,29 @@
+import os
 import typing
+from pathlib import Path
 
 import geopandas as gpd
 import pandas as pd
 
+# caminhos para ambientes
+PATH_LOCAL = str(Path(__file__).parent.parent.parent)
+PATH_GDRIVE = "Projetos/IZ/Cursos/Ciência de Dados/Compartilhar"
+
+# Dicionário com as configurações dos ambientes de DS
+DS_ENVS: typing.Dict[str, str] = {
+    "local_amostra": os.path.join(PATH_LOCAL, "dados", "amostra"),
+    "local_completo": os.path.join(PATH_LOCAL, "dados", "completo"),
+    "gdrive_amostra": f"gdrive://{PATH_GDRIVE}/dados/amostra",
+    "gdrive_completo": f"gdrive://{PATH_GDRIVE}/dados/completo",
+}
+
+# extensões de arquivos que são considerados como textos
 EXTENSOES_TEXTO = ["txt", "html", "xml"]
 
+# lista de extensões que devem ser nativamente interpretadas como data frames
+EXTENSAO_DF = {"csv", "tsv", "parquet", "hdf", "xls", "xlsx", "ods", "feather"}
+
+# funções para exportar data frames pandas
 ESCREVE_PANDAS: typing.Dict[str, typing.Callable] = {
     "csv": pd.DataFrame.to_csv,
     "tsv": pd.DataFrame.to_csv,
@@ -20,6 +39,7 @@ ESCREVE_PANDAS: typing.Dict[str, typing.Callable] = {
     "xml": pd.DataFrame.to_xml,
 }
 
+# funções para exportar data frames de geopandas
 ESCREVE_GEOPANDAS: typing.Dict[str, typing.Callable] = {
     "parquet": gpd.GeoDataFrame.to_parquet,
     "feather": gpd.GeoDataFrame.to_feather,
@@ -28,9 +48,6 @@ ESCREVE_GEOPANDAS: typing.Dict[str, typing.Callable] = {
     "geojson": gpd.GeoDataFrame.to_file,
     "topojson": gpd.GeoDataFrame.to_file,
 }
-
-# lista de extensões que devem ser nativamente interpretadas como data frames
-EXTENSAO_DF = {"csv", "tsv", "parquet", "hdf", "xls", "xlsx", "ods", "feather"}
 
 # dicionário de extensões e funções do pandas para ler conteúdos
 LEITOR_PANDAS: typing.Dict[str, typing.Callable] = {

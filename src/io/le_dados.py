@@ -127,7 +127,7 @@ def le_dados_comprimidos(
         padrao_comp = kwargs["padrao_comp"]
         del kwargs["padrao_comp"]
     else:
-        padrao_comp = None
+        padrao_comp = "^"
 
     # selecionamos o objeto de leitura adequado
     obj_l = RarFile if ext == "rar" else ZipFile
@@ -143,9 +143,14 @@ def le_dados_comprimidos(
             ]
 
             # lê os arquivos para o dicionários
-            objs = {arq: converte_em_objeto(z.open(arq), ext, **kwargs) for arq in arqs}
+            objs = {
+                arq: carrega_arquivo(z.open(arq), obtem_extencao(arq), **kwargs)
+                for arq in arqs
+            }
 
-    except ValueError:
+    except ValueError as e:
+        logging.debug(f"Obtivemos um erro {e} ao carregar o zip, fazendo leitura do disco")
+
         # cria um diretório temporário
         with tempfile.TemporaryDirectory() as tmpdirname:
             temp = Path(tmpdirname)

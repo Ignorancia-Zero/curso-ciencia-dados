@@ -9,7 +9,7 @@ from pathlib import Path
 import boto3
 from botocore.client import BaseClient
 
-from .caminho_base import _CaminhoBase
+from ._base import _CaminhoBase
 
 
 class S3IO(FileIO):

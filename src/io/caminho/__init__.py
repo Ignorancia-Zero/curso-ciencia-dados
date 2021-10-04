@@ -1,12 +1,13 @@
 import typing
 
-from .caminho_local import CaminhoLocal
-from .caminho_s3 import CaminhoS3
+from .gdrive import CaminhoGDrive
+from .local import CaminhoLocal
+from .s3 import CaminhoS3
 
 
 def obtem_objeto_caminho(
     caminho: str, criar_caminho: bool = False
-) -> typing.Union[CaminhoS3, CaminhoLocal]:
+) -> typing.Union[CaminhoLocal, CaminhoGDrive, CaminhoS3]:
     """
     Retorna o objeto caminho adequado com base na string de caminho selecionada
 
@@ -17,6 +18,6 @@ def obtem_objeto_caminho(
     if caminho.startswith("s3://"):
         return CaminhoS3(caminho, criar_caminho)
     elif caminho.startswith("gdrive://"):
-        raise NotImplementedError
+        return CaminhoGDrive(caminho, criar_caminho)
     else:
         return CaminhoLocal(caminho, criar_caminho)

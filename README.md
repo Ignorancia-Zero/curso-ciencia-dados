@@ -1,7 +1,11 @@
 # Curso de Ciência de Dados
 
 ---
+## Sobre o Projeto
 
+TODO
+
+---
 ## Requisitos
 * Python 3.8 64-bit
   * Windows: https://www.python.org/downloads/windows/ ou https://docs.anaconda.com/anaconda/install/windows/
@@ -20,14 +24,64 @@ e copiar os mesmos arquivos contidos em Suporte/WinRAR
            sudo install -c -o $USER rar /usr/local/bin/
            sudo install -c -o $USER unrar /usr/local/bin/
   * Linux: ```sudo apt-get install unrar```
+---
+  
+# Instalação do Ambiente Python
 
-## Instalação
+---
+## Windows
 
-### Windows
-Explicar processo de criação de ambiente
+### Configuração do Ambiente Python
 
-Explicar problemas de configuração de pacotes
+#### Opção 1: YAML Anaconda
+Recomendamos que você instale o anaconda (https://docs.anaconda.com/anaconda/install/windows/)
+e execute o comando
 ```
+conda env create -f setup_anaconda.yml
+```
+Para criar o ambiente com todos os pacotes necessário
+
+*NOTA: Para executar o theano com suporte para C no Windows é necessário ainda executar:*
+```
+conda install -c conda-forge m2w64-toolchain_win-64
+conda install -c anaconda libpython
+```
+
+#### Opção 2: Anaconda/Miniconda
+* Execute no terminal
+```
+conda create -n curso-ciencia-dados python=3.8
+```
+* Em seguida execute `conda activate curso-ciencia-dados`. 
+* Você pode adicionar esse ambiente ao Pycharm:
+File -> Settings -> Project Interpreter -> Add -> Conda Environment ->
+Existing Environment.
+
+
+#### Opção 3: PyCharm com ambiente Conda
+* Faça o download do PyCharm (https://www.jetbrains.com/pycharm/)
+* Pycharm -> Settings -> Project Interpreter -> Add -> Conda Enviroment
+-> [Selecione o conda apropriado] -> Python Version 3.8
+
+
+
+### Instalação Pacotes
+
+#### !!! IMPORTANTE !!! ####
+Garanta que você possuí a última versão do Visual C++ runtime instalada 
+(https://aka.ms/vs/16/release/vc_redist.x64.exe)
+
+No Windows há um sério problema na configuração de ambiente
+que ao ser criado pelo processo acima pode acarretar na geração
+de problemas de compatibilidade principalmente com a biblioteca 
+do geopandas. 
+
+Desta forma, caso haja algum problema recomendamos a instalação 
+manual do ambiente executando os comandos descritos abaixo a 
+partir da raíz do projeto:
+```
+conda create -n curso-ciencia-dados python=3.8
+conda activate curso-ciencia-dados
 cd Suporte/Pacotes Windows
 conda update -n base -c defaults conda
 conda install -c anaconda beautifulsoup4==4.9.3

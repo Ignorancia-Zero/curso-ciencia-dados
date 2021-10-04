@@ -11,7 +11,7 @@ from pydrive2.drive import GoogleDrive
 from pydrive2.drive import GoogleDriveFile
 
 from src.utils.info import CAMINHO_INFO
-from .caminho_base import _CaminhoBase
+from ._base import _CaminhoBase
 
 
 class GDriveIO(FileIO):

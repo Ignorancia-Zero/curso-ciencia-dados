@@ -5,7 +5,7 @@ import shutil
 import typing
 from pathlib import Path
 
-from .caminho_base import _CaminhoBase
+from ._base import _CaminhoBase
 
 
 class CaminhoLocal(_CaminhoBase):

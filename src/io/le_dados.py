@@ -16,7 +16,7 @@ import yaml
 from charamel import Detector
 from rarfile import RarFile
 
-from src.io.configs import EXTENSAO_DF, LEITOR_PANDAS, LEITOR_GEOPANDAS, EXTENSOES_TEXTO
+from src.io.configs import LEITOR_PANDAS, LEITOR_GEOPANDAS, EXTENSOES_TEXTO
 from src.utils.interno import obtem_argumentos_objeto, obtem_extencao
 
 
@@ -149,7 +149,9 @@ def le_dados_comprimidos(
             }
 
     except ValueError as e:
-        logging.debug(f"Obtivemos um erro {e} ao carregar o zip, fazendo leitura do disco")
+        logging.debug(
+            f"Obtivemos um erro {e} ao carregar o zip, fazendo leitura do disco"
+        )
 
         # cria um diretório temporário
         with tempfile.TemporaryDirectory() as tmpdirname:

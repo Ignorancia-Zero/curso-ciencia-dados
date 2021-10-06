@@ -2,8 +2,9 @@
 Catalogo com a identificação de documentos que podem ser
 compartilhados num ambiente de DataStore
 """
-from frozendict import frozendict
 from dataclasses import dataclass
+
+from frozendict import frozendict
 
 
 @dataclass
@@ -38,9 +39,5 @@ class CatalogoInfo:
     """
 
     CONFIG_AQUIS_ESCOLA = frozendict(
-        {
-            "colecao": "info",
-            "nome": "aquis_censo_escola",
-            "tipo": "yml"
-        }
+        {"colecao": "info", "nome": "aquis_censo_escola", "tipo": "yml"}
     )

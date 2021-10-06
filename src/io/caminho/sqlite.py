@@ -16,8 +16,6 @@ class CaminhoSQLite(_CaminhoBase):
     rígido da máquina executando o código
     """
 
-    user: str
-    password: str
     database: str
     _path: Path
     _connection: sqlite3.Connection
@@ -27,22 +25,14 @@ class CaminhoSQLite(_CaminhoBase):
         """
         Inicializa o objeto caminho sql
 
-        :param caminho: string com o caminho desejado (sqlite://@user=XXXX@pw=XXXX/caminho/para/database)
+        :param caminho: string com o caminho desejado (sqlite://caminho/para/database)
         :param criar_caminho: flag se o caminho deve ser criado
         """
         # remove a string de sql
         caminho = caminho[9:]
 
-        # obtém as configurações de usuário e senha
-        u_p = caminho.split("/")[0].split("@")[1:]
-        self.user = u_p[0][5:]
-        self.password = u_p[1][3:]
-
         # obtém o nome do database
         self.database = caminho.split("/")[-1] + ".db"
-
-        # remove usuário e senha de caminho
-        caminho = "/".join(caminho.split("/")[1:])
 
         # obtém o caminho para o database
         self._path = Path("/".join(caminho.split("/")[:-1]))

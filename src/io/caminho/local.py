@@ -64,7 +64,7 @@ class CaminhoLocal(_CaminhoBase):
 
     def verifica_se_arquivo(self, nome_conteudo: str) -> bool:
         """
-        Verifica se um determinado arquivo contido dentro
+        Verifica se um determinado conteúdo contido dentro
         do caminho é um arquivo
 
         :param nome_conteudo: nome do conteúdo a ser verificado

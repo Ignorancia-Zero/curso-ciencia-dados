@@ -84,7 +84,7 @@ class _CaminhoBase(abc.ABC):
     @abc.abstractmethod
     def verifica_se_arquivo(self, nome_conteudo: str) -> bool:
         """
-        Verifica se um determinado arquivo contido dentro
+        Verifica se um determinado conteúdo contido dentro
         do caminho é um arquivo
 
         :param nome_conteudo: nome do conteúdo a ser verificado
@@ -209,12 +209,12 @@ class _CaminhoBase(abc.ABC):
         :param nome_arquivo: nome do arquivo a ser carregado
         :param kwargs: argumentos específicos para a função de carregamento
         """
+        buffer = self._gera_buffer_carregar(nome_arquivo, **kwargs)
         if "ext" not in kwargs:
             ext = obtem_extencao(nome_arquivo)
         else:
             ext = kwargs["ext"]
             del kwargs["ext"]
-        buffer = self._gera_buffer_carregar(nome_arquivo, **kwargs)
         dados = carrega_arquivo(buffer, ext, **kwargs)
         buffer.close()
         return dados
@@ -242,12 +242,12 @@ class _CaminhoBase(abc.ABC):
         :param nome_arquivo: nome do arquivo a ser salvo
         :param kwargs: argumentos específicos para a função de salvamento
         """
+        buffer = self._gera_buffer_salvar(nome_arquivo, **kwargs)
         if "ext" not in kwargs:
             ext = obtem_extencao(nome_arquivo)
         else:
             ext = kwargs["ext"]
             del kwargs["ext"]
-        buffer = self._gera_buffer_salvar(nome_arquivo, **kwargs)
         escreve_para_buffer(dados=dados, buffer=buffer, ext=ext, **kwargs)
         buffer.close()
 

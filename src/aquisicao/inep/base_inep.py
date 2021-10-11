@@ -7,6 +7,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 from src.aquisicao.base_etl import BaseETL
+from src.configs import COLECAO_DADOS_WEB
 from src.io.caminho import obtem_objeto_caminho
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
@@ -56,7 +57,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
                     self._ds,
                     referencia=dict(
                         nome=tag["href"].split("_")[-1],
-                        colecao="externo",
+                        colecao=COLECAO_DADOS_WEB,
                         pasta=self._base,
                     ),
                 ): tag["href"]

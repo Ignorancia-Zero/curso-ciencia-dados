@@ -5,6 +5,7 @@ compartilhados num ambiente de DataStore
 from dataclasses import dataclass
 
 from frozendict import frozendict
+from src.configs import COLECAO_AQUISCAO
 
 
 @dataclass
@@ -16,7 +17,7 @@ class CatalogoAquisicao:
 
     ESCOLA_TEMP = frozendict(
         {
-            "colecao": "aquisicao",
+            "colecao": COLECAO_AQUISCAO,
             "nome": "escola_temp",
             "tipo": "parquet",
         }
@@ -24,7 +25,7 @@ class CatalogoAquisicao:
 
     ESCOLA_ATEMP = frozendict(
         {
-            "colecao": "aquisicao",
+            "colecao": COLECAO_AQUISCAO,
             "nome": "escola_atemp",
             "tipo": "parquet",
         }

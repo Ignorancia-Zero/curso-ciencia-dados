@@ -270,9 +270,6 @@ class EscolaETL(BaseCensoEscolarETL):
                 for base in self.dados_entrada
             ]
         )
-        self.logger.info("Ajustando valores nulos")
-        self.preenche_nulos(escola_temp)
-
         doc = Documento(
             ds=self._ds,
             referencia=CatalogoAquisicao.ESCOLA_TEMP,
@@ -296,13 +293,12 @@ class EscolaETL(BaseCensoEscolarETL):
         )
         self._dados_saida.append(doc)
 
-    def preenche_nulos(self, escola_temp: pd.DataFrame) -> pd.DataFrame:
+    def preenche_nulos(self) -> None:
         """
         Realiza o preenchimento de valores nulos dentro da base temporal
-
-        :param escola_temp: base de dados temporais
-        :return: base preenchida
         """
+        escola_temp = self._dados_saida[0].data
+
         # faz o sorting e reset index
         escola_temp.sort_values(by=["CO_ENTIDADE", "NU_ANO_CENSO"], inplace=True)
         escola_temp.reset_index(drop=True, inplace=True)
@@ -337,8 +333,6 @@ class EscolaETL(BaseCensoEscolarETL):
         for c, p in self._configs["PREENCHER_NULOS"].items():
             escola_temp[c] = escola_temp[c].fillna(p)
 
-        return escola_temp
-
     def transform(self) -> None:
         """
         Transforma os dados e os adequa para os formatos de
@@ -364,3 +358,6 @@ class EscolaETL(BaseCensoEscolarETL):
 
         self.logger.info("Concatenando bases em saídas únicas")
         self.concatena_bases()
+
+        self.logger.info("Ajustando valores nulos")
+        self.preenche_nulos()

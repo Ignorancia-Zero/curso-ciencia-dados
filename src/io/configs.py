@@ -3,6 +3,7 @@ import typing
 from pathlib import Path
 
 import geopandas as gpd
+from src.configs import PASTA_DADOS
 import pandas as pd
 
 # caminhos para ambientes
@@ -11,10 +12,11 @@ PATH_GDRIVE = "Projetos/IZ/Cursos/Ciência de Dados/Compartilhar"
 
 # Dicionário com as configurações dos ambientes de DS
 DS_ENVS: typing.Dict[str, str] = {
-    "local_amostra": os.path.join(PATH_LOCAL, "dados", "amostra"),
-    "local_completo": os.path.join(PATH_LOCAL, "dados", "completo"),
-    "gdrive_amostra": f"gdrive://{PATH_GDRIVE}/dados/amostra",
-    "gdrive_completo": f"gdrive://{PATH_GDRIVE}/dados/completo",
+    "teste": os.path.join(PATH_LOCAL, "src", "tests", PASTA_DADOS),
+    "local_amostra": os.path.join(PATH_LOCAL, PASTA_DADOS, "amostra"),
+    "local_completo": os.path.join(PATH_LOCAL, PASTA_DADOS, "completo"),
+    "gdrive_amostra": f"gdrive://{PATH_GDRIVE}/{PASTA_DADOS}/amostra",
+    "gdrive_completo": f"gdrive://{PATH_GDRIVE}/{PASTA_DADOS}/completo",
 }
 
 # extensões de arquivos que são considerados como textos
@@ -36,7 +38,7 @@ ESCREVE_PANDAS: typing.Dict[str, typing.Callable] = {
     "json": pd.DataFrame.to_json,
     "pkl": pd.DataFrame.to_pickle,
     "html": pd.DataFrame.to_html,
-    "xml": pd.DataFrame.to_xml,
+#    "xml": pd.DataFrame.to_xml,
 }
 
 # funções para exportar data frames de geopandas
@@ -62,7 +64,7 @@ LEITOR_PANDAS: typing.Dict[str, typing.Callable] = {
     "json": pd.read_json,
     "pkl": pd.read_pickle,
     "html": pd.read_html,
-    "xml": pd.read_xml,
+#    "xml": pd.read_xml,
 }
 
 # dicionário de extensões e funções do pandas para ler conteúdos no geopandas

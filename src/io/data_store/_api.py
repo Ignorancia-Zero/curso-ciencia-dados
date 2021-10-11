@@ -54,6 +54,15 @@ class Documento(Hashable):
             self._data = self.ds.obtem_dados(self, **kwargs)
         return self._data
 
+    def exists(self) -> bool:
+        """
+        Checa se o documento existe
+
+        :return: True se o documento existir
+        """
+        cam = self.ds.gera_caminho(self)
+        return cam.verifica_se_arquivo(f"{self.nome}.{self.tipo}")
+
     @property
     def data(self, **kwargs) -> typing.Any:
         """
@@ -196,7 +205,7 @@ class DataStore:
     caminho: _CaminhoBase
     logger: logging.Logger
 
-    def __init__(self, env: str) -> None:
+    def __init__(self, env: str = "local_completo") -> None:
         """
         Gera uma instância do data store
 
@@ -231,7 +240,10 @@ class DataStore:
         return self.caminho.obtem_caminho(lista_cam)
 
     def gera_caminho(
-        self, documento: Documento = None, colecao: Colecao = None
+        self,
+        documento: Documento = None,
+        colecao: Colecao = None,
+        criar_caminho: bool = False,
     ) -> _CaminhoBase:
         """
         Gera um novo objeto caminho com destino a coleção de dados
@@ -239,9 +251,12 @@ class DataStore:
 
         :param documento: objeto com informação de um documento
         :param colecao: objeto coleção de dados
+        :param criar_caminho: flag se o caminho deve ser criado
         :return: caminho para a coleção
         """
-        return self.caminho.__class__(self._obtem_caminho(documento, colecao))
+        return self.caminho.__class__(
+            self._obtem_caminho(documento, colecao), criar_caminho=criar_caminho
+        )
 
     def obtem_dados(self, documento: Documento, **kwargs) -> typing.Any:
         """
@@ -253,7 +268,14 @@ class DataStore:
         :return: objeto python carregado
         """
         self.logger.debug(f"Carregando documento {documento}")
-        return self.gera_caminho(documento=documento).carrega_arquivo(
+        if "criar_caminho" in kwargs:
+            criar_caminho = kwargs["criar_caminho"]
+            del kwargs["criar_caminho"]
+        else:
+            criar_caminho = False
+        return self.gera_caminho(
+            documento=documento, criar_caminho=criar_caminho
+        ).carrega_arquivo(
             nome_arquivo=f"{documento.nome}.{documento.tipo}",
             ext=documento.tipo,
             **kwargs,

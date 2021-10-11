@@ -184,8 +184,10 @@ def le_dados_comprimidos(
     # retorna o objeto adequado de acordo com a quantidade de arquivos
     if len(objs) > 1:
         return objs
-    else:
+    elif len(objs) == 1:
         return list(objs.values())[0]
+    else:
+        return None
 
 
 def carrega_arquivo(

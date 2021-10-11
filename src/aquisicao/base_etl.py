@@ -1,9 +1,9 @@
 import abc
 import logging
 import typing
-from pathlib import Path
 
-import pandas as pd
+from src.io.data_store import DataStore
+from src.io.data_store import Documento
 
 
 class BaseETL(abc.ABC):
@@ -12,26 +12,21 @@ class BaseETL(abc.ABC):
     deve funcionar
     """
 
-    caminho_entrada: Path
-    caminho_saida: Path
-    _dados_entrada: typing.Dict[str, pd.DataFrame]
-    _dados_saida: typing.Dict[str, pd.DataFrame]
+    ds: DataStore
+    criar_caminho: bool
+    _dados_entrada: typing.List[Documento]
+    _dados_saida: typing.List[Documento]
     logger: logging.Logger
 
-    def __init__(self, entrada: str, saida: str, criar_caminho: bool = True) -> None:
+    def __init__(self, ds: DataStore, criar_caminho: bool = True) -> None:
         """
         Instância o objeto de ETL Base
 
-        :param entrada: string com caminho para pasta de entrada
-        :param saida: string com caminho para pasta de saída
+        :param ds: instância de objeto data store
         :param criar_caminho: flag indicando se devemos criar os caminhos
         """
-        self.caminho_entrada = Path(entrada)
-        self.caminho_saida = Path(saida)
-
-        if criar_caminho:
-            self.caminho_entrada.mkdir(parents=True, exist_ok=True)
-            self.caminho_saida.mkdir(parents=True, exist_ok=True)
+        self.criar_caminho = criar_caminho
+        self._ds = ds
 
         self._dados_entrada = None
         self._dados_saida = None
@@ -45,7 +40,7 @@ class BaseETL(abc.ABC):
         return self.__class__.__name__
 
     @property
-    def dados_entrada(self) -> typing.Dict[str, pd.DataFrame]:
+    def dados_entrada(self) -> typing.List[Documento]:
         """
         Acessa o dicionário de dados de entrada
 
@@ -56,7 +51,7 @@ class BaseETL(abc.ABC):
         return self._dados_entrada
 
     @property
-    def dados_saida(self) -> typing.Dict[str, pd.DataFrame]:
+    def dados_saida(self) -> typing.List[Documento]:
         """
         Acessa o dicionário de dados de saída
 
@@ -85,8 +80,8 @@ class BaseETL(abc.ABC):
         """
         Exporta os dados transformados
         """
-        for arq, df in self.dados_saida.items():
-            df.to_parquet(self.caminho_saida / f"{arq}.parquet", index=False)
+        for doc in self.dados_saida:
+            self._ds.insere_dados(doc)
 
     def pipeline(self) -> None:
         """

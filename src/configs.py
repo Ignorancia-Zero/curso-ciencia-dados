@@ -1,3 +1,5 @@
+ENV_DS = "local_completo"
+
 PASTA_DADOS = "dados"
 PASTA_SAIDA = "saida"
 

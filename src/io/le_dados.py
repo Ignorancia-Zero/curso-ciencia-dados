@@ -52,6 +52,46 @@ def le_como_df(dados: typing.BinaryIO, ext: str, **kwargs: typing.Any) -> pd.Dat
     )
 
 
+def load_json(buffer: typing.BinaryIO) -> typing.Dict:
+    """
+    Lê os dados de um buffer como um objeto json
+
+    :param buffer: buffer para dados json
+    :return: dicionário de dados carregado
+    """
+    return json.load(buffer)
+
+
+def load_yaml(buffer: typing.BinaryIO) -> typing.Dict:
+    """
+    Lê os dados de um buffer como um objeto yaml
+
+    :param buffer: buffer para dados yaml
+    :return: dicionário de dados carregado
+    """
+    return yaml.load(buffer, Loader=yaml.FullLoader)
+
+
+def load_pickle(buffer: typing.BinaryIO) -> typing.Any:
+    """
+    Lê os dados de um buffer como um série de objetos pickle
+
+    :param buffer: buffer para dados pickle
+    :return: lista ou objeto carregado
+    """
+    objs = []
+    while True:
+        try:
+            o = pickle.load(buffer)
+        except EOFError:
+            break
+        objs.append(o)
+    if len(objs) > 1:
+        return objs
+    else:
+        return objs[0]
+
+
 def converte_em_objeto(
     dados: typing.BinaryIO, ext: str, **kwargs: typing.Any
 ) -> typing.Any:
@@ -84,21 +124,11 @@ def converte_em_objeto(
     else:
         # utiliza a função de carregamento adequada de acordo com o tipo de arquivo
         if ext == "json":
-            return json.load(dados)
+            return load_json(dados)
         elif ext == "yml":
-            return yaml.load(dados, Loader=yaml.FullLoader)
+            return load_yaml(dados)
         elif ext == "pkl":
-            objs = []
-            while True:
-                try:
-                    o = pickle.load(dados)
-                except EOFError:
-                    break
-                objs.append(o)
-            if len(objs) > 1:
-                return objs
-            else:
-                return objs[0]
+            return load_pickle(dados)
         elif ext in EXTENSOES_TEXTO:
             if "encoding" in kwargs:
                 return dados.read().decode(kwargs["encoding"])
@@ -198,9 +228,8 @@ def carrega_arquivo(
     **kwargs: typing.Any,
 ) -> typing.Any:
     """
-    Realiza o carregamento de um determinado arquivo, que pode ser
-    uma string, path, IO, ou objeto buffer para os conteúdos a serem
-    carregados
+    Realiza o carregamento de um determinado arquivo, que pode ser uma string,
+    path, IO, ou objeto buffer para os conteúdos a serem carregados
 
     :param arquivo: caminho para, caminho aberto ou dados a serem processados
     :param ext: extensão do arquivo

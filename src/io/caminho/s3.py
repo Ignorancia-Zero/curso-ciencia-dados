@@ -1,14 +1,21 @@
 from __future__ import annotations
 
+import json
 import os
+import pickle
 import tempfile
 import typing
 from io import FileIO
 from pathlib import Path
 
 import boto3
+import geopandas as gpd
+import pandas as pd
+import yaml
 from botocore.client import BaseClient
 
+import src.io.le_dados as le_dados
+from src.utils.interno import obtem_argumentos_objeto
 from ._base import _CaminhoBase
 
 
@@ -307,3 +314,406 @@ class CaminhoS3(_CaminhoBase):
 
     def __del__(self):
         self.temp_dir.cleanup()
+
+    def read_df(
+        self, nome_arq: str, func: typing.Callable, **kwargs: typing.Any
+    ) -> typing.Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """
+        Lê um arquivo no pandas usando a função read adequada
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param func: função pandas de carregamento
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return func(
+            self.obtem_caminho(nome_arq), **obtem_argumentos_objeto(func, kwargs)
+        )
+
+    def read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_parquet, **kwargs)
+
+    def read_feather(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_feather, **kwargs)
+
+    def read_csv(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_csv, **kwargs)
+
+    def read_hdf(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_hdf, **kwargs)
+
+    def read_excel(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_excel, **kwargs)
+
+    def read_html(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_html, **kwargs)
+
+    def read_json(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_json, **kwargs)
+
+    def read_xml(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_xml, **kwargs)
+
+    def read_pickle(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, pd.read_pickle, **kwargs)
+
+    def gpd_read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função geopandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, gpd.read_parquet, **kwargs)
+
+    def gpd_read_feather(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função geopandas
+        :return: data frame com objeto carregado
+        """
+        return self.read_df(nome_arq, gpd.read_feather, **kwargs)
+
+    def gpd_read_file(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função geopandas
+        :return: data frame com objeto carregado
+        """
+        cam = self.obtem_caminho(nome_arq)
+        if "zip" in kwargs:
+            if kwargs["zip"]:
+                cam = "zip+" + self.obtem_caminho(nome_arq)
+        return gpd.read_file(cam, **obtem_argumentos_objeto(gpd.read_file, kwargs))
+
+    def load_content(self, nome_arq: str) -> typing.BinaryIO:
+        """
+        Carrega um conteúdo específico do bucket s3
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :return: conteúdo baixado
+        """
+        return self.client.get_object(
+            Bucket=self.bucket,
+            Key=f"{self.prefixo}/{nome_arq}",
+        )["Body"]
+
+    def load_yaml(self, nome_arq: str, **kwargs: typing.Any) -> dict:
+        """
+        Carrega o arquivo yaml como um dicionário
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: dicionário com dados yaml
+        """
+        return le_dados.load_yaml(self.load_content(nome_arq))
+
+    def load_json(self, nome_arq: str, **kwargs: typing.Any) -> dict:
+        """
+        Carrega o arquivo json como um dicionário
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: dicionário com dados json
+        """
+        return le_dados.load_json(self.load_content(nome_arq))
+
+    def load_pickle(self, nome_arq: str, **kwargs: typing.Any) -> list:
+        """
+        Carrega os objetos armazenados num arquivo pickle
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: lista de objetos serializados
+        """
+        return le_dados.load_pickle(self.load_content(nome_arq))
+
+    def load_txt(self, nome_arq: str, **kwargs: typing.Any) -> str:
+        """
+        Carrega os objetos armazenados num arquivo de texto
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param func: função pandas de carregamento
+        :param kwargs: argumentos de carregamento para serem passados para função
+        :return: texto carregado
+        """
+        return self.load_content(nome_arq).read().decode()
+
+    def write_df(
+        self,
+        dados: typing.Union[pd.DataFrame, gpd.GeoDataFrame],
+        func: typing.Callable,
+        nome_arq: str,
+        **kwargs: typing.Any
+    ) -> typing.Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """
+        Lê um arquivo no pandas usando a função read adequada
+
+        :param dados: data frame a ser exportado
+        :param func: função de escrita dos dados
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        return func(
+            dados, self.obtem_caminho(nome_arq), **obtem_argumentos_objeto(func, kwargs)
+        )
+
+    def to_parquet(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_parquet, nome_arq, **kwargs)
+
+    def to_feather(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_feather, nome_arq, **kwargs)
+
+    def to_csv(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_csv, nome_arq, **kwargs)
+
+    def to_hdf(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_hdf, nome_arq, **kwargs)
+
+    def to_excel(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_excel, nome_arq, **kwargs)
+
+    def to_html(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_html, nome_arq, **kwargs)
+
+    def to_json(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_json, nome_arq, **kwargs)
+
+    def to_xml(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_xml, nome_arq, **kwargs)
+
+    def to_pickle(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, pd.DataFrame.to_pickle, nome_arq, **kwargs)
+
+    def gpd_to_parquet(
+        self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o geo data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
+        """
+        self.write_df(dados, gpd.GeoDataFrame.to_parquet, nome_arq, **kwargs)
+
+    def gpd_to_feather(
+        self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o geo data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, gpd.GeoDataFrame.to_feather, nome_arq, **kwargs)
+
+    def gpd_to_file(
+        self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o geo data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.write_df(dados, gpd.GeoDataFrame.to_file, nome_arq, **kwargs)
+
+    def save_yaml(self, dados: dict, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o dicionário para o arquivo dentro do caminho selecionado
+
+        :param dados: dicionário a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.client.put_object(
+            Bucket=self.bucket,
+            Body=bytes(yaml.dump(dados).encode("utf-8")),
+            Key=f"{self.prefixo}/{nome_arq}"
+        )
+
+    def save_json(self, dados: dict, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o dicionário para o arquivo dentro do caminho selecionado
+
+        :param dados: dicionário a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.client.put_object(
+            Bucket=self.bucket,
+            Body=bytes(json.dumps(dados).encode("utf-8")),
+            Key=f"{self.prefixo}/{nome_arq}"
+        )
+
+    def save_pickle(
+        self, dados: typing.Any, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o objeto para o arquivo dentro do caminho selecionado
+
+        :param dados: objeto python a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.client.put_object(
+            Bucket=self.bucket,
+            Body=bytes(pickle.dumps(dados)),
+            Key=f"{self.prefixo}/{nome_arq}"
+        )
+
+    def save_txt(self, dados: str, nome_arq: str, **kwargs: typing.Any) -> None:
+        """
+        Escreve o texto para o arquivo dentro do caminho selecionado
+
+        :param dados: texto a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        self.client.put_object(
+            Bucket=self.bucket,
+            Body=bytes(dados.encode("utf-8")),
+            Key=f"{self.prefixo}/{nome_arq}"
+        )

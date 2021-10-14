@@ -418,9 +418,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -431,9 +430,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -442,9 +440,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -453,9 +450,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -466,9 +462,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -477,9 +472,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -488,9 +482,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -499,9 +492,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -512,9 +504,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -525,9 +516,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o geo data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -538,9 +528,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o geo data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -551,9 +540,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o geo data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -562,9 +550,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o dicionário para o arquivo dentro do caminho selecionado
 
         :param dados: dicionário a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -573,9 +560,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o dicionário para o arquivo dentro do caminho selecionado
 
         :param dados: dicionário a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -586,9 +572,8 @@ class _CaminhoBase(abc.ABC):
         Escreve o objeto para o arquivo dentro do caminho selecionado
 
         :param dados: objeto python a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -597,8 +582,7 @@ class _CaminhoBase(abc.ABC):
         Escreve o texto para o arquivo dentro do caminho selecionado
 
         :param dados: texto a ser exportado
-        :param nome_arq: nome do arquivo a ser carregado
-        :param kwargs: argumentos de carregamento para serem passados para função
-        :return: data frame com objeto carregado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
         """
         raise NotImplementedError("É preciso implementar o método")

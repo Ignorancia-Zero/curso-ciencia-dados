@@ -74,6 +74,15 @@ class Documento(Hashable):
             self.obtem_dados(**kwargs)
         return self._data
 
+    @data.setter
+    def data(self, dados: typing.Any) -> None:
+        """
+        Muda o valor dos dados do documento
+
+        :param dados: objeto python para substituir dados
+        """
+        self._data = dados
+
     def __eq__(self, documento: Documento) -> bool:
         """
         Checa se dois documentos são iguais

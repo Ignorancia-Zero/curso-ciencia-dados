@@ -15,19 +15,53 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
     deve funcionar para baixar dados do CensoEscolar
     """
 
+    _ano: typing.Union[str, int]
     _tabela: str
 
-    def __init__(self, ds: DataStore, tabela: str, criar_caminho: bool = True) -> None:
+    def __init__(
+        self,
+        ds: DataStore,
+        tabela: str,
+        ano: typing.Union[int, str] = "ultimo",
+        criar_caminho: bool = True,
+    ) -> None:
         """
         Instância o objeto de ETL Censo Escolar
 
         :param ds: instância de objeto data store
         :param tabela: Tabela do censo escolar a ser processada
+        :param ano: ano do censo a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         """
         super().__init__(ds, "censo-escolar", criar_caminho)
 
+        self._ano = ano
         self._tabela = tabela
+
+    @property
+    def ano(self) -> int:
+        """
+        Ano do censo sendo processado pelo objeto
+
+        :return: ano como um núnero inteiro
+        """
+        if self._ano == "ultimo":
+            return max([int(b.nome[:4]) for b in self.inep])
+        else:
+            return self.ano
+
+    def dicionario_para_baixar(self) -> typing.Dict[Documento, str]:
+        """
+        Le os conteúdos da pasta de dados e seleciona apenas os arquivos
+        a serem baixados como complementares
+
+        :return: dicionário com nome do arquivo e link para a página
+        """
+        return {
+            doc: link
+            for doc, link in self.inep.items()
+            if not doc.exists() and int(doc.nome[:4]) == self.ano
+        }
 
     @staticmethod
     def obtem_operacao(

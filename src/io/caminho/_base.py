@@ -6,9 +6,10 @@ import typing
 import geopandas as gpd
 import pandas as pd
 
-from src.io.escreve_dados import escreve_para_buffer
-from src.io.le_dados import carrega_arquivo
+import src.io.escreve_dados as escreve_dados
+import src.io.le_dados as le_dados
 from src.utils.interno import obtem_extencao
+from src.io.configs import EXTENSOES_TEXTO
 
 
 class _CaminhoBase(abc.ABC):
@@ -39,28 +40,6 @@ class _CaminhoBase(abc.ABC):
         raise NotImplementedError("É preciso implementar o método")
 
     @abc.abstractmethod
-    def _apaga_caminho(self, apaga_conteudo: bool = False) -> None:
-        """
-        Apaga a pasta para a string deste objeto
-
-        :param apaga_conteudo: flag se devemos apagar o diretório mesmo que
-        ele tenha algum conteúdo
-        """
-        raise NotImplementedError("É preciso implementar o método")
-
-    def apaga_caminho(self, apaga_conteudo: bool = False) -> None:
-        """
-        Apaga a pasta para a string deste objeto
-
-        :param apaga_conteudo: flag se devemos apagar o diretório mesmo que
-        ele tenha algum conteúdo
-        """
-        if len(self.lista_conteudo()) > 0 and not apaga_conteudo:
-            raise PermissionError("O conteúdo do diretório não está vazio")
-        else:
-            self._apaga_caminho()
-
-    @abc.abstractmethod
     def obtem_caminho(self, destino: typing.Union[str, typing.List[str]]) -> str:
         """
         Obtém uma string com o caminho completo para o destino passado
@@ -69,6 +48,16 @@ class _CaminhoBase(abc.ABC):
 
         :param destino: lista ou string de pastas ao destino final
         :return: string com caminho completo para destino
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @abc.abstractmethod
+    def _apaga_caminho(self, apaga_conteudo: bool = False) -> None:
+        """
+        Apaga a pasta para a string deste objeto
+
+        :param apaga_conteudo: flag se devemos apagar o diretório mesmo que
+        ele tenha algum conteúdo
         """
         raise NotImplementedError("É preciso implementar o método")
 
@@ -102,6 +91,91 @@ class _CaminhoBase(abc.ABC):
         """
         raise NotImplementedError("É preciso implementar o método")
 
+    @abc.abstractmethod
+    def _copia_conteudo_mesmo_caminho(
+        self, nome_conteudo: str, caminho_destino: _CaminhoBase
+    ) -> None:
+        """
+        Copia um conteúdo contido no caminho para o caminho de destino
+
+        :param nome_conteudo: nome do conteúdo a ser copiado
+        :param caminho_destino: objeto caminho de destino
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @abc.abstractmethod
+    def _apaga_conteudo(self, nome_conteudo: str) -> None:
+        """
+        Apaga um conteúdo contido no caminho
+
+        :param nome_conteudo: nome do conteúdo a ser apagado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @abc.abstractmethod
+    def read_df(
+        self, nome_arq: str, func: typing.Callable, **kwargs: typing.Any
+    ) -> typing.Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """
+        Lê um arquivo no pandas usando a função read adequada
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param func: função pandas de carregamento
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @abc.abstractmethod
+    def buffer_para_arquivo(self, nome_arq: str) -> typing.BinaryIO:
+        """
+        Gera um buffer de acesso para um conteúdo no caminho
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :return: conteúdo baixado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @abc.abstractmethod
+    def write_df(
+        self,
+        dados: typing.Union[pd.DataFrame, gpd.GeoDataFrame],
+        func: typing.Callable,
+        nome_arq: str,
+        **kwargs: typing.Any,
+    ) -> typing.Union[pd.DataFrame, gpd.GeoDataFrame]:
+        """
+        Lê um arquivo no pandas usando a função read adequada
+
+        :param dados: data frame a ser exportado
+        :param func: função de escrita dos dados
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @abc.abstractmethod
+    def buffer_para_escrita(self, nome_arq: str) -> typing.BinaryIO:
+        """
+        Gera um buffer para upload de dados para o caminho
+
+        :param nome_arq: nome do arquivo a ser salvo
+        :return: buffer para upload do conteúdo
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def apaga_caminho(self, apaga_conteudo: bool = False) -> None:
+        """
+        Apaga a pasta para a string deste objeto
+
+        :param apaga_conteudo: flag se devemos apagar o diretório mesmo que
+        ele tenha algum conteúdo
+        """
+        if len(self.lista_conteudo()) > 0 and not apaga_conteudo:
+            raise PermissionError("O conteúdo do diretório não está vazio")
+        else:
+            self._apaga_caminho()
+
     def renomeia_conteudo(self, nome_origem: str, nome_destino: str) -> None:
         """
         Renomeia o conteúdo dentro do caminho
@@ -126,8 +200,9 @@ class _CaminhoBase(abc.ABC):
         :param caminho_destino: objeto caminho de destino
         """
         if self.verifica_se_arquivo(nome_conteudo):
-            dados = self.carrega_arquivo(nome_conteudo)
-            caminho_destino.salva_arquivo(dados, nome_conteudo)
+            dados = self.buffer_para_arquivo(nome_conteudo).read()
+            with self.buffer_para_escrita(nome_conteudo) as buffer:
+                buffer.write(dados)
         else:
             caminho_origem = self.__class__(
                 caminho=self.obtem_caminho(nome_conteudo),
@@ -139,18 +214,6 @@ class _CaminhoBase(abc.ABC):
             )
             for cont in caminho_origem.lista_conteudo():
                 caminho_origem._copia_conteudo_caminhos_distintos(cont, caminho_destino)
-
-    @abc.abstractmethod
-    def _copia_conteudo_mesmo_caminho(
-        self, nome_conteudo: str, caminho_destino: _CaminhoBase
-    ) -> None:
-        """
-        Copia um conteúdo contido no caminho para o caminho de destino
-
-        :param nome_conteudo: nome do conteúdo a ser copiado
-        :param caminho_destino: objeto caminho de destino
-        """
-        raise NotImplementedError("É preciso implementar o método")
 
     def copia_conteudo(self, nome_conteudo: str, caminho_destino: _CaminhoBase) -> None:
         """
@@ -168,15 +231,6 @@ class _CaminhoBase(abc.ABC):
         else:
             self._copia_conteudo_caminhos_distintos(nome_conteudo, caminho_destino)
 
-    @abc.abstractmethod
-    def _apaga_conteudo(self, nome_conteudo: str) -> None:
-        """
-        Apaga um conteúdo contido no caminho
-
-        :param nome_conteudo: nome do conteúdo a ser apagado
-        """
-        raise NotImplementedError("É preciso implementar o método")
-
     def apaga_conteudo(self, nome_conteudo: str) -> None:
         """
         Apaga um conteúdo contido no caminho
@@ -189,68 +243,6 @@ class _CaminhoBase(abc.ABC):
             )
         self._apaga_conteudo(nome_conteudo)
 
-    @abc.abstractmethod
-    def _gera_buffer_carregar(
-        self, nome_arquivo: str, **kwargs: typing.Any
-    ) -> typing.BinaryIO:
-        """
-        Gera um buffer para os dados a serem carregados para que
-        isto possa ser passado para a função de carregamento interna
-
-        :param nome_arquivo: nome do arquivo a ser carregado
-        :param kwargs: argumentos específicos para a função de carregamento
-        """
-        raise NotImplementedError("É preciso implementar o método")
-
-    def carrega_arquivo(self, nome_arquivo: str, **kwargs: typing.Any) -> typing.Any:
-        """
-        Carrega o arquivo contido no caminho
-
-        :param nome_arquivo: nome do arquivo a ser carregado
-        :param kwargs: argumentos específicos para a função de carregamento
-        """
-        buffer = self._gera_buffer_carregar(nome_arquivo, **kwargs)
-        if "ext" not in kwargs:
-            ext = obtem_extencao(nome_arquivo)
-        else:
-            ext = kwargs["ext"]
-            del kwargs["ext"]
-        dados = carrega_arquivo(buffer, ext, **kwargs)
-        buffer.close()
-        return dados
-
-    @abc.abstractmethod
-    def _gera_buffer_salvar(
-        self, nome_arquivo: str, **kwargs: typing.Any
-    ) -> typing.BinaryIO:
-        """
-        Gera um buffer para os dados a serem salvos em algum local que serão
-        usados como parte do método de salvar
-
-        :param nome_arquivo: nome do arquivo a ser salvo
-        :param kwargs: argumentos específicos para a função de salvamento
-        """
-        raise NotImplementedError("É preciso implementar o método")
-
-    def salva_arquivo(
-        self, dados: typing.Any, nome_arquivo: str, **kwargs: typing.Any
-    ) -> None:
-        """
-        Faz o upload de um determinado conteúdo para o caminho
-
-        :param dados: bytes, data frame, string, etc. a ser salvo
-        :param nome_arquivo: nome do arquivo a ser salvo
-        :param kwargs: argumentos específicos para a função de salvamento
-        """
-        buffer = self._gera_buffer_salvar(nome_arquivo, **kwargs)
-        if "ext" not in kwargs:
-            ext = obtem_extencao(nome_arquivo)
-        else:
-            ext = kwargs["ext"]
-            del kwargs["ext"]
-        escreve_para_buffer(dados=dados, buffer=buffer, ext=ext, **kwargs)
-        buffer.close()
-
     def read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
         Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
@@ -259,7 +251,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_parquet, **kwargs)
 
     def read_feather(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -269,7 +261,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_feather, **kwargs)
 
     def read_csv(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -279,7 +271,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_csv, **kwargs)
 
     def read_hdf(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -289,7 +281,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_hdf, **kwargs)
 
     def read_excel(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -299,7 +291,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_excel, **kwargs)
 
     def read_html(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -309,7 +301,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_html, **kwargs)
 
     def read_json(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -319,7 +311,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_json, **kwargs)
 
     def read_xml(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -329,7 +321,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_xml, **kwargs)
 
     def read_pickle(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -339,7 +331,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função pandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, pd.read_pickle, **kwargs)
 
     def gpd_read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
         """
@@ -349,7 +341,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função geopandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, gpd.read_parquet, **kwargs)
 
     def gpd_read_feather(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
         """
@@ -359,7 +351,17 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função geopandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, gpd.read_feather, **kwargs)
+
+    def gpd_read_shape(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função geopandas
+        :return: data frame com objeto carregado
+        """
+        return self.gpd_read_file(nome_arq, **kwargs)
 
     def gpd_read_file(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
         """
@@ -369,7 +371,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função geopandas
         :return: data frame com objeto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.read_df(nome_arq, gpd.read_file, **kwargs)
 
     def load_yaml(self, nome_arq: str, **kwargs: typing.Any) -> dict:
         """
@@ -379,7 +381,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função
         :return: dicionário com dados yaml
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return le_dados.load_yaml(self.buffer_para_arquivo(nome_arq))
 
     def load_json(self, nome_arq: str, **kwargs: typing.Any) -> dict:
         """
@@ -389,7 +391,7 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função
         :return: dicionário com dados json
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return le_dados.load_json(self.buffer_para_arquivo(nome_arq))
 
     def load_pickle(self, nome_arq: str, **kwargs: typing.Any) -> list:
         """
@@ -399,17 +401,18 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função
         :return: lista de objetos serializados
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return le_dados.load_pickle(self.buffer_para_arquivo(nome_arq))
 
     def load_txt(self, nome_arq: str, **kwargs: typing.Any) -> str:
         """
         Carrega os objetos armazenados num arquivo de texto
 
         :param nome_arq: nome do arquivo a ser carregado
+        :param func: função pandas de carregamento
         :param kwargs: argumentos de carregamento para serem passados para função
         :return: texto carregado
         """
-        raise NotImplementedError("É preciso implementar o método")
+        return self.buffer_para_arquivo(nome_arq).read().decode(kwargs.get("encoding"))
 
     def to_parquet(
         self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
@@ -421,7 +424,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_parquet, nome_arq, **kwargs)
 
     def to_feather(
         self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
@@ -433,7 +436,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_feather, nome_arq, **kwargs)
 
     def to_csv(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -443,7 +446,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_csv, nome_arq, **kwargs)
 
     def to_hdf(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -453,7 +456,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_hdf, nome_arq, **kwargs)
 
     def to_excel(
         self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
@@ -465,7 +468,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_excel, nome_arq, **kwargs)
 
     def to_html(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -475,7 +478,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_html, nome_arq, **kwargs)
 
     def to_json(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -485,7 +488,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_json, nome_arq, **kwargs)
 
     def to_xml(self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -495,7 +498,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_xml, nome_arq, **kwargs)
 
     def to_pickle(
         self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
@@ -507,7 +510,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, pd.DataFrame.to_pickle, nome_arq, **kwargs)
 
     def gpd_to_parquet(
         self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
@@ -516,10 +519,10 @@ class _CaminhoBase(abc.ABC):
         Escreve o geo data frame para o arquivo dentro do caminho selecionado
 
         :param dados: data frame a ser exportado
-        :param nome_arq: nome do arquivo a ser escrito
-        :param kwargs: argumentos de escrita para serem passados para função
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, gpd.GeoDataFrame.to_parquet, nome_arq, **kwargs)
 
     def gpd_to_feather(
         self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
@@ -531,7 +534,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        self.write_df(dados, gpd.GeoDataFrame.to_feather, nome_arq, **kwargs)
 
     def gpd_to_file(
         self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
@@ -543,7 +546,14 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        if kwargs["ext"] == "geojson":
+            kwargs["driver"] = "GeoJSON"
+        elif kwargs["ext"] == "topojson":
+            kwargs["driver"] = "TopoJSON"
+        elif kwargs["ext"] == "json":
+            if not kwargs.get("driver"):
+                kwargs["driver"] = "GeoJSON"
+        self.write_df(dados, gpd.GeoDataFrame.to_file, nome_arq, **kwargs)
 
     def save_yaml(self, dados: dict, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -553,7 +563,9 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        buffer = self.buffer_para_escrita(nome_arq)
+        escreve_dados.save_yaml(dados, buffer)
+        buffer.close()
 
     def save_json(self, dados: dict, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -563,7 +575,9 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        buffer = self.buffer_para_escrita(nome_arq)
+        escreve_dados.save_json(dados, buffer)
+        buffer.close()
 
     def save_pickle(
         self, dados: typing.Any, nome_arq: str, **kwargs: typing.Any
@@ -575,7 +589,9 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        buffer = self.buffer_para_escrita(nome_arq)
+        escreve_dados.save_pickle(dados, buffer)
+        buffer.close()
 
     def save_txt(self, dados: str, nome_arq: str, **kwargs: typing.Any) -> None:
         """
@@ -585,4 +601,6 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        raise NotImplementedError("É preciso implementar o método")
+        buffer = self.buffer_para_escrita(nome_arq)
+        buffer.write(dados.encode(kwargs.get("encoding")))
+        buffer.close()

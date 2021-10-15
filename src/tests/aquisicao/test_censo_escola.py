@@ -154,7 +154,7 @@ def test_concatena_bases(escola_etl) -> None:
 def test_preenche_nulos(escola_etl) -> None:
     antes = escola_etl.dados_saida[0].data.count()
 
-    escola_etl.preenche_nulos()
+    escola_etl.ajustes_finais()
 
     for c in escola_etl._configs["COLS_FBFILL"]:
         assert escola_etl.dados_saida[0].data[c].count() >= antes[c]

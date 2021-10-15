@@ -4,6 +4,7 @@ import typing
 from pathlib import Path
 from urllib.request import urlopen
 
+import pandas as pd
 from bs4 import BeautifulSoup
 
 from src.aquisicao.base_etl import BaseETL
@@ -33,7 +34,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
         ds: DataStore,
         base: str,
         ano: typing.Union[int, str] = "ultimo",
-        criar_caminho: bool = True
+        criar_caminho: bool = True,
     ) -> None:
         """
         Instância o objeto de ETL INEP
@@ -83,7 +84,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
         if self._ano == "ultimo":
             return max([int(b.nome[:4]) for b in self.inep])
         else:
-            return self.ano
+            return self._ano
 
     def dicionario_para_baixar(self) -> typing.Dict[Documento, str]:
         """
@@ -105,7 +106,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
 
         :return: lista de documentos de entrada
         """
-        return list(self.dicionario_para_baixar())
+        return [doc for doc in self.inep if int(doc.nome[:4]) == self.ano]
 
     @property
     @abc.abstractmethod
@@ -148,4 +149,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
         Exporta os dados transformados
         """
         for doc in self.dados_saida:
-            self._ds.salva_documento(doc, partition_by=["ANO"])
+            doc.pasta = f"{doc.nome}/ANO={self.ano}"
+            doc.nome = f"{self.ano}.parquet"
+            doc.data.drop(columns=["ANO"], inplace=True)
+            self._ds.salva_documento(doc)

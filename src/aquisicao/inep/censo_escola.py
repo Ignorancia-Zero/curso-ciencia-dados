@@ -24,7 +24,7 @@ class EscolaETL(BaseCensoEscolarETL):
         self,
         ds: DataStore,
         ano: typing.Union[int, str] = "ultimo",
-        criar_caminho: bool = True
+        criar_caminho: bool = True,
     ) -> None:
         """
         Instância o objeto de ETL de dados de Escola
@@ -35,6 +35,7 @@ class EscolaETL(BaseCensoEscolarETL):
         """
         super().__init__(ds, "escolas", ano=ano, criar_caminho=criar_caminho)
         self._configs = carrega_yaml("aquis_censo_escola.yml")
+        self._documentos_saida = None
 
     @property
     def documentos_saida(self) -> typing.List[Documento]:
@@ -47,11 +48,7 @@ class EscolaETL(BaseCensoEscolarETL):
             self._documentos_saida = [
                 Documento(
                     ds=self._ds,
-                    referencia=CatalogoAquisicao.ESCOLA_TEMP,
-                ),
-                Documento(
-                    ds=self._ds,
-                    referencia=CatalogoAquisicao.ESCOLA_ATEMP,
+                    referencia=CatalogoAquisicao.CENSO_ESCOLA,
                 ),
             ]
         return self._documentos_saida
@@ -104,9 +101,15 @@ class EscolaETL(BaseCensoEscolarETL):
 
         :param base: documento com os dados a serem tratados
         """
-        # TODO: Substituir por lista de colunas indicadora
         # gera a lista de todas as colunas existentes
-        cols = set([c for d in self.dados_entrada for c in d.data])
+        in_atual = [c for c in base.data if c.startswith("IN_")]
+        cols = set(self._configs["IN_COLS"] + in_atual)
+        dif = set(in_atual) - set(self._configs["IN_COLS"])
+        if len(dif) > 0:
+            self._logger.warning(
+                f"Há novas colunas IN que foram adicionadas -> {dif}"
+                f"\nConsidere adiciona-las ao info/aquis_censo_escola.yml"
+            )
 
         # preenche bases com colunas IN quando há uma coluna QT
         for col in base.data:
@@ -282,80 +285,79 @@ class EscolaETL(BaseCensoEscolarETL):
 
     def concatena_bases(self) -> None:
         """
-        Concatena as bases de dados nas saídas temporal e atemporal
+        Concatena as bases de dados em uma saída única
         """
         self._dados_saida = list()
-
-        # cria a base de dados temporal
-        escola_temp = pd.concat(
-            [
-                base.data.loc[
-                    lambda f: f["TP_SITUACAO_FUNCIONAMENTO"] == "EM ATIVIDADE"
-                ].drop(
-                    columns=self._configs["COLS_ATEMPORAL"]
-                    + ["TP_SITUACAO_FUNCIONAMENTO"],
-                    errors="ignore",
-                )
-                for base in self.dados_entrada
-            ]
+        self.documentos_saida[0].data = pd.concat(
+            [base.data for base in self.dados_entrada]
         )
+        self._dados_saida += self.documentos_saida
 
-        # cria a base de dados atemporal
-        escola_atemp = pd.concat(
-            [
-                base.data.reindex(
-                    columns=["CO_ENTIDADE"] + self._configs["COLS_ATEMPORAL"]
-                )
-                for base in self.dados_entrada
-            ]
-        ).drop_duplicates(subset=["CO_ENTIDADE"], keep="last")
-
-        # adiciona aos dados aos documentos
-        self._documentos_saida[0].data = escola_temp
-        self._documentos_saida[1].data = escola_atemp
-
-        # adiciona os documentos aos dados de saída
-        self._dados_saida += self._documentos_saida
-
-    def preenche_nulos(self) -> None:
+    def ajustes_finais(self) -> None:
         """
-        Realiza o preenchimento de valores nulos dentro da base temporal
+        Realiza os ajuste finais a base de dados gerada
         """
-        escola_temp = self._dados_saida[0].data
+        escola = self._dados_saida[0].data
 
         # faz o sorting e reset index
-        escola_temp.sort_values(by=["CO_ENTIDADE", "ANO"], inplace=True)
-        escola_temp.reset_index(drop=True, inplace=True)
+        escola.sort_values(by=["CO_ENTIDADE", "ANO"], inplace=True)
+        escola.reset_index(drop=True, inplace=True)
 
         # preenchimento com valores históricos
         for c in self._configs["COLS_FBFILL"]:
-            escola_temp[c] = escola_temp.groupby(["CO_ENTIDADE"])[c].ffill().values
-            escola_temp[c] = escola_temp.groupby(["CO_ENTIDADE"])[c].bfill().values
+            if c in escola:
+                escola[c] = escola.groupby(["CO_ENTIDADE"])[c].ffill().values
+                escola[c] = escola.groupby(["CO_ENTIDADE"])[c].bfill().values
 
         # remove colunas que são redundantes
-        escola_temp.drop(columns=self._configs["REMOVER_COLS"], inplace=True)
+        escola.drop(
+            columns=self._configs["REMOVER_COLS"], inplace=True, errors="ignore"
+        )
 
         # corrige variáveis de escolas privadas
         for c in self._configs["COLS_PARTICULAR"]:
             c = c if c.startswith("TP") else f"TP{c[2:]}"
-            escola_temp[c] = np.where(
-                (escola_temp[c] == "PÚBLICA")
-                & (escola_temp["TP_DEPENDENCIA"] == "PRIVADA"),
-                np.nan,
-                escola_temp[c],
-            )
+            if c in escola:
+                escola[c] = np.where(
+                    (escola[c] == "PÚBLICA") & (escola["TP_DEPENDENCIA"] == "PRIVADA"),
+                    np.nan,
+                    escola[c],
+                )
 
         # corrige a ocupação de galpão
-        escola_temp["TP_OCUPACAO_GALPAO"] = np.where(
-            ~(escola_temp["TP_OCUPACAO_GALPAO"] == "NÃO")
-            & ~(escola_temp["IN_LOCAL_FUNC_GALPAO"] == 0),
-            np.nan,
-            escola_temp["TP_OCUPACAO_GALPAO"],
-        )
+        if "TP_OCUPACAO_GALPAO" in escola:
+            # corrige a ocupação de galpão
+            escola["TP_OCUPACAO_GALPAO"] = np.where(
+                (
+                    (escola["TP_OCUPACAO_GALPAO"] == "NÃO")
+                    & (escola["IN_LOCAL_FUNC_GALPAO"] == 1)
+                )
+                | (
+                    (escola["TP_OCUPACAO_GALPAO"] != "NÃO")
+                    & (escola["IN_LOCAL_FUNC_GALPAO"] == 0)
+                ),
+                np.nan,
+                escola["TP_OCUPACAO_GALPAO"],
+            )
+
+        # garante que todas as colunas existam
+        escola = escola.reindex(columns=self._configs["DS_SCHEMA"])
 
         # preenche nulos com valores fixos
         for c, p in self._configs["PREENCHER_NULOS"].items():
-            escola_temp[c] = escola_temp[c].fillna(p)
+            if c in escola:
+                escola[c] = escola[c].fillna(p)
+
+        # ajusta o schema
+        for c, dtype in self._configs["DS_SCHEMA"].items():
+            if dtype.startswith("pd."):
+                escola[c] = escola[c].astype(eval(dtype))
+            else:
+                escola[c] = escola[c].astype(dtype)
+
+
+
+        self._dados_saida[0].data = escola
 
     def transform(self) -> None:
         """
@@ -374,5 +376,5 @@ class EscolaETL(BaseCensoEscolarETL):
         self._logger.info("Concatenando bases de dados")
         self.concatena_bases()
 
-        self._logger.info("Ajustando valores nulos")
-        self.preenche_nulos()
+        self._logger.info("Realizando ajustes finais na base")
+        self.ajustes_finais()

@@ -15,17 +15,10 @@ class CatalogoAquisicao:
     aquisição que são colocados no DataStore
     """
 
-    ESCOLA_TEMP = frozendict(
+    CENSO_ESCOLA = frozendict(
         {
             "colecao": COLECAO_AQUISCAO,
-            "nome": "escola_temp.parquet",
-        }
-    )
-
-    ESCOLA_ATEMP = frozendict(
-        {
-            "colecao": COLECAO_AQUISCAO,
-            "nome": "escola_atemp.parquet",
+            "nome": "censo_escola.parquet",
         }
     )
 

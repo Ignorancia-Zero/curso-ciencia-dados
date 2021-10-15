@@ -25,7 +25,7 @@ class Documento(Hashable):
     colecao: str
     nome: str
     tipo: str
-    pasta: str
+    _pasta: str
     colecao: Colecao
     _data: typing.Any
 
@@ -44,29 +44,18 @@ class Documento(Hashable):
         self.tipo = referencia.get("tipo")
         if self.tipo is None:
             self.tipo = obtem_extencao(referencia["nome"])
-        self.pasta = referencia.get("pasta")
-        self.colecao = Colecao(ds=ds, nome=referencia.get("colecao"), pasta=self.pasta)
+        self._pasta = referencia.get("pasta")
+        self.colecao = Colecao(ds=ds, nome=referencia.get("colecao"), pasta=self._pasta)
         self._data = data
 
-    def obtem_dados(self, **kwargs) -> typing.Any:
-        """
-        Carrega os dados do documento em um novo objeto
+    @property
+    def pasta(self) -> str:
+        return self._pasta
 
-        :param kwargs: argumentos de carregamento dos dados
-        :return: objeto carregado python
-        """
-        if self._data is None:
-            self._data = self.ds.carrega_como_objeto(self, **kwargs)
-        return self._data
-
-    def exists(self) -> bool:
-        """
-        Checa se o documento existe
-
-        :return: True se o documento existir
-        """
-        cam = self.ds.gera_caminho(self)
-        return cam.verifica_se_arquivo(f"{self.nome}.{self.tipo}")
+    @pasta.setter
+    def pasta(self, pasta: str) -> None:
+        self._pasta = pasta
+        self.colecao.pasta = pasta
 
     @property
     def data(self, **kwargs) -> typing.Any:
@@ -87,6 +76,26 @@ class Documento(Hashable):
         :param dados: objeto python para substituir dados
         """
         self._data = dados
+
+    def obtem_dados(self, **kwargs) -> typing.Any:
+        """
+        Carrega os dados do documento em um novo objeto
+
+        :param kwargs: argumentos de carregamento dos dados
+        :return: objeto carregado python
+        """
+        if self._data is None:
+            self._data = self.ds.carrega_como_objeto(self, **kwargs)
+        return self._data
+
+    def exists(self) -> bool:
+        """
+        Checa se o documento existe
+
+        :return: True se o documento existir
+        """
+        cam = self.ds.gera_caminho(self)
+        return cam.verifica_se_arquivo(self.nome)
 
     def __eq__(self, documento: Documento) -> bool:
         """
@@ -113,7 +122,7 @@ class Documento(Hashable):
         """
         return (
             f"Documento: nome={self.nome}, tipo={self.tipo}, "
-            f"colecao={self.colecao.nome}"
+            f"colecao={self.colecao.nome}, pasta={self._pasta}"
         )
 
     def __hash__(self) -> hash:
@@ -201,7 +210,7 @@ class Colecao(Collection):
 
         :return: texto com caminho para coleção
         """
-        return f"Coleção: {self.ds._obtem_caminho(colecao=self)}"
+        return f"Coleção: {self.nome} | {self.pasta}"
 
 
 class DataStore:
@@ -298,6 +307,7 @@ class DataStore:
         # se a extenção do arquivo for zip
         elif ext == "zip":
             # nós vamos processar o zip lendo diversos arquivos
+            del kwargs["ext"]
             return le_dados_comprimidos(
                 cam.buffer_para_arquivo(documento.nome), ext, **kwargs
             )
@@ -376,7 +386,7 @@ class DataStore:
         self._logger.debug(f"Salvando documento {documento}")
 
         # obtém o objeto caminho para o documento
-        cam = self.gera_caminho(documento=documento)
+        cam = self.gera_caminho(documento=documento, criar_caminho=True)
 
         # obtém a extenção do arquivo
         if "ext" not in kwargs:

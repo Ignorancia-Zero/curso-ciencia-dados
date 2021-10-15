@@ -106,9 +106,8 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         self._dados_entrada = list()
 
         # para cada arquivo do censo demográfico
-        for censo in tqdm(self.inep):
-            self._ds.carrega_como_objeto(
-                censo,
+        for censo in tqdm(self.documentos_entrada):
+            censo.obtem_dados(
                 como_df=True,
                 padrao_comp=(
                     f"{self._tabela.lower()}."
@@ -118,8 +117,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
                 sep="|",
                 encoding="latin-1",
             )
-            if censo._data is not None:
-                self._dados_entrada.append(censo)
+            self._dados_entrada.append(censo)
 
     @abc.abstractmethod
     def transform(self) -> None:

@@ -3,8 +3,9 @@ import typing
 from pathlib import Path
 
 import geopandas as gpd
-from src.configs import PASTA_DADOS
 import pandas as pd
+
+from src.configs import PASTA_DADOS
 
 # caminhos para ambientes
 PATH_LOCAL = str(Path(__file__).parent.parent.parent)

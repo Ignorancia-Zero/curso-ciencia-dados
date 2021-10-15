@@ -423,7 +423,9 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         if self.verifica_se_arquivo(nome_arq):
             return self.read_df(nome_arq, pd.read_parquet, **kwargs)
         else:
-            return self.from_dir_download(nome_arq, ["parquet"], pd.read_parquet, **kwargs)
+            return self.from_dir_download(
+                nome_arq, ["parquet"], pd.read_parquet, **kwargs
+            )
 
     def gpd_read_shape(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
         """

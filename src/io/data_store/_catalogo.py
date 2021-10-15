@@ -5,6 +5,7 @@ compartilhados num ambiente de DataStore
 from dataclasses import dataclass
 
 from frozendict import frozendict
+
 from src.configs import COLECAO_AQUISCAO
 
 

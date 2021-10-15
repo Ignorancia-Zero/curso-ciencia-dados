@@ -355,8 +355,6 @@ class EscolaETL(BaseCensoEscolarETL):
             else:
                 escola[c] = escola[c].astype(dtype)
 
-
-
         self._dados_saida[0].data = escola
 
     def transform(self) -> None:

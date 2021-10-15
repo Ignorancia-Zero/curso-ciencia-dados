@@ -200,7 +200,10 @@ def le_dados_comprimidos(
             ]
 
             # lê os arquivos para o dicionários
-            objs = {arq: converte_buffer_em_objeto(z.open(arq), ext, **kwargs) for arq in arqs}
+            objs = {
+                arq: converte_buffer_em_objeto(z.open(arq), ext, **kwargs)
+                for arq in arqs
+            }
 
     # retorna o objeto adequado de acordo com a quantidade de arquivos
     if len(objs) > 1:

@@ -1,5 +1,5 @@
-from enum import Enum
 import typing
+from enum import Enum
 
 from src.aquisicao.inep.base_inep import BaseINEPETL
 from src.aquisicao.inep.censo_escola import EscolaETL

@@ -65,7 +65,9 @@ def escreve_para_buffer(
         elif ext == "topojson":
             kwargs["driver"] = "TopoJSON"
         elif ext == "json":
-            kwargs["driver"] = kwargs.get("driver") if kwargs.get("driver") else "GeoJSON"
+            kwargs["driver"] = (
+                kwargs.get("driver") if kwargs.get("driver") else "GeoJSON"
+            )
         elif ext == "shp":
             raise NotImplementedError(
                 "Nós não implementamos uma maneira de exportar os dados de shp para um buffer"

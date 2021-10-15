@@ -8,8 +8,6 @@ import pandas as pd
 
 import src.io.escreve_dados as escreve_dados
 import src.io.le_dados as le_dados
-from src.utils.interno import obtem_extencao
-from src.io.configs import EXTENSOES_TEXTO
 
 
 class _CaminhoBase(abc.ABC):

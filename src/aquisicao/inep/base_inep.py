@@ -4,7 +4,6 @@ import typing
 from pathlib import Path
 from urllib.request import urlopen
 
-import pandas as pd
 from bs4 import BeautifulSoup
 
 from src.aquisicao.base_etl import BaseETL
@@ -152,4 +151,4 @@ class BaseINEPETL(BaseETL, abc.ABC):
             doc.pasta = f"{doc.nome}/ANO={self.ano}"
             doc.nome = f"{self.ano}.parquet"
             doc.data.drop(columns=["ANO"], inplace=True)
-            self._ds.salva_documento(doc)
+            self._ds.salva_documento(doc, partition_cols=["ANO"], engine="fastparquet")

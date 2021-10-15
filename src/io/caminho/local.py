@@ -9,8 +9,8 @@ import geopandas as gpd
 import pandas as pd
 
 from src.utils.interno import obtem_argumentos_objeto
-from ._base import _CaminhoBase
 from src.utils.interno import obtem_extencao
+from ._base import _CaminhoBase
 
 
 class CaminhoLocal(_CaminhoBase):

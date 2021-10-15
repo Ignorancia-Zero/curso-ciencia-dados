@@ -38,7 +38,7 @@ ESCREVE_PANDAS: typing.Dict[str, typing.Callable] = {
     "json": pd.DataFrame.to_json,
     "pkl": pd.DataFrame.to_pickle,
     "html": pd.DataFrame.to_html,
-#    "xml": pd.DataFrame.to_xml,
+    "xml": pd.DataFrame.to_xml,
 }
 
 # funções para exportar data frames de geopandas
@@ -64,7 +64,7 @@ LEITOR_PANDAS: typing.Dict[str, typing.Callable] = {
     "json": pd.read_json,
     "pkl": pd.read_pickle,
     "html": pd.read_html,
-#    "xml": pd.read_xml,
+    "xml": pd.read_xml,
 }
 
 # dicionário de extensões e funções do pandas para ler conteúdos no geopandas

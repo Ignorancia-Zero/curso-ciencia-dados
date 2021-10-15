@@ -10,6 +10,7 @@ import pandas as pd
 
 from src.utils.interno import obtem_argumentos_objeto
 from ._base import _CaminhoBase
+from src.utils.interno import obtem_extencao
 
 
 class CaminhoLocal(_CaminhoBase):
@@ -145,17 +146,17 @@ class CaminhoLocal(_CaminhoBase):
         dados: typing.Union[pd.DataFrame, gpd.GeoDataFrame],
         func: typing.Callable,
         nome_arq: str,
-        **kwargs: typing.Any
-    ) -> typing.Union[pd.DataFrame, gpd.GeoDataFrame]:
+        **kwargs: typing.Any,
+    ) -> None:
         """
-        Lê um arquivo no pandas usando a função read adequada
+        Salva o conteúdo de um data frame pandas usando a função adequada
 
         :param dados: data frame a ser exportado
         :param func: função de escrita dos dados
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        return func(
+        func(
             dados, self.obtem_caminho(nome_arq), **obtem_argumentos_objeto(func, kwargs)
         )
 
@@ -176,7 +177,8 @@ class CaminhoLocal(_CaminhoBase):
         :param kwargs: argumentos de carregamento para serem passados para função geopandas
         :return: data frame com objeto carregado
         """
+        ext = obtem_extencao(nome_arq)
         cam = self.obtem_caminho(nome_arq)
-        if kwargs.get("ext") == "zip":
+        if kwargs.get("ext") == "zip" or ext == "zip":
             cam = "zip://" + cam
         return gpd.read_file(cam, **obtem_argumentos_objeto(gpd.read_file, kwargs))

@@ -143,9 +143,9 @@ class _CaminhoBase(abc.ABC):
         func: typing.Callable,
         nome_arq: str,
         **kwargs: typing.Any,
-    ) -> typing.Union[pd.DataFrame, gpd.GeoDataFrame]:
+    ) -> None:
         """
-        Lê um arquivo no pandas usando a função read adequada
+        Salva o conteúdo de um data frame pandas usando a função adequada
 
         :param dados: data frame a ser exportado
         :param func: função de escrita dos dados

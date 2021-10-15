@@ -292,7 +292,7 @@ class DataStore:
 
         # se a extenção do arquivo for zip
         if ext == "zip":
-            # nós vamos ler os dados comprimidos pelo buffer gerado
+            # nós vamos processar o zip lendo diversos arquivos
             return le_dados_comprimidos(
                 cam.buffer_para_arquivo(documento.nome), ext, **kwargs
             )
@@ -334,7 +334,9 @@ class DataStore:
                 return cam.gpd_read_parquet(nome_arq=documento.nome, **kwargs)
             elif ext == "feather":
                 return cam.gpd_read_feather(nome_arq=documento.nome, **kwargs)
-            elif ext in ["shp", "json", "geojson", "topojson"]:
+            elif ext == "shp":
+                return cam.gpd_read_shape(nome_arq=documento.nome, **kwargs)
+            elif ext in ["json", "geojson", "topojson"]:
                 return cam.gpd_read_file(nome_arq=documento.nome, **kwargs)
             else:
                 raise NotImplementedError(

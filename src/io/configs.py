@@ -22,6 +22,9 @@ DS_ENVS: typing.Dict[str, str] = {
 # extensões de arquivos que são considerados como textos
 EXTENSOES_TEXTO = ["txt", "html", "xml"]
 
+# extensões de arquivo que fazem parte do shapefile
+EXTENSOES_SHAPE = ["shp", "shx", "dbf", "prj", "xml", "sbn", "sbx", "cpg"]
+
 # lista de extensões que devem ser nativamente interpretadas como data frames
 EXTENSAO_DF = {"csv", "tsv", "parquet", "hdf", "xls", "xlsx", "ods", "feather"}
 

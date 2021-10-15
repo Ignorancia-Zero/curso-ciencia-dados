@@ -1,8 +1,8 @@
 import os
 import sys
+import warnings
 from pathlib import Path
 
-import warnings
 import rarfile
 
 if sys.platform.startswith("win"):
@@ -15,4 +15,4 @@ with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
 
     # deprecation warning vindo do uso de imp ao invés de importlib
-    from pydrive2.auth import GoogleAuth
+

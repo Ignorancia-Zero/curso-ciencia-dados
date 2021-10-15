@@ -4,7 +4,6 @@ from pathlib import Path
 
 import pytest
 
-
 try:
     from src.aquisicao.inep.censo_escola import EscolaETL
 except ModuleNotFoundError:

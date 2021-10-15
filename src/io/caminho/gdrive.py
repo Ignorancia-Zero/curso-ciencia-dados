@@ -27,21 +27,19 @@ class GDriveIO(FileIO):
     """
 
     cdrive: CaminhoGDrive
+    temp_dir: tempfile.TemporaryDirectory
+    path: Path
 
-    def __init__(self, drive: CaminhoGDrive, file: str, mode: str) -> None:
+    def __init__(self, drive: CaminhoGDrive, filename: str, mode: str) -> None:
         self.cdrive = drive
-        super(GDriveIO, self).__init__(file=file, mode=mode)
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.path = Path(self.temp_dir.name)
+        super(GDriveIO, self).__init__(file=str(self.path / filename), mode=mode)
 
     def close(self) -> None:
         super().close()
-        title = os.path.basename(self.name)
-        file = self.cdrive._obtem_conteudo(title)
-        if file is None:
-            file = self.cdrive.drive.CreateFile(
-                {"parents": [{"id": self.cdrive._c_id}], "title": title}
-            )
-        file.SetContentFile(self.name)
-        file.Upload()
+        self.cdrive.upload_conteudo(self.name)
+        self.temp_dir.cleanup()
 
 
 class CaminhoGDrive(_CaminhoBase, ABC):
@@ -59,7 +57,6 @@ class CaminhoGDrive(_CaminhoBase, ABC):
     drive: GoogleDrive
     _existe: bool
     _c_id: str
-    temp_dir: tempfile.TemporaryDirectory
 
     def __init__(self, caminho: str = "", criar_caminho: bool = False) -> None:
         """
@@ -74,7 +71,6 @@ class CaminhoGDrive(_CaminhoBase, ABC):
 
         # cria o cliente e o diretório temporário para download de arquivos
         self.drive = GoogleDrive(self.gauth)
-        self.temp_dir = tempfile.TemporaryDirectory()
 
         # ajusta a string de caminho
         if caminho[-1] == "/":
@@ -107,7 +103,7 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         # cria uma flag informando se o caminho existe
         try:
             self._existe = file["title"] == pasta
-        except ValueError:
+        except UnboundLocalError:
             self._existe = caminho == ""
 
     def _cria_pasta(self, id_pai: str, pasta: str) -> str:
@@ -306,7 +302,128 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         :param nome_arq: nome do arquivo a ser salvo
         :return: buffer para upload do conteúdo
         """
-        return GDriveIO(self, file=str(Path(self.temp_dir.name) / nome_arq), mode="wb")
+        return GDriveIO(self, filename=nome_arq, mode="wb")
+
+    def download_conteudo(
+        self, nome_conteudo: str, pasta: typing.Union[str, Path]
+    ) -> None:
+        """
+        Realiza o download de um determinado conteúdo para uma pasta no disco
+
+        :param nome_conteudo: nome do conteúdo a ser baixado
+        :param pasta: pasta de download
+        """
+        if self.verifica_se_arquivo(nome_conteudo):
+            file = self._obtem_conteudo(nome_conteudo)
+            file.GetContentFile(str(Path(pasta) / nome_conteudo))
+        else:
+            sub = Path(pasta) / nome_conteudo
+            sub.mkdir()
+            cam = self.__class__(self.obtem_caminho(nome_conteudo))
+            for cont in cam.lista_conteudo():
+                cam.download_conteudo(cont, sub)
+
+    def upload_conteudo(
+        self, nome_conteudo: str, pasta: typing.Union[str, Path]
+    ) -> None:
+        """
+        Realiza o upload de um conteúdo ao drive
+
+        :param nome_conteudo: nome do conteúdo a ser baixado
+        :param pasta: pasta onde o arquivo está contido
+        """
+        pasta = Path(pasta)
+        if os.path.isfile(pasta / nome_conteudo):
+            file = self._obtem_conteudo(nome_conteudo)
+            if file is None:
+                file = self.drive.CreateFile(
+                    {"parents": [{"id": self._c_id}], "title": nome_conteudo}
+                )
+            file.SetContentFile(pasta / nome_conteudo)
+            file.Upload()
+        else:
+            for path, directories, files in os.walk(pasta):
+                rel = path.replace(str(pasta), "").replace(os.sep, "/")[1:]
+                for dir in directories:
+                    self.__class__(
+                        self.obtem_caminho(rel + "/" + dir), criar_caminho=True
+                    )
+                for file in files:
+                    cam = self.__class__(self.obtem_caminho(rel))
+                    cam.upload_conteudo(file, path)
+
+    def from_dir_download(
+        self,
+        nome_arq: str,
+        extensoes: typing.List[str],
+        func: typing.Callable,
+        **kwargs: typing.Any,
+    ) -> typing.Any:
+        """
+        Para métodos de leitura na qual necessita-se de múltiplos arquivos,
+        eles podem ser passados para este método como uma função que irá
+        gerar um diretório temporário local, fazer o donwload dos arquivos
+        necessários e aplicar a função de leitura
+
+        :param nome_arq: nome do arquivo a ser lido
+        :param extensoes: lista de extensões de arquivo que são aceitas na leitura
+        :param func: função de leitura dos dados
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        arqs = [
+            arq
+            for arq in self.lista_conteudo()
+            if os.path.splitext(arq)[-1][1:] in extensoes
+            and os.path.splitext(arq)[0] == os.path.splitext(nome_arq)[0]
+        ]
+        with tempfile.TemporaryDirectory() as tmp:
+            for a in arqs:
+                self.download_conteudo(a, tmp)
+            return func(
+                str(Path(tmp) / nome_arq),
+                **obtem_argumentos_objeto(func, kwargs),
+            )
+
+    def to_dir_upload(
+        self,
+        dados: typing.Any,
+        func: typing.Callable,
+        nome_arq: str,
+        **kwargs: typing.Any,
+    ) -> None:
+        """
+        Para métodos de exportação na qual são gerados múltiplos arquivos,
+        eles podem ser passados para este métodos como uma função que irá
+        gerar um diretório temporário local para exportação e, depois, realizará
+        o upload dos dados para o caminho
+
+        :param dados: data frame a ser exportado
+        :param func: função de escrita dos dados
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = Path(tmp)
+            func(
+                dados,
+                str(tmp / nome_arq),
+                **obtem_argumentos_objeto(func, kwargs),
+            )
+            for cont in os.listdir(tmp):
+                self.upload_conteudo(cont, tmp)
+
+    def read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
+        """
+        Carrega o arquivo como um dataframe pandas de acordo com o arquivo específicado
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
+        """
+        if self.verifica_se_arquivo(nome_arq):
+            return self.read_df(nome_arq, pd.read_parquet, **kwargs)
+        else:
+            return self.from_dir_download(nome_arq, ["parquet"], pd.read_parquet, **kwargs)
 
     def gpd_read_shape(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
         """
@@ -316,24 +433,12 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         :param kwargs: argumentos de carregamento para serem passados para função geopandas
         :return: data frame com objeto carregado
         """
-        if kwargs.get("ext") != "shp" and obtem_extencao(nome_arq) == "shp":
+        if obtem_extencao(nome_arq) != "shp":
             return self.gpd_read_file(nome_arq, **kwargs)
-
-        # lista os arquivos associados ao shapefile
-        arqs = [
-            arq
-            for arq in self.lista_conteudo()
-            if os.path.splitext(arq)[-1] in EXTENSOES_SHAPE
-            and os.path.basename(arq) == os.path.basename(nome_arq)
-        ]
-
-        # realiza o download dos mesmos
-        for a in arqs:
-            file = self._obtem_conteudo(a)
-            file.GetContentFile(Path(self.temp_dir.name) / file["title"])
-
-        # le o conteúdo
-        return self.gpd_read_file(str(Path(self.temp_dir.name) / nome_arq), **kwargs)
+        else:
+            return self.from_dir_download(
+                nome_arq, EXTENSOES_SHAPE, gpd.read_file, **kwargs
+            )
 
     def gpd_read_file(self, nome_arq: str, **kwargs: typing.Any) -> gpd.GeoDataFrame:
         """
@@ -344,13 +449,30 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         :return: data frame com objeto carregado
         """
         ext = obtem_extencao(nome_arq)
-        if kwargs.get("ext") == "zip" or ext == "zip":
-            file = self._obtem_conteudo(nome_arq)
-            file.GetContentFile(Path(self.temp_dir.name) / file["id"])
-            file = "zip://" + str(Path(self.temp_dir.name) / file["id"])
+        with tempfile.TemporaryDirectory() as tmp:
+            if kwargs.get("ext") == "zip" or ext == "zip":
+                self.download_conteudo(nome_arq, tmp)
+                file = "zip://" + str(Path(tmp) / nome_arq)
+            else:
+                file = self.buffer_para_arquivo(nome_arq)
+            return gpd.read_file(file, **obtem_argumentos_objeto(gpd.read_file, kwargs))
+
+    def to_parquet(
+        self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Escreve o data frame para o arquivo dentro do caminho selecionado
+
+        :param dados: data frame a ser exportado
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        if kwargs.get("partition_cols"):
+            if nome_arq in self.lista_conteudo():
+                self._apaga_conteudo(nome_arq)
+            self.to_dir_upload(dados, pd.DataFrame.to_parquet, nome_arq, **kwargs)
         else:
-            file = self.buffer_para_arquivo(nome_arq)
-        return gpd.read_file(file, **obtem_argumentos_objeto(gpd.read_file, kwargs))
+            self.write_df(dados, pd.DataFrame.to_parquet, nome_arq, **kwargs)
 
     def gpd_to_file(
         self, dados: gpd.GeoDataFrame, nome_arq: str, **kwargs: typing.Any
@@ -362,20 +484,7 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        if kwargs.get("ext") != "shp" and obtem_extencao(nome_arq) == "shp":
+        if obtem_extencao(nome_arq) != "shp":
             self.write_df(dados, gpd.GeoDataFrame.to_file, nome_arq, **kwargs)
         else:
-            with tempfile.TemporaryDirectory(dir=self.temp_dir.name) as tmp:
-                tmp = Path(tmp)
-                dados.to_file(
-                    str(tmp / nome_arq),
-                    **obtem_argumentos_objeto(gpd.GeoDataFrame.to_file, kwargs),
-                )
-                for arq in os.listdir(tmp):
-                    file = self._obtem_conteudo(arq)
-                    if file is None:
-                        file = self.drive.CreateFile(
-                            {"parents": [{"id": self._c_id}], "title": arq}
-                        )
-                    file.SetContentFile(str(tmp / arq))
-                    file.Upload()
+            self.to_dir_upload(dados, gpd.GeoDataFrame.to_file, nome_arq, **kwargs)

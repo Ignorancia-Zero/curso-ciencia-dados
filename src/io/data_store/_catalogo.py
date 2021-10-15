@@ -18,16 +18,14 @@ class CatalogoAquisicao:
     ESCOLA_TEMP = frozendict(
         {
             "colecao": COLECAO_AQUISCAO,
-            "nome": "escola_temp",
-            "tipo": "parquet",
+            "nome": "escola_temp.parquet",
         }
     )
 
     ESCOLA_ATEMP = frozendict(
         {
             "colecao": COLECAO_AQUISCAO,
-            "nome": "escola_atemp",
-            "tipo": "parquet",
+            "nome": "escola_atemp.parquet",
         }
     )
 

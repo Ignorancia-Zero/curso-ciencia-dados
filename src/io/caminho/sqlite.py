@@ -55,14 +55,6 @@ class CaminhoSQLite(_CaminhoBase):
         self._connection = sqlite3.connect(self._path / self.database)
         self._cursor = self._connection.cursor()
 
-    def _apaga_caminho(self, apaga_conteudo: bool = False) -> None:
-        """
-        Apaga a pasta para a string deste objeto
-        """
-        self._cursor.close()
-        self._connection.close()
-        os.remove(self._path / self.database)
-
     def obtem_caminho(self, destino: typing.Union[str, typing.List[str]]) -> str:
         """
         Obtém uma string com o caminho completo para o destino passado
@@ -77,6 +69,14 @@ class CaminhoSQLite(_CaminhoBase):
                 "O objeto caminho de sqllite só aceita caminhos que são strings simples"
             )
         return str(self._path / f"{self.database}::{destino}")
+
+    def _apaga_caminho(self, apaga_conteudo: bool = False) -> None:
+        """
+        Apaga a pasta para a string deste objeto
+        """
+        self._cursor.close()
+        self._connection.close()
+        os.remove(self._path / self.database)
 
     def lista_conteudo(self) -> typing.List[str]:
         """
@@ -129,16 +129,53 @@ class CaminhoSQLite(_CaminhoBase):
         self._cursor.execute(f"DROP table `{nome_conteudo}`")
         self._connection.commit()
 
-    def _gera_buffer_carregar(
-        self, nome_arquivo: str, **kwargs: typing.Any
-    ) -> typing.BinaryIO:
+    def read_df(
+        self, nome_arq: str, func: typing.Callable, **kwargs: typing.Any
+    ) -> typing.Union[pd.DataFrame, gpd.GeoDataFrame]:
         """
-        Carrega o arquivo contido no caminho
+        Lê um arquivo no pandas usando a função read adequada
 
-        :param nome_arquivo: nome do arquivo a ser carregado
-        :param kwargs: argumentos específicos para a função de carregamento
+        :param nome_arq: nome do arquivo a ser carregado
+        :param func: função pandas de carregamento
+        :param kwargs: argumentos de carregamento para serem passados para função pandas
+        :return: data frame com objeto carregado
         """
-        raise NotImplementedError
+        raise NotImplementedError("É preciso implementar o método")
+
+    def buffer_para_arquivo(self, nome_arq: str) -> typing.BinaryIO:
+        """
+        Gera um buffer de acesso para um conteúdo no caminho
+
+        :param nome_arq: nome do arquivo a ser carregado
+        :return: conteúdo baixado
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def write_df(
+        self,
+        dados: typing.Union[pd.DataFrame, gpd.GeoDataFrame],
+        func: typing.Callable,
+        nome_arq: str,
+        **kwargs: typing.Any,
+    ) -> None:
+        """
+        Salva o conteúdo de um data frame pandas usando a função adequada
+
+        :param dados: data frame a ser exportado
+        :param func: função de escrita dos dados
+        :param nome_arq: nome do arquivo a ser escrito
+        :param kwargs: argumentos de escrita para serem passados para função
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    def buffer_para_escrita(self, nome_arq: str) -> typing.BinaryIO:
+        """
+        Gera um buffer para upload de dados para o caminho
+
+        :param nome_arq: nome do arquivo a ser salvo
+        :return: buffer para upload do conteúdo
+        """
+        raise NotImplementedError("É preciso implementar o método")
 
     def carrega_arquivo(self, nome_arquivo: str, **kwargs: typing.Any) -> typing.Any:
         """
@@ -150,18 +187,6 @@ class CaminhoSQLite(_CaminhoBase):
         return pd.read_sql_query(
             f"SELECT * FROM `{nome_arquivo}`", self._connection, **kwargs
         )
-
-    def _gera_buffer_salvar(
-        self, nome_arquivo: str, **kwargs: typing.Any
-    ) -> typing.BinaryIO:
-        """
-        Gera um buffer para os dados a serem salvos em algum local que serão
-        usados como parte do método de salvar
-
-        :param nome_arquivo: nome do arquivo a ser salvo
-        :param kwargs: argumentos específicos para a função de salvamento
-        """
-        raise NotImplementedError
 
     def salva_arquivo(
         self, dados: typing.Any, nome_arquivo: str, **kwargs: typing.Any

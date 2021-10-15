@@ -11,6 +11,7 @@ import pandas as pd
 
 from src.io.caminho import obtem_objeto_caminho
 from src.io.caminho._base import _CaminhoBase
+from src.io.caminho import CaminhoSQLite
 from src.io.configs import DS_ENVS, EXTENSOES_TEXTO
 from src.io.le_dados import le_dados_comprimidos
 from src.utils.interno import obtem_extencao
@@ -290,8 +291,12 @@ class DataStore:
             kwargs["ext"] = documento.tipo
         ext = kwargs["ext"]
 
+        # se o caminho for de SQL, nós lemos o dataframe diretamente
+        if isinstance(cam, CaminhoSQLite) or ext == "sql":
+            return cam.carrega_arquivo(documento.nome, **kwargs)
+
         # se a extenção do arquivo for zip
-        if ext == "zip":
+        elif ext == "zip":
             # nós vamos processar o zip lendo diversos arquivos
             return le_dados_comprimidos(
                 cam.buffer_para_arquivo(documento.nome), ext, **kwargs
@@ -378,6 +383,10 @@ class DataStore:
             kwargs["ext"] = documento.tipo
         ext = kwargs["ext"]
 
+        # se o caminho for de SQL
+        if isinstance(cam, CaminhoSQLite) or ext == "sql":
+            cam.salva_arquivo(documento.data, documento.nome, **kwargs)
+
         # se a extenção do arquivo for zip
         if ext == "zip":
             raise NotImplementedError("Nós não configuramos a escrita de arquivos zip")
@@ -428,24 +437,18 @@ class DataStore:
         # escolhe alguma das funções restantes
         else:
             if ext == "json":
-                return cam.load_json(nome_arq=documento.nome, **kwargs)
+                cam.save_json(dados=documento.data, nome_arq=documento.nome, **kwargs)
             elif ext == "yml":
-                return cam.load_yaml(nome_arq=documento.nome, **kwargs)
+                cam.save_yaml(dados=documento.data, nome_arq=documento.nome, **kwargs)
             elif ext == "pkl":
-                return cam.load_pickle(nome_arq=documento.nome, **kwargs)
+                cam.save_pickle(dados=documento.data, nome_arq=documento.nome, **kwargs)
             elif ext in EXTENSOES_TEXTO:
-                return cam.load_txt(nome_arq=documento.nome, **kwargs)
+                cam.save_txt(dados=documento.data, nome_arq=documento.nome, **kwargs)
             else:
                 raise NotImplementedError(
                     f"Não criamos um método para carregar como objeto python "
                     f"arquivos do tipo {ext}"
                 )
-        self._logger.debug(f"Salvando documento {documento}")
-        self.gera_caminho(documento=documento).salva_arquivo(
-            dados=documento.data,
-            nome_arquivo=documento.nome,
-            **kwargs,
-        )
 
     def lista_documentos(self, colecao: Colecao) -> typing.List[Documento]:
         """

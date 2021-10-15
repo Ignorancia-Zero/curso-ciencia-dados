@@ -33,12 +33,12 @@ def le_como_df(dados: typing.BinaryIO, ext: str, **kwargs: typing.Any) -> pd.Dat
     # do mesmo caso não tenha sido fornecido
     if ext in ["csv", "tsv", "txt"]:
         if "encoding" not in kwargs:
-            file_bytes = dados.read()
+            file_bytes = dados.read(10000)
             det = Detector(min_confidence=0.5)
             kwargs["encoding"] = det.detect(file_bytes)
             if kwargs["encoding"] is None:
                 kwargs["encoding"] = "latin-1"
-            dados = BytesIO(file_bytes)
+            dados.seek(0)
 
     # para arquivos ods garante que a engine de leitura
     # esteja adequada
@@ -59,7 +59,9 @@ def load_json(buffer: typing.BinaryIO) -> typing.Dict:
     :param buffer: buffer para dados json
     :return: dicionário de dados carregado
     """
-    return json.load(buffer)
+    dados = json.load(buffer)
+    buffer.close()
+    return dados
 
 
 def load_yaml(buffer: typing.BinaryIO) -> typing.Dict:
@@ -69,7 +71,9 @@ def load_yaml(buffer: typing.BinaryIO) -> typing.Dict:
     :param buffer: buffer para dados yaml
     :return: dicionário de dados carregado
     """
-    return yaml.load(buffer, Loader=yaml.FullLoader)
+    dados = yaml.load(buffer, Loader=yaml.FullLoader)
+    buffer.close()
+    return dados
 
 
 def load_pickle(buffer: typing.BinaryIO) -> typing.Any:
@@ -86,13 +90,15 @@ def load_pickle(buffer: typing.BinaryIO) -> typing.Any:
         except EOFError:
             break
         objs.append(o)
+
+    buffer.close()
     if len(objs) > 1:
         return objs
     else:
         return objs[0]
 
 
-def converte_em_objeto(
+def converte_buffer_em_objeto(
     dados: typing.BinaryIO, ext: str, **kwargs: typing.Any
 ) -> typing.Any:
     """
@@ -104,25 +110,13 @@ def converte_em_objeto(
     :param kwargs: parâmetros de leitura
     :return: objeto python
     """
-    # se quisermos converter a saída em data frame
-    if "como_df" in kwargs:
-        # testa primeiro a possibilidade de ler o conteúdo com o geopandas
-        if ext in LEITOR_GEOPANDAS:
-            try:
-                return LEITOR_GEOPANDAS[ext](
-                    dados, **obtem_argumentos_objeto(LEITOR_GEOPANDAS[ext], kwargs)
-                )
-            except ValueError:
-                logging.debug("Falha ao ler como Geopandas. Tentando ler como pandas")
-                return le_como_df(dados, ext, **kwargs)
-
-        # depois le como data frame se a flag de leitura for específicada
-        if ext in LEITOR_PANDAS:
-            return le_como_df(dados, ext, **kwargs)
-
-    # caso contrário
+    if kwargs.get("como_df"):
+        return le_como_df(dados, ext, **kwargs)
+    elif kwargs.get("como_gdf"):
+        return LEITOR_GEOPANDAS[ext](
+            dados, **obtem_argumentos_objeto(LEITOR_GEOPANDAS[ext], kwargs)
+        )
     else:
-        # utiliza a função de carregamento adequada de acordo com o tipo de arquivo
         if ext == "json":
             return load_json(dados)
         elif ext == "yml":
@@ -130,10 +124,7 @@ def converte_em_objeto(
         elif ext == "pkl":
             return load_pickle(dados)
         elif ext in EXTENSOES_TEXTO:
-            if "encoding" in kwargs:
-                return dados.read().decode(kwargs["encoding"])
-            else:
-                return dados.read().decode("UTF-8")
+            return dados.read().decode(kwargs.get("encoding"))
         else:
             raise NotImplementedError(f"Não implementamos leitura de arquivos {ext}")
 
@@ -209,15 +200,13 @@ def le_dados_comprimidos(
             ]
 
             # lê os arquivos para o dicionários
-            objs = {arq: converte_em_objeto(z.open(arq), ext, **kwargs) for arq in arqs}
+            objs = {arq: converte_buffer_em_objeto(z.open(arq), ext, **kwargs) for arq in arqs}
 
     # retorna o objeto adequado de acordo com a quantidade de arquivos
     if len(objs) > 1:
         return objs
     elif len(objs) == 1:
         return list(objs.values())[0]
-    else:
-        return None
 
 
 def carrega_arquivo(
@@ -247,7 +236,7 @@ def carrega_arquivo(
         arquivo = open(str(arquivo), "rb")
 
     # lê os dados e fecha o buffer gerado
-    dados = converte_em_objeto(arquivo, ext, **kwargs)
+    dados = converte_buffer_em_objeto(arquivo, ext, **kwargs)
     arquivo.close()
 
     return dados

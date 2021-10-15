@@ -1,7 +1,7 @@
 # Dicionário que renomeia as colunas de diferentes anos de dados
 # para garantir que as bases entre nomes tenham o mesmo conteúdo
 RENOMEIA_COLUNAS:
-  "ANO_CENSO": "NU_ANO_CENSO"
+  "ANO_CENSO": "ANO"
   "PK_COD_ENTIDADE": "CO_ENTIDADE"
   "COD_ORGAO_REGIONAL_INEP": "CO_ORGAO_REGIONAL"
   "DESC_SITUACAO_FUNCIONAMENTO": "TP_SITUACAO_FUNCIONAMENTO"

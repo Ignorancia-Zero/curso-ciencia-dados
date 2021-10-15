@@ -6,10 +6,14 @@ import typing
 from collections.abc import Collection
 from collections.abc import Hashable
 
+import geopandas as gpd
+import pandas as pd
+
+from src.io.caminho import obtem_objeto_caminho
+from src.io.caminho._base import _CaminhoBase
+from src.io.configs import DS_ENVS, EXTENSOES_TEXTO
+from src.io.le_dados import le_dados_comprimidos
 from src.utils.interno import obtem_extencao
-from ..caminho import obtem_objeto_caminho
-from ..caminho._base import _CaminhoBase
-from ..configs import DS_ENVS
 
 
 class Documento(Hashable):
@@ -35,7 +39,7 @@ class Documento(Hashable):
         :param data: dados do documento
         """
         self.ds = ds
-        self.nome = os.path.splitext(os.path.basename(referencia["nome"]))[0]
+        self.nome = os.path.basename(referencia["nome"])
         self.tipo = referencia.get("tipo")
         if self.tipo is None:
             self.tipo = obtem_extencao(referencia["nome"])
@@ -51,7 +55,7 @@ class Documento(Hashable):
         :return: objeto carregado python
         """
         if self._data is None:
-            self._data = self.ds.obtem_dados(self, **kwargs)
+            self._data = self.ds.carrega_como_objeto(self, **kwargs)
         return self._data
 
     def exists(self) -> bool:
@@ -211,8 +215,8 @@ class DataStore:
     """
 
     _env: str
-    caminho: _CaminhoBase
-    logger: logging.Logger
+    caminho_base: _CaminhoBase
+    _logger: logging.Logger
 
     def __init__(self, env: str = "local_completo") -> None:
         """
@@ -221,8 +225,8 @@ class DataStore:
         :param env: ambiente do objeto data store
         """
         self._env = env
-        self.logger = logging.getLogger(__name__)
-        self.caminho = obtem_objeto_caminho(DS_ENVS[env])
+        self._logger = logging.getLogger(__name__)
+        self.caminho_base = obtem_objeto_caminho(DS_ENVS[env])
 
     def _obtem_caminho(self, data: Documento = None, colecao: Colecao = None) -> str:
         """
@@ -246,7 +250,7 @@ class DataStore:
         if colecao.pasta is not None:
             lista_cam += colecao.pasta.split("/")
 
-        return self.caminho.obtem_caminho(lista_cam)
+        return self.caminho_base.obtem_caminho(lista_cam)
 
     def gera_caminho(
         self,
@@ -263,11 +267,11 @@ class DataStore:
         :param criar_caminho: flag se o caminho deve ser criado
         :return: caminho para a coleção
         """
-        return self.caminho.__class__(
+        return self.caminho_base.__class__(
             self._obtem_caminho(documento, colecao), criar_caminho=criar_caminho
         )
 
-    def obtem_dados(self, documento: Documento, **kwargs) -> typing.Any:
+    def carrega_como_objeto(self, documento: Documento, **kwargs) -> typing.Any:
         """
         Carrega os dados de um determinado documento em
         um objeto python
@@ -276,31 +280,168 @@ class DataStore:
         :param kwargs: parâmetros de carregamento
         :return: objeto python carregado
         """
-        self.logger.debug(f"Carregando documento {documento}")
-        if "criar_caminho" in kwargs:
-            criar_caminho = kwargs["criar_caminho"]
-            del kwargs["criar_caminho"]
-        else:
-            criar_caminho = False
-        return self.gera_caminho(
-            documento=documento, criar_caminho=criar_caminho
-        ).carrega_arquivo(
-            nome_arquivo=f"{documento.nome}.{documento.tipo}",
-            ext=documento.tipo,
-            **kwargs,
-        )
+        self._logger.debug(f"Carregando documento {documento}")
 
-    def insere_dados(self, documento: Documento, **kwargs) -> None:
+        # obtém o objeto caminho para o documento
+        cam = self.gera_caminho(documento=documento)
+
+        # obtém a extenção do arquivo
+        if "ext" not in kwargs:
+            kwargs["ext"] = documento.tipo
+        ext = kwargs["ext"]
+
+        # se a extenção do arquivo for zip
+        if ext == "zip":
+            # nós vamos ler os dados comprimidos pelo buffer gerado
+            return le_dados_comprimidos(
+                cam.buffer_para_arquivo(documento.nome), ext, **kwargs
+            )
+
+        # checa se como_df está ativado
+        elif kwargs.get("como_df"):
+            # se estiver carrega os dados com o pandas
+            if ext == "parquet":
+                return cam.read_parquet(nome_arq=documento.nome, **kwargs)
+            elif ext == "hdf" or ext == "h5":
+                return cam.read_hdf(nome_arq=documento.nome, **kwargs)
+            elif ext == "pkl":
+                return cam.read_pickle(nome_arq=documento.nome, **kwargs)
+            elif ext == "feather":
+                return cam.read_feather(nome_arq=documento.nome, **kwargs)
+            elif ext == "csv" or ext == "txt" or ext == "tsv":
+                return cam.read_csv(nome_arq=documento.nome, **kwargs)
+            elif ext == "xlsx" or ext == "xls":
+                return cam.read_excel(nome_arq=documento.nome, **kwargs)
+            elif ext == "ods":
+                kwargs["engine"] = "odf"
+                return cam.read_excel(nome_arq=documento.nome, **kwargs)
+            elif ext == "html":
+                return cam.read_html(nome_arq=documento.nome, **kwargs)
+            elif ext == "xml":
+                return cam.read_xml(nome_arq=documento.nome, **kwargs)
+            elif ext == "json":
+                return cam.read_json(nome_arq=documento.nome, **kwargs)
+            else:
+                raise NotImplementedError(
+                    f"Não criamos um método para carregar como data frame "
+                    f"arquivos do tipo {ext}"
+                )
+
+        # checa se como_gdf está ativado
+        elif kwargs.get("como_gdf"):
+            # se estiver carrega os dados com o geopandas
+            if ext == "parquet":
+                return cam.gpd_read_parquet(nome_arq=documento.nome, **kwargs)
+            elif ext == "feather":
+                return cam.gpd_read_feather(nome_arq=documento.nome, **kwargs)
+            elif ext in ["shp", "json", "geojson", "topojson"]:
+                return cam.gpd_read_file(nome_arq=documento.nome, **kwargs)
+            else:
+                raise NotImplementedError(
+                    f"Não criamos um método para carregar como geo data frame "
+                    f"arquivos do tipo {ext}"
+                )
+
+        # caso contrário
+        else:
+            # tenta alguma das extenções restantes
+            if ext == "json":
+                return cam.load_json(nome_arq=documento.nome, **kwargs)
+            elif ext == "yml":
+                return cam.load_yaml(nome_arq=documento.nome, **kwargs)
+            elif ext == "pkl":
+                return cam.load_pickle(nome_arq=documento.nome, **kwargs)
+            elif ext in EXTENSOES_TEXTO:
+                return cam.load_txt(nome_arq=documento.nome, **kwargs)
+            else:
+                raise NotImplementedError(
+                    f"Não criamos um método para carregar como objeto python "
+                    f"arquivos do tipo {ext}"
+                )
+
+    def salva_documento(self, documento: Documento, **kwargs) -> None:
         """
         Insere os dados de um documento para o data store
 
         :param documento: documento a ser salvo
         :param kwargs: parâmetros para salvar
         """
-        self.logger.debug(f"Salvando documento {documento}")
+        self._logger.debug(f"Salvando documento {documento}")
+
+        # obtém o objeto caminho para o documento
+        cam = self.gera_caminho(documento=documento)
+
+        # obtém a extenção do arquivo
+        if "ext" not in kwargs:
+            kwargs["ext"] = documento.tipo
+        ext = kwargs["ext"]
+
+        # se a extenção do arquivo for zip
+        if ext == "zip":
+            raise NotImplementedError("Nós não configuramos a escrita de arquivos zip")
+
+        # escolhe a função de exportação para um data frame
+        if isinstance(documento.data, pd.DataFrame):
+            if ext == "parquet":
+                cam.to_parquet(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "hdf" or ext == "h5":
+                cam.to_hdf(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "pkl":
+                cam.to_pickle(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "feather":
+                cam.to_feather(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "csv" or ext == "txt" or ext == "tsv":
+                cam.to_csv(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "xlsx" or ext == "xls":
+                cam.to_excel(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "ods":
+                kwargs["engine"] = "odf"
+                cam.to_excel(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "html":
+                cam.to_html(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "xml":
+                cam.to_xml(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            elif ext == "json":
+                cam.to_json(nome_arq=documento.nome, dados=documento.data, **kwargs)
+            else:
+                raise NotImplementedError(
+                    f"Não criamos um método para escrever um data frame "
+                    f"na extenção {ext}"
+                )
+
+        # escolhe a função de exportação para um geo data frame
+        elif isinstance(documento.data, gpd.GeoDataFrame):
+            if ext == "parquet":
+                cam.gpd_to_parquet(nome_arq=documento.nome, **kwargs)
+            elif ext == "feather":
+                cam.gpd_to_feather(nome_arq=documento.nome, **kwargs)
+            elif ext in ["shp", "json", "geojson", "topojson"]:
+                cam.gpd_to_file(nome_arq=documento.nome, **kwargs)
+            else:
+                raise NotImplementedError(
+                    f"Não criamos um método para escrever um geo data frame "
+                    f"na extenção {ext}"
+                )
+
+        # escolhe alguma das funções restantes
+        else:
+            if ext == "json":
+                return cam.load_json(nome_arq=documento.nome, **kwargs)
+            elif ext == "yml":
+                return cam.load_yaml(nome_arq=documento.nome, **kwargs)
+            elif ext == "pkl":
+                return cam.load_pickle(nome_arq=documento.nome, **kwargs)
+            elif ext in EXTENSOES_TEXTO:
+                return cam.load_txt(nome_arq=documento.nome, **kwargs)
+            else:
+                raise NotImplementedError(
+                    f"Não criamos um método para carregar como objeto python "
+                    f"arquivos do tipo {ext}"
+                )
+        self._logger.debug(f"Salvando documento {documento}")
         self.gera_caminho(documento=documento).salva_arquivo(
             dados=documento.data,
-            nome_arquivo=f"{documento.nome}.{documento.tipo}",
+            nome_arquivo=documento.nome,
             **kwargs,
         )
 

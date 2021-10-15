@@ -6,16 +6,18 @@ import pandas as pd
 import pytest
 
 
-@pytest.mark.order1
+@pytest.mark.run(order=1)
 def test_extract(dados_path, escola_etl) -> None:
     escola_etl.extract()
 
     assert escola_etl.dados_entrada is not None
-    assert set(escola_etl._inep) == set(escola_etl.dados_entrada)
+    assert len(escola_etl.dados_entrada) == 1
+    assert escola_etl.ano == 2020
+    assert escola_etl.dados_entrada[0].nome == "2020.zip"
     assert isinstance(escola_etl.dados_entrada[0].data, pd.DataFrame)
 
 
-@pytest.mark.order2
+@pytest.mark.run(order=2)
 def test_renomeia_colunas(escola_etl) -> None:
     renomear = {
         d.nome: set(escola_etl._configs["RENOMEIA_COLUNAS"]).intersection(
@@ -24,7 +26,8 @@ def test_renomeia_colunas(escola_etl) -> None:
         for d in escola_etl.dados_entrada
     }
 
-    escola_etl.renomeia_colunas()
+    for base in escola_etl.dados_entrada:
+        escola_etl.renomeia_colunas(base)
 
     i = 0
     for k, cols in renomear.items():
@@ -35,18 +38,20 @@ def test_renomeia_colunas(escola_etl) -> None:
         i += 1
 
 
-@pytest.mark.order3
+@pytest.mark.run(order=3)
 def test_dropa_colunas(escola_etl) -> None:
-    escola_etl.dropa_colunas()
+    for base in escola_etl.dados_entrada:
+        escola_etl.dropa_colunas(base)
 
     for d in escola_etl.dados_entrada:
         for c in escola_etl._configs["DROPAR_COLUNAS"]:
             assert c not in d.data
 
 
-@pytest.mark.order4
+@pytest.mark.run(order=4)
 def test_processa_dt(escola_etl) -> None:
-    escola_etl.processa_dt()
+    for base in escola_etl.dados_entrada:
+        escola_etl.processa_dt(base)
 
     for d in escola_etl.dados_entrada:
         for c in d.data:
@@ -54,9 +59,10 @@ def test_processa_dt(escola_etl) -> None:
                 assert d.data[c].dtype == "datetime64[ns]"
 
 
-@pytest.mark.order5
+@pytest.mark.run(order=5)
 def test_processa_qt(escola_etl) -> None:
-    escola_etl.processa_qt()
+    for base in escola_etl.dados_entrada:
+        escola_etl.processa_qt(base)
 
     for d in escola_etl.dados_entrada:
         if d.nome >= "2019.zip":
@@ -65,7 +71,7 @@ def test_processa_qt(escola_etl) -> None:
                     assert 88888 not in d.data[c].values
 
 
-@pytest.mark.order6
+@pytest.mark.run(order=6)
 def test_processa_in(escola_etl) -> None:
     cols = set([c for d in escola_etl.dados_entrada for c in d.data])
     criar_qt = [
@@ -84,7 +90,8 @@ def test_processa_in(escola_etl) -> None:
         for d in escola_etl.dados_entrada
     ]
 
-    escola_etl.processa_in()
+    for base in escola_etl.dados_entrada:
+        escola_etl.processa_in(base)
 
     for k, cols in enumerate(criar_qt):
         assert cols.issubset(set(escola_etl.dados_entrada[k].data))
@@ -110,9 +117,10 @@ def test_processa_in(escola_etl) -> None:
                 assert {0, 1, np.nan}, set(d.data[c].unique())
 
 
-@pytest.mark.order7
+@pytest.mark.run(order=7)
 def test_processa_tp(escola_etl) -> None:
-    escola_etl.processa_tp()
+    for base in escola_etl.dados_entrada:
+        escola_etl.processa_tp(base)
 
     for d in escola_etl.dados_entrada:
         if "IN_LINGUA_INDIGENA" in d.data and "IN_LINGUA_PORTUGUESA" in d.data:
@@ -134,30 +142,26 @@ def test_processa_tp(escola_etl) -> None:
                 assert "category" == d.data[c].dtype
 
 
-@pytest.mark.order8
+@pytest.mark.run(order=8)
 def test_concatena_bases(escola_etl) -> None:
     escola_etl.concatena_bases()
 
-    assert len(escola_etl.dados_saida) == 2
-
+    assert len(escola_etl.dados_saida) == 1
     assert (
-        escola_etl.dados_saida[1].data.shape[0]
-        == escola_etl.dados_saida[1].data["CO_ENTIDADE"].nunique()
-    )
-
-    assert set(escola_etl._configs["COLS_ATEMPORAL"]).issubset(
-        set(escola_etl.dados_saida[1].data)
+        escola_etl.dados_saida[0].data.shape[0]
+        == escola_etl.dados_saida[0].data["CO_ENTIDADE"].nunique()
     )
 
 
-@pytest.mark.order9
-def test_preenche_nulos(escola_etl) -> None:
+@pytest.mark.run(order=9)
+def test_ajustes_finais(escola_etl) -> None:
     antes = escola_etl.dados_saida[0].data.count()
 
     escola_etl.ajustes_finais()
 
     for c in escola_etl._configs["COLS_FBFILL"]:
-        assert escola_etl.dados_saida[0].data[c].count() >= antes[c]
+        if c in antes:
+            assert escola_etl.dados_saida[0].data[c].count() >= antes[c]
 
     for c in escola_etl._configs["REMOVER_COLS"]:
         assert c not in escola_etl.dados_saida[0].data
@@ -167,6 +171,8 @@ def test_preenche_nulos(escola_etl) -> None:
             escola_etl.dados_saida[0].data.shape[0]
             == escola_etl.dados_saida[0].data[c].count()
         )
+
+    assert set(escola_etl.dados_saida[0].data) == set(escola_etl._configs["DS_SCHEMA"])
 
 
 if __name__ == "__main__":

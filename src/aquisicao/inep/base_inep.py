@@ -151,4 +151,4 @@ class BaseINEPETL(BaseETL, abc.ABC):
             doc.pasta = f"{doc.nome}/ANO={self.ano}"
             doc.nome = f"{self.ano}.parquet"
             doc.data.drop(columns=["ANO"], inplace=True)
-            self._ds.salva_documento(doc, partition_cols=["ANO"])
+            self._ds.salva_documento(doc)

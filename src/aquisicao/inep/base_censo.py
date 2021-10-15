@@ -30,38 +30,11 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
 
         :param ds: instância de objeto data store
         :param tabela: Tabela do censo escolar a ser processada
-        :param ano: ano do censo a ser processado (pode ser um inteiro ou 'ultimo')
+        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         """
-        super().__init__(ds, "censo-escolar", criar_caminho)
-
-        self._ano = ano
+        super().__init__(ds, "censo-escolar", ano=ano, criar_caminho=criar_caminho)
         self._tabela = tabela
-
-    @property
-    def ano(self) -> int:
-        """
-        Ano do censo sendo processado pelo objeto
-
-        :return: ano como um núnero inteiro
-        """
-        if self._ano == "ultimo":
-            return max([int(b.nome[:4]) for b in self.inep])
-        else:
-            return self.ano
-
-    def dicionario_para_baixar(self) -> typing.Dict[Documento, str]:
-        """
-        Le os conteúdos da pasta de dados e seleciona apenas os arquivos
-        a serem baixados como complementares
-
-        :return: dicionário com nome do arquivo e link para a página
-        """
-        return {
-            doc: link
-            for doc, link in self.inep.items()
-            if not doc.exists() and int(doc.nome[:4]) == self.ano
-        }
 
     @staticmethod
     def obtem_operacao(
@@ -134,7 +107,8 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
 
         # para cada arquivo do censo demográfico
         for censo in tqdm(self.inep):
-            censo.obtem_dados(
+            self._ds.carrega_como_objeto(
+                censo,
                 como_df=True,
                 padrao_comp=(
                     f"{self._tabela.lower()}."

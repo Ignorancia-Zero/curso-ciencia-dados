@@ -12,32 +12,60 @@ class BaseETL(abc.ABC):
     deve funcionar
     """
 
-    ds: DataStore
-    criar_caminho: bool
+    _ds: DataStore
+    _reprocessar: bool
+    _criar_caminho: bool
     _dados_entrada: typing.List[Documento]
     _dados_saida: typing.List[Documento]
-    logger: logging.Logger
+    _logger: logging.Logger
 
-    def __init__(self, ds: DataStore, criar_caminho: bool = True) -> None:
+    def __init__(
+        self,
+        ds: DataStore,
+        criar_caminho: bool = True,
+        reprocessar: bool = False,
+    ) -> None:
         """
         Instância o objeto de ETL Base
 
         :param ds: instância de objeto data store
         :param criar_caminho: flag indicando se devemos criar os caminhos
+        :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
-        self.criar_caminho = criar_caminho
+        self._criar_caminho = criar_caminho
+        self._reprocessar = reprocessar
         self._ds = ds
 
         self._dados_entrada = None
         self._dados_saida = None
 
-        self.logger = logging.getLogger(__name__)
+        self._logger = logging.getLogger(__name__)
 
     def __str__(self) -> str:
         """
         Representação de texto da classe
         """
         return self.__class__.__name__
+
+    @property
+    @abc.abstractmethod
+    def documentos_entrada(self) -> typing.List[Documento]:
+        """
+        Gera a lista de documentos de entrada
+
+        :return: lista de documentos de entrada
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @property
+    @abc.abstractmethod
+    def documentos_saida(self) -> typing.List[Documento]:
+        """
+        Gera a lista de documentos de saída
+
+        :return: lista de documentos de saída
+        """
+        raise NotImplementedError("É preciso implementar o método")
 
     @property
     def dados_entrada(self) -> typing.List[Documento]:
@@ -66,7 +94,7 @@ class BaseETL(abc.ABC):
         """
         Extraí os dados do objeto
         """
-        pass
+        raise NotImplementedError("É preciso implementar o método")
 
     @abc.abstractmethod
     def transform(self) -> None:
@@ -74,24 +102,24 @@ class BaseETL(abc.ABC):
         Transforma os dados e os adequa para os formatos de
         saída de interesse
         """
-        pass
+        raise NotImplementedError("É preciso implementar o método")
 
     def load(self) -> None:
         """
         Exporta os dados transformados
         """
         for doc in self.dados_saida:
-            self._ds.insere_dados(doc)
+            self._ds.salva_documento(doc)
 
     def pipeline(self) -> None:
         """
         Executa o pipeline completo de tratamento de dados
         """
-        self.logger.info(f"EXTRAINDO DADOS {self}")
+        self._logger.info(f"EXTRAINDO DADOS {self}")
         self.extract()
 
-        self.logger.info(f"TRANSFORMANDO DADOS {self}")
+        self._logger.info(f"TRANSFORMANDO DADOS {self}")
         self.transform()
 
-        self.logger.info(f"CARREGANDO DADOS {self}")
+        self._logger.info(f"CARREGANDO DADOS {self}")
         self.load()

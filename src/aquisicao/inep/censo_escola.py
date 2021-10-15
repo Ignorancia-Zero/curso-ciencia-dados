@@ -18,16 +18,43 @@ class EscolaETL(BaseCensoEscolarETL):
     """
 
     _configs: typing.Dict[str, typing.Any]
+    _documentos_saida: typing.List[Documento]
 
-    def __init__(self, ds: DataStore, criar_caminho: bool = True) -> None:
+    def __init__(
+        self,
+        ds: DataStore,
+        ano: typing.Union[int, str] = "ultimo",
+        criar_caminho: bool = True
+    ) -> None:
         """
         Instância o objeto de ETL de dados de Escola
 
         :param ds: instância de objeto data store
+        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         """
-        super().__init__(ds, "escolas", criar_caminho)
+        super().__init__(ds, "escolas", ano=ano, criar_caminho=criar_caminho)
         self._configs = carrega_yaml("aquis_censo_escola.yml")
+
+    @property
+    def documentos_saida(self) -> typing.List[Documento]:
+        """
+        Gera a lista de documentos de saída
+
+        :return: lista de documentos de saída
+        """
+        if self._documentos_saida is None:
+            self._documentos_saida = [
+                Documento(
+                    ds=self._ds,
+                    referencia=CatalogoAquisicao.ESCOLA_TEMP,
+                ),
+                Documento(
+                    ds=self._ds,
+                    referencia=CatalogoAquisicao.ESCOLA_ATEMP,
+                ),
+            ]
+        return self._documentos_saida
 
     def renomeia_colunas(self, base: Documento) -> None:
         """
@@ -272,12 +299,6 @@ class EscolaETL(BaseCensoEscolarETL):
                 for base in self.dados_entrada
             ]
         )
-        doc = Documento(
-            ds=self._ds,
-            referencia=CatalogoAquisicao.ESCOLA_TEMP,
-            data=escola_temp,
-        )
-        self._dados_saida.append(doc)
 
         # cria a base de dados atemporal
         escola_atemp = pd.concat(
@@ -288,12 +309,13 @@ class EscolaETL(BaseCensoEscolarETL):
                 for base in self.dados_entrada
             ]
         ).drop_duplicates(subset=["CO_ENTIDADE"], keep="last")
-        doc = Documento(
-            ds=self._ds,
-            referencia=CatalogoAquisicao.ESCOLA_ATEMP,
-            data=escola_atemp,
-        )
-        self._dados_saida.append(doc)
+
+        # adiciona aos dados aos documentos
+        self._documentos_saida[0].data = escola_temp
+        self._documentos_saida[1].data = escola_atemp
+
+        # adiciona os documentos aos dados de saída
+        self._dados_saida += self._documentos_saida
 
     def preenche_nulos(self) -> None:
         """
@@ -302,7 +324,7 @@ class EscolaETL(BaseCensoEscolarETL):
         escola_temp = self._dados_saida[0].data
 
         # faz o sorting e reset index
-        escola_temp.sort_values(by=["CO_ENTIDADE", "NU_ANO_CENSO"], inplace=True)
+        escola_temp.sort_values(by=["CO_ENTIDADE", "ANO"], inplace=True)
         escola_temp.reset_index(drop=True, inplace=True)
 
         # preenchimento com valores históricos
@@ -340,7 +362,7 @@ class EscolaETL(BaseCensoEscolarETL):
         Transforma os dados e os adequa para os formatos de
         saída de interesse
         """
-        self.logger.info("Processando bases de entrada")
+        self._logger.info("Processando bases de entrada")
         for base in tqdm(self.dados_entrada):
             self.renomeia_colunas(base)
             self.dropa_colunas(base)
@@ -349,8 +371,8 @@ class EscolaETL(BaseCensoEscolarETL):
             self.processa_in(base)
             self.processa_tp(base)
 
-        self.logger.info("Concatenando bases de dados")
+        self._logger.info("Concatenando bases de dados")
         self.concatena_bases()
 
-        self.logger.info("Ajustando valores nulos")
+        self._logger.info("Ajustando valores nulos")
         self.preenche_nulos()

@@ -43,7 +43,7 @@ class EscolaETL(BaseCensoEscolarETL):
 
         :return: lista de documentos de saída
         """
-        if self._documentos_saida is None:
+        if not hasattr(self, "_documentos_saida"):
             self._documentos_saida = [
                 Documento(
                     ds=self._ds,

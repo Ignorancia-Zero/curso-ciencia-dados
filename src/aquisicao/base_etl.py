@@ -70,7 +70,7 @@ class BaseETL(abc.ABC):
 
         :return: dicionário com o nome do arquivo e um dataframe com os dados
         """
-        if self._dados_entrada is None:
+        if not hasattr(self, "_dados_entrada"):
             self.extract()
         return self._dados_entrada
 
@@ -81,7 +81,7 @@ class BaseETL(abc.ABC):
 
         :return: dicionário com o nome do arquivo e um dataframe com os dados
         """
-        if self._dados_saida is None:
+        if not hasattr(self, "_dados_saida"):
             self.extract()
         return self._dados_saida
 

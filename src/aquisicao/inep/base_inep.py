@@ -56,7 +56,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
 
         :return: dicionário com nome do arquivo e link para a página
         """
-        if self._inep is None:
+        if not hasattr(self, "_inep"):
             html = urlopen(self._url).read()
             soup = BeautifulSoup(html, features="html.parser")
             self._inep = {

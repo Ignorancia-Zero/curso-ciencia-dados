@@ -4,6 +4,7 @@ import logging
 import os
 import typing
 from collections.abc import Collection
+from collections.abc import Hashable
 
 import geopandas as gpd
 import pandas as pd
@@ -16,7 +17,7 @@ from src.io.le_dados import le_dados_comprimidos
 from src.utils.interno import obtem_extencao
 
 
-class Documento:
+class Documento(Hashable):
     """
     Representa a interface com os dados que podem ser acessados
     """
@@ -129,6 +130,17 @@ class Documento:
 
     def __repr__(self) -> str:
         return str(self)
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.ds._env,
+                self.colecao.nome,
+                self.colecao.pasta,
+                self.nome,
+                self.tipo,
+            )
+        )
 
 
 class Colecao(Collection):

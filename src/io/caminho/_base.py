@@ -520,7 +520,7 @@ class _CaminhoBase(abc.ABC):
         :param nome_arq: nome do arquivo a ser escrito
         :param kwargs: argumentos de escrita para serem passados para função
         """
-        self.write_df(dados, pd.DataFrame.to_xml, nome_arq, **kwargs)
+        self.write_df(dados, pd.DataFrame.to_xml, nome_arq, **kwargs) # type: ignore
 
     def to_pickle(
         self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any

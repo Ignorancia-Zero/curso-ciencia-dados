@@ -42,7 +42,7 @@ ESCREVE_PANDAS: typing.Dict[str, typing.Callable] = {
     "json": pd.DataFrame.to_json,
     "pkl": pd.DataFrame.to_pickle,
     "html": pd.DataFrame.to_html,
-    "xml": pd.DataFrame.to_xml,
+    "xml": pd.DataFrame.to_xml, # type: ignore
 }
 
 # funções para exportar data frames de geopandas

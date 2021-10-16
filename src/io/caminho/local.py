@@ -87,7 +87,7 @@ class CaminhoLocal(_CaminhoBase):
         os.rename(str(self.caminho / nome_origem), str(self.caminho / nome_destino))
 
     def _copia_conteudo_mesmo_caminho(
-        self, nome_conteudo: str, caminho_destino: CaminhoLocal
+        self, nome_conteudo: str, caminho_destino: _CaminhoBase
     ) -> None:
         """
         Copia um conteúdo contido no caminho para o caminho de destino
@@ -95,6 +95,7 @@ class CaminhoLocal(_CaminhoBase):
         :param nome_conteudo: nome do conteúdo a ser copiado
         :param caminho_destino: objeto caminho de destino
         """
+        assert isinstance(caminho_destino, CaminhoLocal)
         if self.verifica_se_arquivo(nome_conteudo):
             shutil.copyfile(
                 self.obtem_caminho(nome_conteudo),

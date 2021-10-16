@@ -35,7 +35,6 @@ class EscolaETL(BaseCensoEscolarETL):
         """
         super().__init__(ds, "escolas", ano=ano, criar_caminho=criar_caminho)
         self._configs = carrega_yaml("aquis_censo_escola.yml")
-        self._documentos_saida = None
 
     @property
     def documentos_saida(self) -> typing.List[Documento]:

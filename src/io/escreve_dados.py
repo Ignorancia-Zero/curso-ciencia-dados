@@ -24,6 +24,7 @@ def save_json(dados: dict, buffer: typing.BinaryIO) -> None:
     buffer.write(up.read().encode("UTF-8"))
 
 
+# TODO: buffer deveria ser typing.BinaryIO, mas por algum motivo yaml só aceita IO[str]
 def save_yaml(dados: dict, buffer: typing.BinaryIO) -> None:
     """
     Realiza a escrita de dados yaml para um buffer
@@ -31,7 +32,7 @@ def save_yaml(dados: dict, buffer: typing.BinaryIO) -> None:
     :param dados: dados a serem salvos
     :param buffer: buffer para escrever
     """
-    yaml.dump(dados, buffer)
+    yaml.dump(dados, buffer)  # type: ignore
 
 
 def save_pickle(dados: typing.Any, buffer: typing.BinaryIO) -> None:

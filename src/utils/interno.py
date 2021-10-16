@@ -18,7 +18,7 @@ def obtem_argumentos_objeto(
     if isinstance(objeto, types.FunctionType):
         sig = inspect.signature(objeto)
     else:
-        sig = inspect.signature(objeto.__init__)
+        sig = inspect.signature(getattr(objeto, "__init__"))
     args_obj = dict()
     for param in sig.parameters:
         if param in kwargs:

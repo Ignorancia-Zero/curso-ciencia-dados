@@ -5,6 +5,7 @@ import sqlite3
 import typing
 from pathlib import Path
 
+import geopandas as gpd
 import pandas as pd
 
 from ._base import _CaminhoBase
@@ -36,10 +37,6 @@ class CaminhoSQLite(_CaminhoBase):
 
         # obtém o caminho para o database
         self._path = Path("/".join(caminho.split("/")[:-1]))
-
-        # cria as variáveis adicionais
-        self._connection = None
-        self._cursor = None
 
         super().__init__(caminho, criar_caminho)
 
@@ -109,7 +106,7 @@ class CaminhoSQLite(_CaminhoBase):
         self._connection.commit()
 
     def _copia_conteudo_mesmo_caminho(
-        self, nome_conteudo: str, caminho_destino: CaminhoSQL
+        self, nome_conteudo: str, caminho_destino: _CaminhoBase
     ) -> None:
         """
         Copia um conteúdo contido no caminho para o caminho de destino
@@ -117,6 +114,7 @@ class CaminhoSQLite(_CaminhoBase):
         :param nome_conteudo: nome do conteúdo a ser copiado
         :param caminho_destino: objeto caminho de destino
         """
+        assert isinstance(caminho_destino, CaminhoSQLite)
         df = self.carrega_arquivo(nome_conteudo)
         caminho_destino.salva_arquivo(df, nome_conteudo)
 

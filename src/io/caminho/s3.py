@@ -7,8 +7,13 @@ from io import BytesIO
 import boto3
 import geopandas as gpd
 import pandas as pd
-from boto3.resources.base import ServiceResource
-from botocore.client import BaseClient
+from botocore.response import StreamingBody
+from mypy_boto3_s3 import ServiceResource, S3Client
+from mypy_boto3_s3.type_defs import (
+    CopySourceTypeDef,
+    DeleteTypeDef,
+    ObjectIdentifierTypeDef,
+)
 
 from src.utils.interno import obtem_argumentos_objeto
 from src.utils.interno import obtem_extencao
@@ -22,18 +27,18 @@ class S3Buffer(BytesIO):
     dados carregados para o bucket S3
     """
 
-    client: BaseClient
+    client: S3Client
     bucket: str
     key: str
     filename: str
 
     def __init__(
         self,
-        client: BaseClient,
+        client: S3Client,
         bucket: str,
         key: str,
         filename: str,
-        initial_bytes: bytes = None,
+        initial_bytes: bytes = b"",
     ) -> None:
         self.client = client
         self.bucket = bucket
@@ -66,7 +71,7 @@ class CaminhoS3(_CaminhoBase):
 
     bucket: str
     caminho: str
-    client: BaseClient
+    client: S3Client
     resource: ServiceResource
 
     def __init__(self, caminho: str = "", criar_caminho: bool = False) -> None:
@@ -134,8 +139,11 @@ class CaminhoS3(_CaminhoBase):
         pages = paginator.paginate(Bucket=self.bucket, Prefix=f"{prefixo}/")
 
         # lista os objetos a serem deletados
-        delete_us = dict(Objects=[])
-        for item in pages.search("Contents"):
+        delete_us: typing.Dict[str, typing.List[ObjectIdentifierTypeDef]] = dict(
+            Objects=[]
+        )
+        # TODO: deveria fornecer um gerador???
+        for item in pages.search("Contents"):  # type: ignore
             delete_us["Objects"].append(dict(Key=item["Key"]))
 
         # realiza a remoção do conteúdo
@@ -143,7 +151,9 @@ class CaminhoS3(_CaminhoBase):
             if not apaga_conteudo:
                 raise ValueError("O diretório não está vazio")
             for i in range(0, len(delete_us["Objects"]), self.LIMITE_AWS):
-                deletar = {"Objects": delete_us["Object"][i : i + self.LIMITE_AWS]}
+                deletar: DeleteTypeDef = {
+                    "Objects": delete_us["Object"][i : i + self.LIMITE_AWS]
+                }
                 self.client.delete_objects(Bucket=self.bucket, Delete=deletar)
 
     def _apaga_caminho(self, apaga_conteudo: bool = False) -> None:
@@ -169,9 +179,9 @@ class CaminhoS3(_CaminhoBase):
         conteudo = objetos_s3.get("Contents")
         if conteudo:
             return [
-                os.path.basename(item.get("Key"))
+                os.path.basename(item["Key"])
                 for item in conteudo
-                if not item.get("Key").endswith("/")
+                if not item["Key"].endswith("/")
             ]
         else:
             return list()
@@ -189,7 +199,7 @@ class CaminhoS3(_CaminhoBase):
                 Bucket=self.bucket,
                 Prefix=f"{self.prefixo}/{nome_conteudo}",
                 Delimiter="/",
-            ).get("Contents")[0]
+            )["Contents"][0]
         )
 
     def _renomeia_conteudo(self, nome_origem: str, nome_destino: str) -> None:
@@ -200,15 +210,13 @@ class CaminhoS3(_CaminhoBase):
         :param nome_destino: nome do conteúdo de destino
         """
         if self.verifica_se_arquivo(nome_origem):
-            origem = {
+            origem: CopySourceTypeDef = {
                 "Bucket": self.bucket,
                 "Key": self.client.list_objects_v2(
                     Bucket=self.bucket,
                     Prefix=f"{self.prefixo}/{nome_origem}",
                     Delimiter="/",
-                )
-                .get("Contents")[0]
-                .get("Key"),
+                )["Contents"][0]["Key"],
             }
             self.client.copy(origem, self.bucket, f"{self.prefixo}/{nome_destino}")
             self.apaga_conteudo(nome_origem)
@@ -226,7 +234,7 @@ class CaminhoS3(_CaminhoBase):
             caminho_origem.apaga_caminho(apaga_conteudo=True)
 
     def _copia_conteudo_mesmo_caminho(
-        self, nome_conteudo: str, caminho_destino: CaminhoS3
+        self, nome_conteudo: str, caminho_destino: _CaminhoBase
     ) -> None:
         """
         Copia um conteúdo contido no caminho para o caminho de destino
@@ -234,16 +242,15 @@ class CaminhoS3(_CaminhoBase):
         :param nome_conteudo: nome do conteúdo a ser copiado
         :param caminho_destino: objeto caminho de destino
         """
+        assert isinstance(caminho_destino, CaminhoS3)
         if self.verifica_se_arquivo(nome_conteudo):
-            origem = {
+            origem: CopySourceTypeDef = {
                 "Bucket": self.bucket,
                 "Key": self.client.list_objects_v2(
                     Bucket=self.bucket,
                     Prefix=f"{self.prefixo}/{nome_conteudo}",
                     Delimiter="/",
-                )
-                .get("Contents")[0]
-                .get("Key"),
+                )["Contents"][0]["Key"],
             }
             self.client.copy(
                 origem,
@@ -274,8 +281,8 @@ class CaminhoS3(_CaminhoBase):
                 Prefix=f"{self.prefixo}/{nome_conteudo}",
                 Delimiter="/",
             )
-            for item in objetos_s3.get("Contents"):
-                self.client.delete_object(Bucket=self.bucket, Key=item.get("Key"))
+            for item in objetos_s3["Contents"]:
+                self.client.delete_object(Bucket=self.bucket, Key=item["Key"])
         else:
             if nome_conteudo[-1] == "/":
                 nome_conteudo = nome_conteudo[:-1]
@@ -296,7 +303,8 @@ class CaminhoS3(_CaminhoBase):
             self.obtem_caminho(nome_arq), **obtem_argumentos_objeto(func, kwargs)
         )
 
-    def buffer_para_arquivo(self, nome_arq: str) -> typing.BinaryIO:
+    # TODO: Conciliar StreamingBody com typing.BinaryIO
+    def buffer_para_arquivo(self, nome_arq: str) -> StreamingBody:  # type: ignore
         """
         Carrega um conteúdo específico do bucket s3
 

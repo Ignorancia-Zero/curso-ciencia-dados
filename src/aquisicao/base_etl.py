@@ -35,10 +35,6 @@ class BaseETL(abc.ABC):
         self._criar_caminho = criar_caminho
         self._reprocessar = reprocessar
         self._ds = ds
-
-        self._dados_entrada = None
-        self._dados_saida = None
-
         self._logger = logging.getLogger(__name__)
 
     def __str__(self) -> str:

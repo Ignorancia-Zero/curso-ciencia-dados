@@ -48,7 +48,6 @@ class BaseINEPETL(BaseETL, abc.ABC):
         self._base = base.replace("-", "_")
         self._ano = ano
         self._url = f"{self.URL}/{base}"
-        self._inep = None
 
     @property
     def inep(self) -> typing.Dict[Documento, str]:
@@ -80,8 +79,11 @@ class BaseINEPETL(BaseETL, abc.ABC):
 
         :return: ano como um núnero inteiro
         """
-        if self._ano == "ultimo":
-            return max([int(b.nome[:4]) for b in self.inep])
+        if isinstance(self._ano, str):
+            if self._ano == "ultimo":
+                return max([int(b.nome[:4]) for b in self.inep])
+            else:
+                raise ValueError(f"Não conseguimos processar ano={self._ano}")
         else:
             return self._ano
 

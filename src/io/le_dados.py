@@ -6,7 +6,6 @@ import re
 import tempfile
 import typing
 from io import BytesIO
-from io import StringIO
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -124,14 +123,15 @@ def converte_buffer_em_objeto(
         elif ext == "pkl":
             return load_pickle(dados)
         elif ext in EXTENSOES_TEXTO:
-            return dados.read().decode(kwargs.get("encoding"))
+            encoding: str = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+            return dados.read().decode(encoding)
         else:
             raise NotImplementedError(f"Não implementamos leitura de arquivos {ext}")
 
 
 def le_dados_comprimidos(
     arquivo: typing.Union[str, Path, typing.IO[bytes], BytesIO], ext: str, **kwargs
-) -> typing.Dict[str, typing.Any]:
+) -> typing.Union[typing.Dict[str, typing.Any], None]:
     """
     Lê dados comprimidos em um arquivo zip ou rar e devolve um
     dicionário de arquivos com os conteúdos carregados de acordo
@@ -211,11 +211,11 @@ def le_dados_comprimidos(
     elif len(objs) == 1:
         return list(objs.values())[0]
 
+    return None
+
 
 def carrega_arquivo(
-    arquivo: typing.Union[
-        str, Path, typing.IO[bytes], typing.IO[str], StringIO, BytesIO
-    ],
+    arquivo: typing.Union[str, Path, typing.BinaryIO],
     ext: str,
     **kwargs: typing.Any,
 ) -> typing.Any:

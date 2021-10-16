@@ -4,7 +4,6 @@ import logging
 import os
 import typing
 from collections.abc import Collection
-from collections.abc import Hashable
 
 import geopandas as gpd
 import pandas as pd
@@ -17,12 +16,11 @@ from src.io.le_dados import le_dados_comprimidos
 from src.utils.interno import obtem_extencao
 
 
-class Documento(Hashable):
+class Documento:
     """
     Representa a interface com os dados que podem ser acessados
     """
 
-    colecao: str
     nome: str
     tipo: str
     _pasta: str
@@ -30,7 +28,7 @@ class Documento(Hashable):
     _data: typing.Any
 
     def __init__(
-        self, ds: DataStore, referencia: dict, data: typing.Any = None
+        self, ds: DataStore, referencia: typing.Dict[str, str], data: typing.Any = None
     ) -> None:
         """
         Instancia um novo objeto documento
@@ -41,31 +39,34 @@ class Documento(Hashable):
         """
         self.ds = ds
         self.nome = os.path.basename(referencia["nome"])
-        self.tipo = referencia.get("tipo")
-        if self.tipo is None:
+
+        if not referencia.get("tipo"):
             self.tipo = obtem_extencao(referencia["nome"])
-        self._pasta = referencia.get("pasta")
-        self.colecao = Colecao(ds=ds, nome=referencia.get("colecao"), pasta=self._pasta)
+        else:
+            self.tipo = referencia["tipo"]
+
+        self._pasta = "" if not referencia.get("pasta") else referencia["pasta"]
+        self.colecao = Colecao(ds=ds, nome=referencia["colecao"], pasta=self._pasta)
         self._data = data
 
     @property
-    def pasta(self) -> str:
+    def pasta(self) -> typing.Union[str, None]:
         return self._pasta
 
     @pasta.setter
-    def pasta(self, pasta: str) -> None:
-        self._pasta = pasta
-        self.colecao.pasta = pasta
+    def pasta(self, v: str) -> None:
+        self._pasta = v
+        self.colecao.pasta = v
 
     @property
-    def data(self, **kwargs) -> typing.Any:
+    def data(self) -> typing.Any:
         """
         Obtém os dados do documento
 
         :return: dados do documento
         """
         if self._data is None:
-            self.obtem_dados(**kwargs)
+            self.obtem_dados()
         return self._data
 
     @data.setter
@@ -97,7 +98,7 @@ class Documento(Hashable):
         cam = self.ds.gera_caminho(self)
         return cam.verifica_se_arquivo(self.nome)
 
-    def __eq__(self, documento: Documento) -> bool:
+    def __eq__(self, documento: typing.Union[object, Documento]) -> bool:
         """
         Checa se dois documentos são iguais
 
@@ -106,13 +107,14 @@ class Documento(Hashable):
         """
         if not isinstance(documento, Documento):
             return False
-        return (
-            self.ds._env == documento.ds._env
-            and self.colecao.nome == documento.colecao.nome
-            and self.colecao.pasta == documento.colecao.pasta
-            and self.nome == documento.nome
-            and self.tipo == documento.tipo
-        )
+        else:
+            return (
+                self.ds._env == documento.ds._env
+                and self.colecao.nome == documento.colecao.nome
+                and self.colecao.pasta == documento.colecao.pasta
+                and self.nome == documento.nome
+                and self.tipo == documento.tipo
+            )
 
     def __str__(self) -> str:
         """
@@ -125,17 +127,6 @@ class Documento(Hashable):
             f"colecao={self.colecao.nome}, pasta={self._pasta}"
         )
 
-    def __hash__(self) -> hash:
-        return hash(
-            (
-                self.ds._env,
-                self.colecao.nome,
-                self.colecao.pasta,
-                self.nome,
-                self.tipo,
-            )
-        )
-
     def __repr__(self) -> str:
         return str(self)
 
@@ -146,12 +137,12 @@ class Colecao(Collection):
     gerenciado pelo Data Store
     """
 
-    _dados: typing.List[Documento]
+    _dados: typing.Union[None, typing.List[Documento]]
     ds: DataStore
     nome: str
     pasta: str
 
-    def __init__(self, ds: DataStore, nome: str, pasta: str = None) -> None:
+    def __init__(self, ds: DataStore, nome: str, pasta: str = "") -> None:
         """
         Instância um novo objeto Coleção
 
@@ -252,20 +243,21 @@ class DataStore:
             raise ValueError("É preciso fornecer um objeto dados ou coleção")
 
         # extraí o objeto coleção do objeto data
-        if data is not None:
-            colecao = data.colecao
+        colecao = data.colecao if data is not None else colecao
+        if colecao is None:
+            raise ValueError("A coleção obtida é vazia")
 
         # gera lista de caminhos
         lista_cam = [colecao.nome]
-        if colecao.pasta is not None:
+        if colecao.pasta != "":
             lista_cam += colecao.pasta.split("/")
 
         return self.caminho_base.obtem_caminho(lista_cam)
 
     def gera_caminho(
         self,
-        documento: Documento = None,
-        colecao: Colecao = None,
+        documento: typing.Union[Documento, None] = None,
+        colecao: typing.Union[Colecao, None] = None,
         criar_caminho: bool = False,
     ) -> _CaminhoBase:
         """

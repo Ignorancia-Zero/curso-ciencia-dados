@@ -28,17 +28,19 @@ class GDriveIO(FileIO):
 
     cdrive: CaminhoGDrive
     temp_dir: tempfile.TemporaryDirectory
+    filename: str
     path: Path
 
     def __init__(self, drive: CaminhoGDrive, filename: str, mode: str) -> None:
         self.cdrive = drive
         self.temp_dir = tempfile.TemporaryDirectory()
         self.path = Path(self.temp_dir.name)
+        self.filename = filename
         super(GDriveIO, self).__init__(file=str(self.path / filename), mode=mode)
 
     def close(self) -> None:
         super().close()
-        self.cdrive.upload_conteudo(self.name)
+        self.cdrive.upload_conteudo(self.filename, self.path)
         self.temp_dir.cleanup()
 
 
@@ -228,7 +230,7 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         file.Upload()
 
     def _copia_conteudo_mesmo_caminho(
-        self, nome_conteudo: str, caminho_destino: CaminhoGDrive
+        self, nome_conteudo: str, caminho_destino: _CaminhoBase
     ) -> None:
         """
         Copia um conteúdo contido no caminho para o caminho de destino
@@ -238,6 +240,7 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         :param nome_conteudo: nome do conteúdo a ser copiado
         :param caminho_destino: objeto caminho de destino
         """
+        assert isinstance(caminho_destino, CaminhoGDrive)
         file = self._obtem_conteudo(nome_conteudo)
         self.drive.auth.service.files().copy(
             fileId=file["id"],
@@ -403,14 +406,14 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         :param kwargs: argumentos de escrita para serem passados para função
         """
         with tempfile.TemporaryDirectory() as tmp:
-            tmp = Path(tmp)
+            tmpp = Path(tmp)
             func(
                 dados,
-                str(tmp / nome_arq),
+                str(tmpp / nome_arq),
                 **obtem_argumentos_objeto(func, kwargs),
             )
-            for cont in os.listdir(tmp):
-                self.upload_conteudo(cont, tmp)
+            for cont in os.listdir(tmpp):
+                self.upload_conteudo(cont, tmpp)
 
     def read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -454,7 +457,9 @@ class CaminhoGDrive(_CaminhoBase, ABC):
         with tempfile.TemporaryDirectory() as tmp:
             if kwargs.get("ext") == "zip" or ext == "zip":
                 self.download_conteudo(nome_arq, tmp)
-                file = "zip://" + str(Path(tmp) / nome_arq)
+                file: typing.Union[str, typing.BinaryIO] = "zip://" + str(
+                    Path(tmp) / nome_arq
+                )
             else:
                 file = self.buffer_para_arquivo(nome_arq)
             return gpd.read_file(file, **obtem_argumentos_objeto(gpd.read_file, kwargs))

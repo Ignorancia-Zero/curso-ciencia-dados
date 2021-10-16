@@ -125,7 +125,7 @@ class _CaminhoBase(abc.ABC):
         raise NotImplementedError("É preciso implementar o método")
 
     @abc.abstractmethod
-    def buffer_para_arquivo(self, nome_arq: str) -> typing.BinaryIO:
+    def buffer_para_arquivo(self, nome_arq: str) -> typing.Any:
         """
         Gera um buffer de acesso para um conteúdo no caminho
 
@@ -240,6 +240,29 @@ class _CaminhoBase(abc.ABC):
                 f"{nome_conteudo} não está contido em {self._caminho}"
             )
         self._apaga_conteudo(nome_conteudo)
+
+    def carrega_arquivo(
+        self, nome_arquivo: str, **kwargs: typing.Any
+    ) -> typing.BinaryIO:
+        """
+        Carrega o arquivo contido no caminho
+
+        :param nome_arquivo: nome do arquivo a ser carregado
+        :param kwargs: argumentos específicos para a função de carregamento
+        """
+        raise NotImplementedError
+
+    def salva_arquivo(
+        self, dados: typing.Any, nome_arquivo: str, **kwargs: typing.Any
+    ) -> None:
+        """
+        Faz o upload de um determinado conteúdo para o caminho
+
+        :param dados: bytes, data frame, string, etc. a ser salvo
+        :param nome_arquivo: nome do arquivo a ser salvo
+        :param kwargs: argumentos específicos para a função de salvamento
+        """
+        raise NotImplementedError
 
     def read_parquet(self, nome_arq: str, **kwargs: typing.Any) -> pd.DataFrame:
         """
@@ -410,7 +433,8 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de carregamento para serem passados para função
         :return: texto carregado
         """
-        return self.buffer_para_arquivo(nome_arq).read().decode(kwargs.get("encoding"))
+        encoding: str = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+        return self.buffer_para_arquivo(nome_arq).read().decode(encoding)
 
     def to_parquet(
         self, dados: pd.DataFrame, nome_arq: str, **kwargs: typing.Any
@@ -600,5 +624,6 @@ class _CaminhoBase(abc.ABC):
         :param kwargs: argumentos de escrita para serem passados para função
         """
         buffer = self.buffer_para_escrita(nome_arq)
-        buffer.write(dados.encode(kwargs.get("encoding")))
+        encoding: str = kwargs["encoding"] if "encoding" in kwargs else "utf-8"
+        buffer.write(dados.encode(encoding))
         buffer.close()

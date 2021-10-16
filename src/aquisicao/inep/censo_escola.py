@@ -47,7 +47,7 @@ class EscolaETL(BaseCensoEscolarETL):
             self._documentos_saida = [
                 Documento(
                     ds=self._ds,
-                    referencia=CatalogoAquisicao.CENSO_ESCOLA,
+                    referencia=dict(CatalogoAquisicao.CENSO_ESCOLA),
                 ),
             ]
         return self._documentos_saida

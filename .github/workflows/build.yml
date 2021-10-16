@@ -40,3 +40,6 @@ jobs:
         run: |
           flake8 . --select BLK --extend-exclude=dist,build --show-source --statistics
 
+      - name: Type Check
+        run: |
+          mypy src/

@@ -1,9 +1,9 @@
 import abc
 import logging
 import typing
-from pathlib import Path
 
-import pandas as pd
+from src.io.data_store import DataStore
+from src.io.data_store import Documento
 
 
 class BaseETL(abc.ABC):
@@ -12,31 +12,30 @@ class BaseETL(abc.ABC):
     deve funcionar
     """
 
-    caminho_entrada: Path
-    caminho_saida: Path
-    _dados_entrada: typing.Dict[str, pd.DataFrame]
-    _dados_saida: typing.Dict[str, pd.DataFrame]
-    logger: logging.Logger
+    _ds: DataStore
+    _reprocessar: bool
+    _criar_caminho: bool
+    _dados_entrada: typing.List[Documento]
+    _dados_saida: typing.List[Documento]
+    _logger: logging.Logger
 
-    def __init__(self, entrada: str, saida: str, criar_caminho: bool = True) -> None:
+    def __init__(
+        self,
+        ds: DataStore,
+        criar_caminho: bool = True,
+        reprocessar: bool = False,
+    ) -> None:
         """
         Instância o objeto de ETL Base
 
-        :param entrada: string com caminho para pasta de entrada
-        :param saida: string com caminho para pasta de saída
+        :param ds: instância de objeto data store
         :param criar_caminho: flag indicando se devemos criar os caminhos
+        :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
-        self.caminho_entrada = Path(entrada)
-        self.caminho_saida = Path(saida)
-
-        if criar_caminho:
-            self.caminho_entrada.mkdir(parents=True, exist_ok=True)
-            self.caminho_saida.mkdir(parents=True, exist_ok=True)
-
-        self._dados_entrada = None
-        self._dados_saida = None
-
-        self.logger = logging.getLogger(__name__)
+        self._criar_caminho = criar_caminho
+        self._reprocessar = reprocessar
+        self._ds = ds
+        self._logger = logging.getLogger(__name__)
 
     def __str__(self) -> str:
         """
@@ -45,24 +44,44 @@ class BaseETL(abc.ABC):
         return self.__class__.__name__
 
     @property
-    def dados_entrada(self) -> typing.Dict[str, pd.DataFrame]:
+    @abc.abstractmethod
+    def documentos_entrada(self) -> typing.List[Documento]:
+        """
+        Gera a lista de documentos de entrada
+
+        :return: lista de documentos de entrada
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @property
+    @abc.abstractmethod
+    def documentos_saida(self) -> typing.List[Documento]:
+        """
+        Gera a lista de documentos de saída
+
+        :return: lista de documentos de saída
+        """
+        raise NotImplementedError("É preciso implementar o método")
+
+    @property
+    def dados_entrada(self) -> typing.List[Documento]:
         """
         Acessa o dicionário de dados de entrada
 
         :return: dicionário com o nome do arquivo e um dataframe com os dados
         """
-        if self._dados_entrada is None:
+        if not hasattr(self, "_dados_entrada"):
             self.extract()
         return self._dados_entrada
 
     @property
-    def dados_saida(self) -> typing.Dict[str, pd.DataFrame]:
+    def dados_saida(self) -> typing.List[Documento]:
         """
         Acessa o dicionário de dados de saída
 
         :return: dicionário com o nome do arquivo e um dataframe com os dados
         """
-        if self._dados_saida is None:
+        if not hasattr(self, "_dados_saida"):
             self.extract()
         return self._dados_saida
 
@@ -71,7 +90,7 @@ class BaseETL(abc.ABC):
         """
         Extraí os dados do objeto
         """
-        pass
+        raise NotImplementedError("É preciso implementar o método")
 
     @abc.abstractmethod
     def transform(self) -> None:
@@ -79,24 +98,24 @@ class BaseETL(abc.ABC):
         Transforma os dados e os adequa para os formatos de
         saída de interesse
         """
-        pass
+        raise NotImplementedError("É preciso implementar o método")
 
     def load(self) -> None:
         """
         Exporta os dados transformados
         """
-        for arq, df in self.dados_saida.items():
-            df.to_parquet(self.caminho_saida / f"{arq}.parquet", index=False)
+        for doc in self.dados_saida:
+            self._ds.salva_documento(doc)
 
     def pipeline(self) -> None:
         """
         Executa o pipeline completo de tratamento de dados
         """
-        self.logger.info(f"EXTRAINDO DADOS {self}")
+        self._logger.info(f"EXTRAINDO DADOS {self}")
         self.extract()
 
-        self.logger.info(f"TRANSFORMANDO DADOS {self}")
+        self._logger.info(f"TRANSFORMANDO DADOS {self}")
         self.transform()
 
-        self.logger.info(f"CARREGANDO DADOS {self}")
+        self._logger.info(f"CARREGANDO DADOS {self}")
         self.load()

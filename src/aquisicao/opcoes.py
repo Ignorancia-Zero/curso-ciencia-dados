@@ -1,29 +1,17 @@
+import typing
 from enum import Enum
 
+from src.aquisicao.inep.base_inep import BaseINEPETL
 from src.aquisicao.inep.censo_escola import EscolaETL
-from src.utils.logs import log_erros
+from src.io.data_store import DataStore
 
 
-class EnumETL(Enum):
+class INEP_ETL(Enum):
     ESCOLA = "escola"
 
 
 # chave = Enum
-# valor = Classe de objeto ETL
-ETL_DICT = {EnumETL.ESCOLA: EscolaETL}
-
-
-@log_erros
-def executa_etl(etl: str, entrada: str, saida: str, criar_caminho: bool) -> None:
-    """
-    Executa o pipeline de ETL de uma determinada fonte
-
-    :param etl: nome do ETL a ser executado
-    :param entrada: string com caminho para pasta de entrada
-    :param saida: string com caminho para pasta de saída
-    :param criar_caminho: flag indicando se devemos criar os caminhos
-    """
-    global ETL_DICT
-
-    objeto = ETL_DICT[EnumETL(etl)](entrada, saida, criar_caminho)
-    objeto.pipeline()
+# valor = Classe de objeto ETL INEP
+INEP_DICT: typing.Dict[
+    INEP_ETL, typing.Callable[[DataStore, typing.Union[str, int], bool], BaseINEPETL]
+] = {INEP_ETL.ESCOLA: EscolaETL}

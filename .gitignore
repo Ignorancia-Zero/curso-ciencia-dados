@@ -134,3 +134,4 @@ dmypy.json
 /saida/
 /.idea/
 /docs/apidoc/
+*gdrive_credentials.json

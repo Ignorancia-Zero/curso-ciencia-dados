@@ -8,7 +8,10 @@ try:
     from src.aquisicao.inep.censo_escola import EscolaETL
 except ModuleNotFoundError:
     sys.path.append(str(Path(os.path.dirname(__file__)).parent.parent))
+finally:
+    from src.configs import COLECAO_DADOS_WEB
     from src.aquisicao.inep.censo_escola import EscolaETL
+    from src.io.data_store import DataStore, Documento
 
 
 @pytest.fixture(scope="session")
@@ -28,12 +31,17 @@ def saida_path(test_path):
 
 @pytest.fixture(scope="session")
 def escola_etl(dados_path, saida_path):
-    etl = EscolaETL(
-        entrada=str(dados_path),
-        saida=str(saida_path / "aquisicao"),
-    )
+    etl = EscolaETL(ds=DataStore("teste"), ano="ultimo")
     etl._inep = {
-        k: "" for k in os.listdir(dados_path / "censo_escolar") if int(k[3]) % 2 == 0
+        Documento(
+            etl._ds,
+            referencia=dict(
+                nome=k,
+                colecao=COLECAO_DADOS_WEB,
+                pasta=etl._base,
+            ),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
     }
 
     return etl

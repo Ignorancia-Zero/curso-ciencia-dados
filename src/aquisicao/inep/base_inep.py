@@ -1,11 +1,16 @@
 import abc
-import os
+import tempfile
 import typing
-import urllib
+from pathlib import Path
+from urllib.request import urlopen
 
 from bs4 import BeautifulSoup
 
 from src.aquisicao.base_etl import BaseETL
+from src.configs import COLECAO_DADOS_WEB
+from src.io.caminho import obtem_objeto_caminho
+from src.io.data_store import DataStore
+from src.io.data_store import Documento
 from src.utils.web import download_dados_web
 
 
@@ -19,58 +24,111 @@ class BaseINEPETL(BaseETL, abc.ABC):
         "https://www.gov.br/inep/pt-br/acesso-a-informacao/dados-abertos/microdados/"
     )
 
+    _base: str
     _url: str
-    _inep: typing.Dict[str, str]
+    _inep: typing.Dict[Documento, str]
 
     def __init__(
-        self, entrada: str, saida: str, base: str, criar_caminho: bool = True
+        self,
+        ds: DataStore,
+        base: str,
+        ano: typing.Union[int, str] = "ultimo",
+        criar_caminho: bool = True,
     ) -> None:
         """
         Instância o objeto de ETL INEP
 
-        :param entrada: string com caminho para pasta de entrada
-        :param saida: string com caminho para pasta de saída
+        :param ds: instância de objeto data store
         :param base: Nome da base que vai na URL do INEP
+        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         """
-        super().__init__(entrada, saida, criar_caminho)
+        super().__init__(ds, criar_caminho)
 
+        self._base = base.replace("-", "_")
+        self._ano = ano
         self._url = f"{self.URL}/{base}"
-        self._inep = None
 
     @property
-    def inep(self) -> typing.Dict[str, str]:
+    def inep(self) -> typing.Dict[Documento, str]:
         """
         Realiza o web-scraping da página de dados do INEP
 
         :return: dicionário com nome do arquivo e link para a página
         """
-        if self._inep is None:
-            html = urllib.request.urlopen(self._url).read()
+        if not hasattr(self, "_inep"):
+            html = urlopen(self._url).read()
             soup = BeautifulSoup(html, features="html.parser")
             self._inep = {
-                tag["href"].split("_")[-1]: tag["href"]
+                Documento(
+                    self._ds,
+                    referencia=dict(
+                        nome=tag["href"].split("_")[-1],
+                        colecao=COLECAO_DADOS_WEB,
+                        pasta=self._base,
+                    ),
+                ): tag["href"]
                 for tag in soup.find_all("a", {"class": "external-link"})
             }
         return self._inep
 
-    def dicionario_para_baixar(self) -> typing.Dict[str, str]:
+    @property
+    def ano(self) -> int:
+        """
+        Ano do censo sendo processado pelo objeto
+
+        :return: ano como um núnero inteiro
+        """
+        if isinstance(self._ano, str):
+            if self._ano == "ultimo":
+                return max([int(b.nome[:4]) for b in self.inep])
+            else:
+                raise ValueError(f"Não conseguimos processar ano={self._ano}")
+        else:
+            return self._ano
+
+    def dicionario_para_baixar(self) -> typing.Dict[Documento, str]:
         """
         Le os conteúdos da pasta de dados e seleciona apenas os arquivos
         a serem baixados como complementares
 
         :return: dicionário com nome do arquivo e link para a página
         """
-        baixados = os.listdir(str(self.caminho_entrada))
-        return {arq: link for arq, link in self.inep.items() if arq not in baixados}
+        return {
+            doc: link
+            for doc, link in self.inep.items()
+            if not doc.exists() and int(doc.nome[:4]) == self.ano
+        }
+
+    @property
+    def documentos_entrada(self) -> typing.List[Documento]:
+        """
+        Gera a lista de documentos de entrada
+
+        :return: lista de documentos de entrada
+        """
+        return [doc for doc in self.inep if int(doc.nome[:4]) == self.ano]
+
+    @property
+    @abc.abstractmethod
+    def documentos_saida(self) -> typing.List[Documento]:
+        """
+        Gera a lista de documentos de saída
+
+        :return: lista de documentos de saída
+        """
+        raise NotImplementedError("É preciso implementar o método")
 
     def download_conteudo(self) -> None:
         """
         Realiza o download dos dados INEP para uma pasta local
         """
-        for arq, link in self.dicionario_para_baixar().items():
-            caminho_arq = self.caminho_saida / arq
-            download_dados_web(caminho_arq, link)
+        for doc, link in self.dicionario_para_baixar().items():
+            with tempfile.TemporaryFile() as temp:
+                download_dados_web(temp, link)
+                cam1 = obtem_objeto_caminho(str(Path(temp.name).parent))
+                cam2 = self._ds.gera_caminho(doc)
+                cam1.copia_conteudo(temp.name, cam2)
 
     @abc.abstractmethod
     def extract(self) -> None:
@@ -86,3 +144,13 @@ class BaseINEPETL(BaseETL, abc.ABC):
         saída de interesse
         """
         pass
+
+    def load(self) -> None:
+        """
+        Exporta os dados transformados
+        """
+        for doc in self.dados_saida:
+            doc.pasta = f"{doc.nome}/ANO={self.ano}"
+            doc.nome = f"{self.ano}.parquet"
+            doc.data.drop(columns=["ANO"], inplace=True)
+            self._ds.salva_documento(doc)

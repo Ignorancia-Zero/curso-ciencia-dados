@@ -1,4 +1,4 @@
+ENV_DS = "local_completo"
+COLECAO_DADOS_WEB = "externo"
+COLECAO_AQUISCAO = "aquisicao"
 PASTA_DADOS = "dados"
-PASTA_SAIDA = "saida"
-
-PASTA_SAIDA_AQUISICAO = f"{PASTA_SAIDA}/aquisicao"

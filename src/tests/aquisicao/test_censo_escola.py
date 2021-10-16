@@ -51,7 +51,7 @@ def test_dropa_colunas(escola_etl) -> None:
 @pytest.mark.run(order=4)
 def test_processa_dt(escola_etl) -> None:
     for base in escola_etl.dados_entrada:
-        escola_etl.processa_dt(base)
+        escola_etl.gera_dt_nascimento(base)
 
     for d in escola_etl.dados_entrada:
         for c in d.data:

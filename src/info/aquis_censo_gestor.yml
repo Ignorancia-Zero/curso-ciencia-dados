@@ -1,0 +1,188 @@
+# Dicionário que renomeia as colunas de diferentes anos de dados
+# para garantir que as bases entre nomes tenham o mesmo conteúdo
+RENOMEIA_COLUNAS:
+  "NU_ANO_CENSO": "ANO"
+
+# Lista de colunas que serão dropadas entre todas as bases
+DROPAR_COLUNAS:
+  - "NU_MES"
+  - "NU_ANO"
+  - "NU_IDADE_REFERENCIA"
+  - "CO_UF_NASC"
+  - "CO_AREA_CURSO_1"
+  - "CO_AREA_CURSO_2"
+  - "TP_TIPO_IES_1"
+  - "TP_TIPO_IES_2"
+  - "IN_LICENCIATURA_1"
+  - "IN_LICENCIATURA_2"
+  - "CO_MESORREGIAO"
+  - "CO_MICRORREGIAO"
+  - "CO_UF"
+  - "CO_MUNICIPIO"
+  - "CO_DISTRITO"
+  - "TP_DEPENDENCIA"
+  - "TP_LOCALIZACAO"
+  - "TP_CATEGORIA_ESCOLA_PRIVADA"
+  - "IN_CONVENIADA_PP"
+  - "TP_CONVENIO_PODER_PUBLICO"
+  - "IN_MANT_ESCOLA_PRIVADA_EMP"
+  - "IN_MANT_ESCOLA_PRIVADA_ONG"
+  - "IN_MANT_ESCOLA_PRIVADA_OSCIP"
+  - "IN_MANT_ESCOLA_PRIV_ONG_OSCIP"
+  - "IN_MANT_ESCOLA_PRIVADA_SIND"
+  - "IN_MANT_ESCOLA_PRIVADA_SIST_S"
+  - "IN_MANT_ESCOLA_PRIVADA_S_FINS"
+  - "TP_REGULAMENTACAO"
+  - "TP_LOCALIZACAO_DIFERENCIADA"
+  - "IN_EDUCACAO_INDIGENA"
+
+# De-para entre o valor de item dentro de uma coluna TP e
+# a categoria em texto equivalente
+DEPARA_TP:
+  "TP_SEXO":
+    1: "MASCULINO"
+    2: "FEMININO"
+
+  "TP_COR_RACA":
+    0: "NÃO DECLARADA"
+    1: "BRANCA"
+    2: "PRETA"
+    3: "PARDA"
+    4: "AMARELA"
+    5: "INDÍGENA"
+
+  "TP_NACIONALIDADE":
+    1: "BRASILEIRO"
+    2: "NATURALIZADO OU NASCIDO NO EXTERIOR"
+    3: "ESTRANGEIRO"
+
+  "TP_ESCOLARIDADE":
+    1: "FUNDAMENTAL INCOMPLETO"
+    2: "FUNDAMENTAL COMPLETO"
+    3: "MÉDIO COMPLETO"
+    4: "SUPERIOR COMPLETO"
+
+  "TP_ENSINO_MEDIO":
+    0: "NÃO APLICÁVEL"
+    1: "GERAL"
+    2: "NORMAL"
+    3: "TÉCNICO"
+    4: "INDÍGENA"
+
+  "TP_CARGO_GESTOR":
+    1: "DIRETOR"
+    2: "OUTRO CARGO"
+
+  TP_TIPO_ACESSO_CARGO:
+    0: "NÃO APLICÁVEL"
+    1: "PROPRIETÁRIO"
+    2: "INDICAÇÃO"
+    3: "PROCESSO SELETIVO"
+    4: "CONCURSO"
+    5: "ELEITORAL SEM COMUNIDADE"
+    6: "ELEITORAL COM COMUNIDADE"
+    7: "OUTRO"
+
+  "TP_TIPO_CONTRATACAO":
+    0: "NÃO APLICÁVEL"
+    1: "ESTÁVEL"
+    2: "TEMPORÁRIO"
+    3: "TERCEIRIZADO"
+    4: "CLT"
+
+
+# Dicionário de valores de preenchimento fixo de colunas
+PREENCHER_NULOS:
+  "CO_IES_1": 0
+  "CO_IES_2": 0
+  "CO_MUNICIPIO_NASC": 0
+  "IN_NECESSIDADE_ESPECIAL": -1
+  "IN_BAIXA_VISAO": -1
+  "IN_CEGUEIRA": -1
+  "IN_DEF_AUDITIVA": -1
+  "IN_DEF_FISICA": -1
+  "IN_DEF_INTELECTUAL": -1
+  "IN_SURDEZ": -1
+  "IN_SURDOCEGUEIRA": -1
+  "IN_DEF_MULTIPLA": -1
+  "IN_AUTISMO": -1
+  "IN_SUPERDOTACAO": -1
+  "IN_ESPECIALIZACAO": -1
+  "IN_MESTRADO": -1
+  "IN_DOUTORADO": -1
+  "IN_POS_NENHUM": -1
+  "IN_ESPECIFICO_CRECHE": -1
+  "IN_ESPECIFICO_PRE_ESCOLA": -1
+  "IN_ESPECIFICO_ANOS_INICIAIS": -1
+  "IN_ESPECIFICO_ANOS_FINAIS": -1
+  "IN_ESPECIFICO_ENS_MEDIO": -1
+  "IN_ESPECIFICO_EJA": -1
+  "IN_ESPECIFICO_ED_ESPECIAL": -1
+  "IN_ESPECIFICO_ED_INDIGENA": -1
+  "IN_ESPECIFICO_CAMPO": -1
+  "IN_ESPECIFICO_AMBIENTAL": -1
+  "IN_ESPECIFICO_DIR_HUMANOS": -1
+  "IN_ESPECIFICO_DIV_SEXUAL": -1
+  "IN_ESPECIFICO_DIR_ADOLESC": -1
+  "IN_ESPECIFICO_AFRO": -1
+  "IN_ESPECIFICO_GESTAO": -1
+  "IN_ESPECIFICO_OUTROS": -1
+  "IN_ESPECIFICO_NENHUM": -1
+  "TP_ENSINO_MEDIO": "NÃO APLICÁVEL"
+  "TP_TIPO_ACESSO_CARGO": "NÃO APLICÁVEL"
+  "TP_TIPO_CONTRATACAO": "NÃO APLICÁVEL"z
+
+# Schema de colunas que deve ser adotado para todas as bases de dados
+# para garantir uniformidade do carregamento das dados parquet
+DS_SCHEMA:
+  "ANO": "uint16"
+  "ID_GESTOR": "object"
+  "CO_ENTIDADE": "uint32"
+  "CO_PAIS_ORIGEM": "uint32"
+  "CO_IES_1": "uint32"
+  "CO_CURSO_1": "object"
+  "CO_IES_2": "uint32"
+  "CO_CURSO_2": "object"
+  "CO_MUNICIPIO_NASC": "uint32"
+  "DT_NASCIMENTO": "datetime64[ns]"
+  "NU_IDADE": "uint8"
+  "IN_NECESSIDADE_ESPECIAL": "int8"
+  "IN_BAIXA_VISAO": "int8"
+  "IN_CEGUEIRA": "int8"
+  "IN_DEF_AUDITIVA": "int8"
+  "IN_DEF_FISICA": "int8"
+  "IN_DEF_INTELECTUAL": "int8"
+  "IN_SURDEZ": "int8"
+  "IN_SURDOCEGUEIRA": "int8"
+  "IN_DEF_MULTIPLA": "int8"
+  "IN_AUTISMO": "int8"
+  "IN_SUPERDOTACAO": "int8"
+  "IN_ESPECIALIZACAO": "int8"
+  "IN_MESTRADO": "int8"
+  "IN_DOUTORADO": "int8"
+  "IN_POS_NENHUM": "int8"
+  "IN_ESPECIFICO_CRECHE": "int8"
+  "IN_ESPECIFICO_PRE_ESCOLA": "int8"
+  "IN_ESPECIFICO_ANOS_INICIAIS": "int8"
+  "IN_ESPECIFICO_ANOS_FINAIS": "int8"
+  "IN_ESPECIFICO_ENS_MEDIO": "int8"
+  "IN_ESPECIFICO_EJA": "int8"
+  "IN_ESPECIFICO_ED_ESPECIAL": "int8"
+  "IN_ESPECIFICO_ED_INDIGENA": "int8"
+  "IN_ESPECIFICO_CAMPO": "int8"
+  "IN_ESPECIFICO_AMBIENTAL": "int8"
+  "IN_ESPECIFICO_DIR_HUMANOS": "int8"
+  "IN_ESPECIFICO_DIV_SEXUAL": "int8"
+  "IN_ESPECIFICO_DIR_ADOLESC": "int8"
+  "IN_ESPECIFICO_AFRO": "int8"
+  "IN_ESPECIFICO_GESTAO": "int8"
+  "IN_ESPECIFICO_OUTROS": "int8"
+  "IN_ESPECIFICO_NENHUM": "int8"
+  "TP_SEXO": "pd.CategoricalDtype(categories=['MASCULINO', 'FEMININO', 'NÃO INFORMADO'], ordered=False)"
+  "TP_COR_RACA": "pd.CategoricalDtype(categories=['NÃO DECLARADA', 'BRANCA', 'PRETA', 'PARDA', 'AMARELA', 'INDÍGENA'], ordered=False)"
+  "TP_NACIONALIDADE": "pd.CategoricalDtype(categories=['BRASILEIRO', 'NATURALIZADO OU NASCIDO NO EXTERIOR', 'ESTRANGEIRO'], ordered=False)"
+  "TP_ESCOLARIDADE": "pd.CategoricalDtype(categories=['FUNDAMENTAL INCOMPLETO', 'FUNDAMENTAL COMPLETO', 'MÉDIO COMPLETO', 'SUPERIOR COMPLETO'], ordered=True)"
+  "TP_ENSINO_MEDIO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'GERAL', 'NORMAL', 'TÉCNICO', 'INDÍGENA'], ordered=False)"
+  "TP_CARGO_GESTOR": "pd.CategoricalDtype(categories=['DIRETOR', 'OUTRO CARGO'], ordered=False)"
+  "TP_TIPO_ACESSO_CARGO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'PROPRIETÁRIO', 'INDICAÇÃO', 'PROCESSO SELETIVO', 'CONCURSO', 'ELEITORAL SEM COMUNIDADE', 'ELEITORAL COM COMUNIDADE', 'OUTRO'], ordered=False)"
+  "TP_TIPO_CONTRATACAO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'ESTÁVEL', 'TEMPORÁRIO', 'TERCEIRIZADO', 'CLT'], ordered=False)"

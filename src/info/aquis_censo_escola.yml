@@ -493,6 +493,7 @@ TRATAMENTO_IN:
 # a categoria em texto equivalente
 DEPARA_TP:
   "TP_CATEGORIA_ESCOLA_PRIVADA":
+    0: "PÚBLICA"
     1: "PARTICULAR"
     2: "COMUNITÁRIA"
     3: "CONFESSIONAL"
@@ -532,6 +533,7 @@ DEPARA_TP:
     2: "RURAL"
 
   "TP_CONVENIO_PODER_PUBLICO":
+    0: "PÚBLICA"
     1: "MUNICIPAL"
     2: "ESTADUAL"
     3: "ESTADUAL E MUNICIPAL"
@@ -574,15 +576,6 @@ DEPARA_TP:
     1: "PRÓPRIO"
     2: "ALUGADO"
     3: "CEDIDO"
-
-# Valor de preenchimento da coluna TP caso a escola esteja
-# em atividade
-PREENCHER_TP:
-  "TP_CATEGORIA_ESCOLA_PRIVADA": "PÚBLICA"
-  "TP_REDE_LOCAL": "NÃO INFORMADO"
-  "TP_OCUPACAO_GALPAO": "NÃO"
-  "TP_CONVENIO_PODER_PUBLICO": "PÚBLICA"
-  "TP_OCUPACAO_PREDIO_ESCOLAR": "NÃO"
 
 # Lista de colunas que devem ser exclusivamente preenchidas
 # para escolar particulares
@@ -711,6 +704,11 @@ REMOVER_COLS:
   - "IN_AGUA_FILTRADA"
   - "IN_LINGUA_INDIGENA"
   - "IN_LINGUA_PORTUGUESA"
+
+# Dicionário de valores de preenchimento fixo de colunas
+PREENCHER_NULOS:
+  "TP_INDIGENA_LINGUA": "SEM EDUCAÇÃO INDÍGENA"
+  "CO_DISTRITO": 0
 
 # Schema de colunas que deve ser adotado para todas as bases de dados
 # para garantir uniformidade do carregamento das dados parquet
@@ -950,8 +948,3 @@ DS_SCHEMA:
   "TP_REGULAMENTACAO": "pd.CategoricalDtype(categories=['EM TRAMITAÇÃO', 'NÃO', 'SIM'], ordered=False)"
   "TP_RESPONSAVEL_REGULAMENTACAO": "pd.CategoricalDtype(categories=['ESTADUAL', 'ESTADUAL E MUNICIPAL', 'FEDERAL', 'FEDERAL E ESTADUAL', 'FEDERAL ESTADUAL E MUNICIPAL', 'MUNICIPAL', 'NÃO INFORMADO'], ordered=False)"
   "TP_SITUACAO_FUNCIONAMENTO": "pd.CategoricalDtype(categories=['EM ATIVIDADE', 'EXTINTA', 'PARALISADA'], ordered=False)"
-
-# Dicionário de valores de preenchimento fixo de colunas
-PREENCHER_NULOS:
-  "TP_INDIGENA_LINGUA": "SEM EDUCAÇÃO INDÍGENA"
-  "CO_DISTRITO": 0

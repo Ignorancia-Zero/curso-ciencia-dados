@@ -37,6 +37,13 @@ class CatalogoAquisicao:
         }
     )
 
+    CENSO_DOCENTE = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "censo_docente.parquet",
+        }
+    )
+
 
 @dataclass
 class CatalogoInfo:

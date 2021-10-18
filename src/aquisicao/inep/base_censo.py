@@ -111,12 +111,15 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
                 como_df=True,
                 padrao_comp=(
                     f"({self._tabela.lower()}|{self._tabela.upper()}|{self._tabela.lower().title()})"
+                    f"(_co|_CO|_nordeste|_NORDESTE|_norte|_NORTE|_sudeste|_SUDESTE|_sul|_SUL)?"
                     f"[.](csv|CSV|rar|RAR|zip|ZIP)"
                 ),
                 sep="|",
                 encoding="latin-1",
             )
             if censo._data is not None:
+                if isinstance(censo.data, dict):
+                    censo.data = pd.concat(censo.data.values())
                 self._dados_entrada.append(censo)
 
         if len(self._dados_entrada) == 0:

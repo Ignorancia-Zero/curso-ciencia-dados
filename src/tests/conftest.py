@@ -11,6 +11,7 @@ except ModuleNotFoundError:
 finally:
     from src.configs import COLECAO_DADOS_WEB
     from src.aquisicao.inep.censo_escola import EscolaETL
+    from src.aquisicao.inep.censo_gestor import GestorETL
     from src.io.data_store import DataStore, Documento
 
 
@@ -25,13 +26,26 @@ def dados_path(test_path):
 
 
 @pytest.fixture(scope="session")
-def saida_path(test_path):
-    return test_path / "saida"
+def escola_etl(dados_path):
+    etl = EscolaETL(ds=DataStore("teste"), ano="ultimo")
+    etl._inep = {
+        Documento(
+            etl._ds,
+            referencia=dict(
+                nome=k,
+                colecao=COLECAO_DADOS_WEB,
+                pasta=etl._base,
+            ),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
+    }
+
+    return etl
 
 
 @pytest.fixture(scope="session")
-def escola_etl(dados_path, saida_path):
-    etl = EscolaETL(ds=DataStore("teste"), ano="ultimo")
+def gestor_etl(dados_path):
+    etl = GestorETL(ds=DataStore("teste"), ano="ultimo")
     etl._inep = {
         Documento(
             etl._ds,

@@ -130,7 +130,7 @@ PREENCHER_NULOS:
   "IN_ESPECIFICO_NENHUM": -1
   "TP_ENSINO_MEDIO": "NÃO APLICÁVEL"
   "TP_TIPO_ACESSO_CARGO": "NÃO APLICÁVEL"
-  "TP_TIPO_CONTRATACAO": "NÃO APLICÁVEL"z
+  "TP_TIPO_CONTRATACAO": "NÃO APLICÁVEL"
 
 # Schema de colunas que deve ser adotado para todas as bases de dados
 # para garantir uniformidade do carregamento das dados parquet

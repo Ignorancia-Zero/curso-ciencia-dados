@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.mark.run(order=1)
-def test_extract(dados_path, escola_etl) -> None:
+def test_extract(escola_etl) -> None:
     escola_etl.extract()
 
     assert escola_etl.dados_entrada is not None
@@ -51,7 +51,7 @@ def test_dropa_colunas(escola_etl) -> None:
 @pytest.mark.run(order=4)
 def test_processa_dt(escola_etl) -> None:
     for base in escola_etl.dados_entrada:
-        escola_etl.gera_dt_nascimento(base)
+        escola_etl.processa_dt(base)
 
     for d in escola_etl.dados_entrada:
         for c in d.data:

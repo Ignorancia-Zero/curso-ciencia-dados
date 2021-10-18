@@ -110,14 +110,20 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             censo.obtem_dados(
                 como_df=True,
                 padrao_comp=(
-                    f"{self._tabela.lower()}."
-                    f"|{self._tabela.upper()}."
-                    f"|{self._tabela.lower().title()}."
+                    f"({self._tabela.lower()}|{self._tabela.upper()}|{self._tabela.lower().title()})"
+                    f"[.](csv|CSV|rar|RAR|zip|ZIP)"
                 ),
                 sep="|",
                 encoding="latin-1",
             )
-            self._dados_entrada.append(censo)
+            if censo._data is not None:
+                self._dados_entrada.append(censo)
+
+        if len(self._dados_entrada) == 0:
+            raise ValueError(
+                f"As configurações do objeto não geraram qualquer base de dados"
+                f"de entrada -> {self._base} / {self._tabela} / {self._ano}"
+            )
 
     @abc.abstractmethod
     def transform(self) -> None:

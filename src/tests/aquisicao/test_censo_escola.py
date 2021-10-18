@@ -7,7 +7,7 @@ import pytest
 
 
 @pytest.mark.run(order=1)
-def test_extract(dados_path, escola_etl) -> None:
+def test_extract(escola_etl) -> None:
     escola_etl.extract()
 
     assert escola_etl.dados_entrada is not None

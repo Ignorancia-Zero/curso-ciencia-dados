@@ -253,8 +253,6 @@ class EscolaETL(BaseCensoEscolarETL):
                     )
 
                 # cria o tipo categórico
-                if c in self._configs["PREENCHER_TP"]:
-                    vals += [self._configs["PREENCHER_TP"][c]]
                 cat = pd.Categorical(vals).dtype
 
                 # realiza a conversão da coluna

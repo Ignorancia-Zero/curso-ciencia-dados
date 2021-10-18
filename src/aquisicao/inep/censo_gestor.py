@@ -129,8 +129,8 @@ class GestorETL(BaseCensoEscolarETL):
         gestor.reset_index(drop=True, inplace=True)
 
         # garante que todas as colunas existam
-        rm = set(gestor) - set(self._configs['DS_SCHEMA'])
-        ad = set(self._configs['DS_SCHEMA']) - set(gestor)
+        rm = set(gestor) - set(self._configs["DS_SCHEMA"])
+        ad = set(self._configs["DS_SCHEMA"]) - set(gestor)
         if len(rm) > 0:
             self._logger.warning(f"As colunas {rm} serão removidas do data set")
         if len(ad) > 0:

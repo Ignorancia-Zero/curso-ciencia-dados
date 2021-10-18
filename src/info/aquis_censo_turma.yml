@@ -150,7 +150,6 @@ DEPARA_TP:
     1: "SALA ANEXA"
     2: "SOCIOEDUCATIVO"
     3: "PRISIONAL"
-    9: "NÃO APLICÁVEL"
 
   "TP_MOD_ENSINO":
     1: "REGULAR"
@@ -167,7 +166,6 @@ PREENCHER_NULOS:
   "CO_TIPO_ATIVIDADE_6": 0
   "CO_ETAPA_ENSINO": 0
   "QT_MATRICULAS": -1
-  "TP_TIPO_LOCAL_TURMA": "NÃO APLICÁVEL"
 
 # Schema de colunas que deve ser adotado para todas as bases de dados
 # para garantir uniformidade do carregamento das dados parquet
@@ -242,6 +240,6 @@ DS_SCHEMA:
   "IN_FUNDAMENTOS_EDUCACAO": "float32"
   "TP_MEDIACAO_DIDATICO_PEDAGO": "pd.CategoricalDtype(categories=['PRESENCIAL', 'SEMIPRESENCIAL', 'EAD'], ordered=False)"
   "TP_TIPO_ATENDIMENTO_TURMA": "pd.CategoricalDtype(categories=['ESCOLARIZAÇÃO', 'ESCOLARIZAÇÃO E AE', 'AE', 'AEE'], ordered=False)"
-  "TP_TIPO_LOCAL_TURMA": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'HOSPITALAR', 'INTERNAÇÃO', 'PRISIONAL', 'COMPLEMENTAR'], ordered=False)"
+  "TP_TIPO_LOCAL_TURMA": "pd.CategoricalDtype(categories=['NENHUM', 'SALA ANEXA', 'SOCIOEDUCATIVO', 'PRISIONAL'], ordered=False)"
   "TP_MOD_ENSINO": "pd.CategoricalDtype(categories=['REGULAR', 'ESPECIAL - SUBSTITUTIVA', 'JOVENS E ADULTOS'], ordered=False)"
   "TP_TIPO_TURMA": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'HOSPITALAR', 'INTERNAÇÃO', 'PRISIONAL', 'COMPLEMENTAR', 'AEE'], ordered=False)"

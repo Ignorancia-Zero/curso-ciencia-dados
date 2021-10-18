@@ -338,8 +338,8 @@ class EscolaETL(BaseCensoEscolarETL):
             )
 
         # garante que todas as colunas existam
-        rm = set(escola) - set(self._configs['DS_SCHEMA'])
-        ad = set(self._configs['DS_SCHEMA']) - set(escola)
+        rm = set(escola) - set(self._configs["DS_SCHEMA"])
+        ad = set(self._configs["DS_SCHEMA"]) - set(escola)
         if len(rm) > 0:
             self._logger.warning(f"As colunas {rm} serão removidas do data set")
         if len(ad) > 0:

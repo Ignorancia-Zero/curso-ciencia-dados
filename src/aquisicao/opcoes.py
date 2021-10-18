@@ -18,8 +18,4 @@ class INEP_ETL(Enum):
 # valor = Classe de objeto ETL INEP
 INEP_DICT: typing.Dict[
     INEP_ETL, typing.Callable[[DataStore, typing.Union[str, int], bool], BaseINEPETL]
-] = {
-    INEP_ETL.ESCOLA: EscolaETL,
-    INEP_ETL.GESTOR: GestorETL,
-    INEP_ETL.TURMA: TurmaETL
-}
+] = {INEP_ETL.ESCOLA: EscolaETL, INEP_ETL.GESTOR: GestorETL, INEP_ETL.TURMA: TurmaETL}

@@ -196,8 +196,7 @@ class TurmaETL(BaseCensoEscolarETL):
 
         # preenche nulos com valores fixos
         for c, p in self._configs["PREENCHER_NULOS"].items():
-            if c in turma:
-                turma[c] = turma[c].fillna(p)
+            turma[c] = turma[c].fillna(p)
 
         # ajusta o schema
         for c, dtype in self._configs["DS_SCHEMA"].items():

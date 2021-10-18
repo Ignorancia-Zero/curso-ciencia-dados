@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from frozendict import frozendict
 
 from src.configs import COLECAO_AQUISCAO
+from src.configs import COLECAO_DATAMART
 
 
 @dataclass
@@ -47,4 +48,18 @@ class CatalogoInfo:
 
     CONFIG_AQUIS_ESCOLA = frozendict(
         {"colecao": "info", "nome": "aquis_censo_escola", "tipo": "yml"}
+    )
+
+
+@dataclass
+class CatalogoDatamart:
+    """
+
+    """
+
+    ESCOLA = frozendict(
+        {
+            "colecao": COLECAO_DATAMART,
+            "nome": "escola.parquet",
+        }
     )

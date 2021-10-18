@@ -30,6 +30,13 @@ class CatalogoAquisicao:
         }
     )
 
+    CENSO_TURMA = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "censo_turma.parquet",
+        }
+    )
+
 
 @dataclass
 class CatalogoInfo:

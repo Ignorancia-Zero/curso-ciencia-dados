@@ -1,5 +1,7 @@
 import typing
 
+import numpy as np
+
 from src.aquisicao.inep.base_censo import BaseCensoEscolarETL
 from src.io.data_store import CatalogoAquisicao
 from src.io.data_store import DataStore
@@ -48,3 +50,54 @@ class DocenteETL(BaseCensoEscolarETL):
                 ),
             ]
         return self._documentos_saida
+
+    def processa_in(self, base: Documento) -> None:
+        """
+        Realiza o processamento das colunas indicadoras
+
+        :param base: documento com os dados a serem tratados
+        """
+        super(DocenteETL, self).processa_in(base)
+
+        if (
+            "IN_INTERCULTURAL_OUTROS" in base.data
+            and "IN_ESPECIFICO_OUTROS" not in base.data
+        ):
+            base.data.rename(
+                columns={"IN_INTERCULTURAL_OUTROS": "IN_ESPECIFICO_OUTROS"},
+                inplace=True,
+            )
+
+    def processa_tp(self, base: Documento) -> None:
+        """
+        Realiza o processamento das colunas de tipo
+
+        :param base: documento com os dados a serem tratados
+        """
+        if "TP_ESCOLARIDADE" not in base.data and "TP_ESCOLARIDADE_0" in base.data:
+            base.data["TP_ESCOLARIDADE"] = np.where(
+                base.data["TP_ESCOLARIDADE_0"] <= 2,
+                base.data["TP_ESCOLARIDADE_0"],
+                np.where(
+                    base.data["TP_ESCOLARIDADE_0"].isin([3, 4, 5]),
+                    3,
+                    np.where(base.data["TP_ESCOLARIDADE_0"] == 6, 4, np.nan),
+                ),
+            )
+
+        if "TP_ENSINO_MEDIO" not in base.data and "TP_ESCOLARIDADE_0" in base.data:
+            base.data["TP_ENSINO_MEDIO"] = np.where(
+                base.data["TP_ESCOLARIDADE_0"] == 5,
+                1,
+                np.where(
+                    base.data["TP_ESCOLARIDADE_0"] == 3,
+                    2,
+                    np.where(base.data["TP_ESCOLARIDADE_0"] == 4, 4, 9),
+                ),
+            )
+
+        if "TP_TIPO_DOCENTE" in base.data:
+            if base.data["TP_TIPO_DOCENTE"].min() == 0:
+                base.data["TP_TIPO_DOCENTE"] += 1
+
+        super(DocenteETL, self).processa_tp(base)

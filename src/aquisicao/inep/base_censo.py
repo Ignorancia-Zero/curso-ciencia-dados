@@ -152,9 +152,17 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             and "NU_MES" in base.data
             and "DT_NASCIMENTO" in self._configs["DADOS_SCHEMA"]
         ):
-            base.data["DT_NASCIMENTO"] = pd.to_datetime(
-                base.data["NU_ANO"] * 100 + base.data["NU_MES"], format="%Y%m"
-            )
+            if "NU_DIA" in base.data:
+                base.data["DT_NASCIMENTO"] = pd.to_datetime(
+                    base.data["NU_ANO"] * 10000
+                    + base.data["NU_MES"] * 100
+                    + base.data["NU_DIA"],
+                    format="%Y%m%d",
+                )
+            else:
+                base.data["DT_NASCIMENTO"] = pd.to_datetime(
+                    base.data["NU_ANO"] * 100 + base.data["NU_MES"], format="%Y%m"
+                )
 
     def dropa_colunas(self, base: Documento) -> None:
         """
@@ -268,7 +276,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             ),
             data=base.data.reindex(columns=cols),
         )
-        base.data.drop(columns=self._configs["COLS_DEPARA"], inplace=True)
+        base.data.drop(columns=self._configs["COLS_DEPARA"], errors="ignore", inplace=True)
         base.data.drop_duplicates(inplace=True)
 
         return base_id

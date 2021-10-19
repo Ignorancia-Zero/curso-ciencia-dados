@@ -1,3 +1,5 @@
+COL_ID: "CO_ENTIDADE"
+
 # Dicionário que renomeia as colunas de diferentes anos de dados
 # para garantir que as bases entre nomes tenham o mesmo conteúdo
 RENOMEIA_COLUNAS:

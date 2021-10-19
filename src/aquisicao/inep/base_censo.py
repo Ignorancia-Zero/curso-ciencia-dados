@@ -70,6 +70,17 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
                 ),
                 sep="|",
                 encoding="latin-1",
+                dtype={
+                    "FK_COD_AREA_OCDE_1": "str",
+                    "FK_COD_AREA_OCDE_2": "str",
+                    "FK_COD_AREA_OCDE_3": "str",
+                    "PK_COD_AREA_OCDE_1": "str",
+                    "PK_COD_AREA_OCDE_2": "str",
+                    "PK_COD_AREA_OCDE_3": "str",
+                    "CO_CURSO_1": "str",
+                    "CO_CURSO_2": "str",
+                    "CO_CURSO_3": "str",
+                },
             )
             if censo._data is not None:
                 if isinstance(censo.data, dict):

@@ -13,6 +13,7 @@ finally:
     from src.aquisicao.inep.censo_escola import EscolaETL
     from src.aquisicao.inep.censo_gestor import GestorETL
     from src.aquisicao.inep.censo_turma import TurmaETL
+    from src.aquisicao.inep.censo_docente import DocenteETL
     from src.io.data_store import DataStore, Documento
 
 
@@ -65,6 +66,24 @@ def gestor_etl(dados_path):
 @pytest.fixture(scope="session")
 def turma_etl(dados_path):
     etl = TurmaETL(ds=DataStore("teste"), ano="ultimo")
+    etl._inep = {
+        Documento(
+            etl._ds,
+            referencia=dict(
+                nome=k,
+                colecao=COLECAO_DADOS_WEB,
+                pasta=etl._base,
+            ),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
+    }
+
+    return etl
+
+
+@pytest.fixture(scope="session")
+def docente_etl(dados_path):
+    etl = DocenteETL(ds=DataStore("teste"), ano="ultimo")
     etl._inep = {
         Documento(
             etl._ds,

@@ -406,7 +406,7 @@ PREENCHER_NULOS:
 # para garantir uniformidade do carregamento das dados parquet
 DADOS_SCHEMA:
   "ANO": "uint16"
-  "ID_DOCENTE": "object"
+  "ID_DOCENTE": "str"
   "DT_NASCIMENTO": "datetime64[ns]"
   "CO_PAIS_ORIGEM": "uint32"
   "CO_MUNICIPIO_NASC": "uint32"
@@ -466,7 +466,7 @@ DADOS_SCHEMA:
   "TP_SEXO": "pd.CategoricalDtype(categories=['MASCULINO', 'FEMININO', 'NÃO INFORMADO'], ordered=False)"
   "TP_COR_RACA": "pd.CategoricalDtype(categories=['NÃO DECLARADA', 'BRANCA', 'PRETA', 'PARDA', 'AMARELA', 'INDÍGENA'], ordered=False)"
   "TP_NACIONALIDADE": "pd.CategoricalDtype(categories=['BRASILEIRO', 'NATURALIZADO OU NASCIDO NO EXTERIOR', 'ESTRANGEIRO'], ordered=False)"
-  "TP_ZONA_RESIDENCIAL": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'RURAL', 'URBANA'], ordered=False)"
+  "TP_ZONA_RESIDENCIAL": "pd.CategoricalDtype(categories=['NÃO INFORMADO', 'RURAL', 'URBANA'], ordered=False)"
   "TP_LOCAL_RESID_DIFERENCIADA": "pd.CategoricalDtype(categories=['NÃO DIFERENCIADA', 'QUILOMBOLA', 'INDÍGENA', 'ASSENTAMENTO', 'NÃO INFORMADO'], ordered=False)"
   "TP_ESCOLARIDADE": "pd.CategoricalDtype(categories=['FUNDAMENTAL INCOMPLETO', 'FUNDAMENTAL COMPLETO', 'MÉDIO COMPLETO', 'SUPERIOR COMPLETO'], ordered=True)"
   "TP_ENSINO_MEDIO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'GERAL', 'NORMAL', 'TÉCNICO', 'INDÍGENA'], ordered=False)"

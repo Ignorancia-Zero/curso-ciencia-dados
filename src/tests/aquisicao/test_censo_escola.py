@@ -143,9 +143,15 @@ def test_processa_tp(escola_etl) -> None:
 
 
 @pytest.mark.run(order=8)
-def test_concatena_bases(escola_etl) -> None:
-    escola_etl.concatena_bases()
+def test_remove_duplicatas(escola_etl) -> None:
+    base_id = escola_etl.remove_duplicatas(escola_etl.documentos_entrada[0])
 
+    assert base_id is None
+
+
+@pytest.mark.run(order=9)
+def test_gera_documento_saida(escola_etl) -> None:
+    escola_etl.gera_documento_saida(escola_etl.documentos_entrada[0], None)
     assert len(escola_etl.dados_saida) == 1
     assert (
         escola_etl.dados_saida[0].data.shape[0]
@@ -153,18 +159,13 @@ def test_concatena_bases(escola_etl) -> None:
     )
 
 
-@pytest.mark.run(order=9)
-def test_ajustes_finais(escola_etl) -> None:
-    antes = escola_etl.dados_saida[0].data.count()
-
-    escola_etl.ajustes_finais()
-
-    for c in escola_etl._configs["COLS_FBFILL"]:
-        if c in antes:
-            assert escola_etl.dados_saida[0].data[c].count() >= antes[c]
-
-    for c in escola_etl._configs["REMOVER_COLS"]:
-        assert c not in escola_etl.dados_saida[0].data
+@pytest.mark.run(order=10)
+def test_ajusta_schema(escola_etl) -> None:
+    escola_etl.ajusta_schema(
+        base=escola_etl.documentos_saida[0],
+        fill=escola_etl._configs["PREENCHER_NULOS"],
+        schema=escola_etl._configs["DADOS_SCHEMA"],
+    )
 
     for c in escola_etl._configs["PREENCHER_NULOS"]:
         assert (
@@ -172,7 +173,12 @@ def test_ajustes_finais(escola_etl) -> None:
             == escola_etl.dados_saida[0].data[c].count()
         )
 
-    assert set(escola_etl.dados_saida[0].data) == set(escola_etl._configs["DS_SCHEMA"])
+    assert set(escola_etl.dados_saida[0].data) == set(
+        escola_etl._configs["DADOS_SCHEMA"]
+    )
+    for col, dtype in escola_etl._configs["DADOS_SCHEMA"].items():
+        if not dtype.startswith("pd."):
+            assert escola_etl.dados_saida[0].data[col].dtype == dtype
 
 
 if __name__ == "__main__":

@@ -74,26 +74,38 @@ def test_processa_tp(turma_etl) -> None:
 
 
 @pytest.mark.run(order=6)
-def test_concatena_bases(turma_etl) -> None:
-    turma_etl.concatena_bases()
+def test_remove_duplicatas(turma_etl) -> None:
+    base_id = turma_etl.remove_duplicatas(turma_etl.documentos_entrada[0])
 
-    assert len(turma_etl.dados_saida) == 1
+    assert base_id is None
 
 
 @pytest.mark.run(order=7)
-def test_ajustes_finais(turma_etl) -> None:
-    turma_etl.ajustes_finais()
+def test_gera_documento_saida(turma_etl) -> None:
+    turma_etl.gera_documento_saida(turma_etl.documentos_entrada[0], None)
+    assert len(turma_etl.dados_saida) == 1
+    assert (
+        turma_etl.dados_saida[0].data.shape[0]
+        == turma_etl.dados_saida[0].data["ID_TURMA"].nunique()
+    )
+
+
+@pytest.mark.run(order=8)
+def test_ajusta_schema(turma_etl) -> None:
+    turma_etl.ajusta_schema(
+        base=turma_etl.documentos_saida[0],
+        fill=turma_etl._configs["PREENCHER_NULOS"],
+        schema=turma_etl._configs["DADOS_SCHEMA"],
+    )
 
     for c in turma_etl._configs["PREENCHER_NULOS"]:
-        print(turma_etl.dados_saida[0].data[c])
         assert (
             turma_etl.dados_saida[0].data.shape[0]
             == turma_etl.dados_saida[0].data[c].count()
         )
 
-    assert set(turma_etl.dados_saida[0].data) == set(turma_etl._configs["DS_SCHEMA"])
-
-    for col, dtype in turma_etl._configs["DS_SCHEMA"].items():
+    assert set(turma_etl.dados_saida[0].data) == set(turma_etl._configs["DADOS_SCHEMA"])
+    for col, dtype in turma_etl._configs["DADOS_SCHEMA"].items():
         if not dtype.startswith("pd."):
             assert turma_etl.dados_saida[0].data[col].dtype == dtype
 

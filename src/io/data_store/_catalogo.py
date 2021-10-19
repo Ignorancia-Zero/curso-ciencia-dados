@@ -16,24 +16,45 @@ class CatalogoAquisicao:
     aquisição que são colocados no DataStore
     """
 
-    CENSO_ESCOLA = frozendict(
+    ESCOLA = frozendict(
         {
             "colecao": COLECAO_AQUISCAO,
-            "nome": "censo_escola.parquet",
+            "nome": "escola.parquet",
         }
     )
 
-    CENSO_GESTOR = frozendict(
+    GESTOR = frozendict(
         {
             "colecao": COLECAO_AQUISCAO,
-            "nome": "censo_gestor.parquet",
+            "nome": "gestor.parquet",
         }
     )
 
-    CENSO_TURMA = frozendict(
+    GESTOR_ESCOLA = frozendict(
         {
             "colecao": COLECAO_AQUISCAO,
-            "nome": "censo_turma.parquet",
+            "nome": "depara_gestor_escola.parquet",
+        }
+    )
+
+    TURMA = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "turma.parquet",
+        }
+    )
+
+    DOCENTE = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "docente.parquet",
+        }
+    )
+
+    DOCENTE_TURMA = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "depara_docente_turma.parquet",
         }
     )
 

@@ -599,6 +599,9 @@ COLS_88888:
   - "QT_EQUIP_MULTIMIDIA"
     
 
+# Lista de colunas que devem ser adicionadas ao de-para
+COLS_DEPARA: {}
+
 # Lista de colunas que devem ser preenchidas com valores anteriores
 # ou posteriores para uma determinada escola
 COLS_FBFILL:
@@ -697,14 +700,6 @@ COLS_FBFILL:
   - "IN_EQUIP_IMPRESSORA_MULT" # só existe de 2015 em diante
   - "TP_OCUPACAO_GALPAO" # só existe de 2012 em diante
 
-# Lista de colunas que devem ser removidas na base consolidada porque
-# são reduntantes com relação a outras criadas ao longo do processo
-# de transformação de dados
-REMOVER_COLS:
-  - "IN_AGUA_FILTRADA"
-  - "IN_LINGUA_INDIGENA"
-  - "IN_LINGUA_PORTUGUESA"
-
 # Dicionário de valores de preenchimento fixo de colunas
 PREENCHER_NULOS:
   "TP_INDIGENA_LINGUA": "SEM EDUCAÇÃO INDÍGENA"
@@ -712,7 +707,7 @@ PREENCHER_NULOS:
 
 # Schema de colunas que deve ser adotado para todas as bases de dados
 # para garantir uniformidade do carregamento das dados parquet
-DS_SCHEMA:
+DADOS_SCHEMA:
   "ANO": "int64"
   "CO_ENTIDADE": "int64"
   "CO_MUNICIPIO": "int64"
@@ -948,3 +943,5 @@ DS_SCHEMA:
   "TP_REGULAMENTACAO": "pd.CategoricalDtype(categories=['EM TRAMITAÇÃO', 'NÃO', 'SIM'], ordered=False)"
   "TP_RESPONSAVEL_REGULAMENTACAO": "pd.CategoricalDtype(categories=['ESTADUAL', 'ESTADUAL E MUNICIPAL', 'FEDERAL', 'FEDERAL E ESTADUAL', 'FEDERAL ESTADUAL E MUNICIPAL', 'MUNICIPAL', 'NÃO INFORMADO'], ordered=False)"
   "TP_SITUACAO_FUNCIONAMENTO": "pd.CategoricalDtype(categories=['EM ATIVIDADE', 'EXTINTA', 'PARALISADA'], ordered=False)"
+
+DEPARA_SCHEMA: {}

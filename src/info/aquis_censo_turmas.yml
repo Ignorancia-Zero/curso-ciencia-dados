@@ -1,3 +1,5 @@
+COL_ID: "ID_TURMA"
+
 # Dicionário que renomeia as colunas de diferentes anos de dados
 # para garantir que as bases entre nomes tenham o mesmo conteúdo
 RENOMEIA_COLUNAS:
@@ -123,6 +125,20 @@ DROPAR_COLUNAS:
   - IN_EDUCACAO_INDIGENA
   - ID_MANT_ESCOLA_PRIVADA_APAE
 
+# Lista de colunas IN_ que podemos mapear contra uma coluna QT
+IN_COLS: []
+
+# Dicionário que configura como fazer o tratamento de variáveis
+# indicadoras. Cada chave corresponde ao nome de uma coluna que
+# contém uma lista com dois valores. O primeiro da expressão regular
+# que será utilizada para selecionar os campos de origem; o segundo
+# com o tipo de comparação que será feito com o valor 0 para converter
+# o resultado da operação numa flag
+TRATAMENTO_IN:
+  IN_DISC_EST_SOCIAIS_SOCIOLOGIA:
+    - "IN_DISC_SOCIOLOGIA|IN_DISC_ESTUDOS_SOCIAIS"
+    - ">"
+
 # De-para entre o valor de item dentro de uma coluna TP e
 # a categoria em texto equivalente
 DEPARA_TP:
@@ -156,6 +172,13 @@ DEPARA_TP:
     2: "ESPECIAL - SUBSTITUTIVA"
     3: "JOVENS E ADULTOS"
 
+# Colunas de quantidades que foram preenchidas com os valores
+# de 88888 caso o valor do censo não fosse considerado razoável
+COLS_88888: []
+
+# Lista de colunas que devem ser adicionadas ao de-para
+COLS_DEPARA: []
+
 # Dicionário de valores de preenchimento fixo de colunas
 PREENCHER_NULOS:
   "CO_TIPO_ATIVIDADE_1": 0
@@ -169,7 +192,7 @@ PREENCHER_NULOS:
 
 # Schema de colunas que deve ser adotado para todas as bases de dados
 # para garantir uniformidade do carregamento das dados parquet
-DS_SCHEMA:
+DADOS_SCHEMA:
   "ANO": "int64"
   "ID_TURMA": "int64"
   "CO_ENTIDADE": "int64"
@@ -243,3 +266,5 @@ DS_SCHEMA:
   "TP_TIPO_LOCAL_TURMA": "pd.CategoricalDtype(categories=['NENHUM', 'SALA ANEXA', 'SOCIOEDUCATIVO', 'PRISIONAL'], ordered=False)"
   "TP_MOD_ENSINO": "pd.CategoricalDtype(categories=['REGULAR', 'ESPECIAL - SUBSTITUTIVA', 'JOVENS E ADULTOS'], ordered=False)"
   "TP_TIPO_TURMA": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'HOSPITALAR', 'INTERNAÇÃO', 'PRISIONAL', 'COMPLEMENTAR', 'AEE'], ordered=False)"
+
+DEPARA_SCHEMA: {}

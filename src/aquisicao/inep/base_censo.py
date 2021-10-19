@@ -291,7 +291,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             referencia=dict(
                 nome=f"{self._tabela}_depara.parquet",
                 colecao=base.colecao.nome,
-                pasta=base.pasta,
+                pasta=base.colecao.pasta,
             ),
             data=base.data.reindex(columns=cols),
         )

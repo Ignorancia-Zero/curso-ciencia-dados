@@ -34,6 +34,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
         base: str,
         ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
+        reprocessar: bool = False,
     ) -> None:
         """
         Instância o objeto de ETL INEP
@@ -42,8 +43,9 @@ class BaseINEPETL(BaseETL, abc.ABC):
         :param base: Nome da base que vai na URL do INEP
         :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
+        :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
-        super().__init__(ds, criar_caminho)
+        super().__init__(ds, criar_caminho, reprocessar)
 
         self._base = base.replace("-", "_")
         self._ano = ano

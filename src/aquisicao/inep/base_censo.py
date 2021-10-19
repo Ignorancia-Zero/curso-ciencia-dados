@@ -28,6 +28,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         tabela: str,
         ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
+        reprocessar: bool = False,
     ) -> None:
         """
         Instância o objeto de ETL Censo Escolar
@@ -36,8 +37,15 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         :param tabela: Tabela do censo escolar a ser processada
         :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
+        :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
-        super().__init__(ds, "censo-escolar", ano=ano, criar_caminho=criar_caminho)
+        super().__init__(
+            ds,
+            "censo-escolar",
+            ano=ano,
+            criar_caminho=criar_caminho,
+            reprocessar=reprocessar,
+        )
         self._tabela = tabela
         self._configs = carrega_yaml(f"aquis_censo_{tabela}.yml")
 
@@ -276,10 +284,27 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             ),
             data=base.data.reindex(columns=cols),
         )
-        base.data.drop(columns=self._configs["COLS_DEPARA"], errors="ignore", inplace=True)
+        base.data.drop(
+            columns=self._configs["COLS_DEPARA"], errors="ignore", inplace=True
+        )
         base.data.drop_duplicates(inplace=True)
 
         return base_id
+
+    def gera_documento_saida(
+        self, base: Documento, base_id: typing.Union[None, Documento]
+    ) -> None:
+        """
+        Concatena as bases de dados em uma saída única
+
+        :param base: documento com os dados de entrada
+        :param base_id: documento com os dados que duplicam linhas
+        """
+        self._dados_saida = list()
+        self.documentos_saida[0].data = base.data
+        if base_id is not None:
+            self.documentos_saida[1].data = base_id.data
+        self._dados_saida += self.documentos_saida
 
     def ajusta_schema(
         self,
@@ -316,21 +341,6 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
                 base.data[c] = base.data[c].astype(dtype).replace({"nan": None})
             else:
                 base.data[c] = base.data[c].astype(dtype)
-
-    def gera_documento_saida(
-        self, base: Documento, base_id: typing.Union[None, Documento]
-    ) -> None:
-        """
-        Concatena as bases de dados em uma saída única
-
-        :param base: documento com os dados de entrada
-        :param base_id: documento com os dados que duplicam linhas
-        """
-        self._dados_saida = list()
-        self.documentos_saida[0].data = base.data
-        if base_id is not None:
-            self.documentos_saida[1].data = base_id.data
-        self._dados_saida += self.documentos_saida
 
     def transform(self) -> None:
         """

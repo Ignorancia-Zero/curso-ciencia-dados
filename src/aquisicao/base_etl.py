@@ -111,6 +111,10 @@ class BaseETL(abc.ABC):
         """
         Executa o pipeline completo de tratamento de dados
         """
+        if all([doc.exists() for doc in self.documentos_saida]) and not self._reprocessar:
+            self._logger.info(f"DADOS DE {self} JÁ FORAM PROCESSADOS")
+            return
+
         self._logger.info(f"EXTRAINDO DADOS {self}")
         self.extract()
 

@@ -21,6 +21,7 @@ class DocenteETL(BaseCensoEscolarETL):
         ds: DataStore,
         ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
+        reprocessar: bool = False,
     ) -> None:
         """
         Instância o objeto de ETL de dados de Docente
@@ -28,8 +29,15 @@ class DocenteETL(BaseCensoEscolarETL):
         :param ds: instância de objeto data store
         :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
+        :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
-        super().__init__(ds, "docentes", ano=ano, criar_caminho=criar_caminho)
+        super().__init__(
+            ds,
+            "docentes",
+            ano=ano,
+            criar_caminho=criar_caminho,
+            reprocessar=reprocessar,
+        )
 
     @property
     def documentos_saida(self) -> typing.List[Documento]:

@@ -1,17 +1,10 @@
 import abc
-import tempfile
 import typing
-from pathlib import Path
-from urllib.request import urlopen
-
-from bs4 import BeautifulSoup
 
 from src.aquisicao._etl import BaseETL
 from src.configs import COLECAO_DADOS_WEB
-from src.io.caminho import obtem_objeto_caminho
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
-from src.utils.web import download_dados_web
 from src.utils.web import obtem_pagina
 
 

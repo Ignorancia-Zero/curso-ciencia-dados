@@ -18,6 +18,6 @@ for ano in $(seq $anoi $anof)
 do
   for base in $bases
   do
-    python run.py aquisicao processa-dado-inep --etl $base --ano "$ano" --reprocessar
+    python run.py aquisicao processa-microdado-inep --etl $base --ano "$ano" --reprocessar
   done
 done

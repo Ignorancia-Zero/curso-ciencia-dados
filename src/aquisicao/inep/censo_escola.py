@@ -20,17 +20,17 @@ class EscolaETL(BaseCensoEscolarETL):
     def __init__(
         self,
         ds: DataStore,
-        ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
         reprocessar: bool = False,
+        ano: typing.Union[int, str] = "ultimo",
     ) -> None:
         """
         Instância o objeto de ETL de dados de Escola
 
         :param ds: instância de objeto data store
-        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
+        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         """
         super().__init__(
             ds, "escolas", ano=ano, criar_caminho=criar_caminho, reprocessar=reprocessar

@@ -1,0 +1,50 @@
+# determina como será gerada a configuração do pedido de permissão
+# file = carrega um arquivo json com as configurações (necessário definir client_config_file)
+# settings = utiliza um dicionário de configurações (necessário definir client_config)
+# service = utiliza um serviço de configuração (necessário definir service_config)
+"client_config_backend": "settings"
+
+# flag se devemos salvar as credenciais. Se true, deve-se definir save_credentials_backend
+"save_credentials": true
+
+# TODO: O que essa configuração faz????????
+get_refresh_token: false
+
+# caminho para o arquivo que contem as configurações da API
+"client_config_file": "client_secrets.json"
+
+# método para guardar as credenciais, só pode ser file
+"save_credentials_backend": "file"
+
+# dicionário de configurações de autenticação do aplicativo. É necessário
+# definir as chaves de client_id, client_secret, auth_uri, token_uri, redirect_uri
+# e revoke_uri
+"client_config":
+  "project_id": "ignorancia-zero"
+  "revoke_uri": ~
+#  "client_id": "578913650913-fduuluvhivagm0nkbj6g7s1lpdtgpavj.apps.googleusercontent.com"
+#  "client_secret": "P5V870Ej7cuZcUYPwAWcDxbi"
+#  "auth_uri": "https://accounts.google.com/o/oauth2/auth"
+#  "token_uri": "https://oauth2.googleapis.com/token"
+#  "redirect_uri": "http://localhost:8080/"
+  "client_id": "578913650913-roo837nt9ratgt9qd13ns1g9ml5nolum.apps.googleusercontent.com"
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth"
+  "token_uri": "https://oauth2.googleapis.com/token"
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs"
+  "client_secret": "KQGeL9DBX_PoTneAWTLYYk6p"
+  "redirect_uris": ["urn:ietf:wg:oauth:2.0:oob", "http://localhost"]
+
+# configurações do serviço de autenticação. Deve-se preencher os dados
+# de client_user_email, client_service_email, client_pkcs12_file_path
+# e client_json_file_path
+"service_config":
+  "client_user_email": ~
+  "client_service_email": ~
+  "client_pkcs12_file_path": ~
+  "client_json_file_path": ~
+
+# escopo de permissões que a API deve pedir
+"oauth_scope": ["https://www.googleapis.com/auth/drive"]
+
+# nome do arquivo para guardar as credenciais do usuário
+"save_credentials_file": "gdrive_credentials.json"

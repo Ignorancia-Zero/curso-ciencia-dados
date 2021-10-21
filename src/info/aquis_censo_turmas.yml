@@ -1,0 +1,140 @@
+COL_ID: "ID_TURMA"
+
+# Dicionário que configura como fazer o tratamento de variáveis
+# indicadoras. Cada chave corresponde ao nome de uma coluna que
+# contém uma lista com dois valores. O primeiro da expressão regular
+# que será utilizada para selecionar os campos de origem; o segundo
+# com o tipo de comparação que será feito com o valor 0 para converter
+# o resultado da operação numa flag
+TRATAMENTO_IN:
+  IN_DISC_EST_SOCIAIS_SOCIOLOGIA:
+    - "IN_DISC_SOCIOLOGIA|IN_DISC_ESTUDOS_SOCIAIS"
+    - ">"
+
+# De-para entre o valor de item dentro de uma coluna TP e
+# a categoria em texto equivalente
+DEPARA_TP:
+  "TP_MEDIACAO_DIDATICO_PEDAGO":
+    1: "PRESENCIAL"
+    2: "SEMIPRESENCIAL"
+    3: "EAD"
+
+  "TP_TIPO_ATENDIMENTO_TURMA":
+    1: "ESCOLARIZAÇÃO"
+    2: "ESCOLARIZAÇÃO E AE"
+    3: "AE"
+    4: "AEE"
+
+  "TP_TIPO_TURMA":
+    0: "NÃO APLICÁVEL"
+    1: "HOSPITALAR"
+    2: "INTERNAÇÃO"
+    3: "PRISIONAL"
+    4: "COMPLEMENTAR"
+    5: "AEE"
+
+  "TP_TIPO_LOCAL_TURMA":
+    0: "NENHUM"
+    1: "SALA ANEXA"
+    2: "SOCIOEDUCATIVO"
+    3: "PRISIONAL"
+
+  "TP_MOD_ENSINO":
+    1: "REGULAR"
+    2: "ESPECIAL - SUBSTITUTIVA"
+    3: "JOVENS E ADULTOS"
+
+# Colunas de quantidades que foram preenchidas com os valores
+# de 88888 caso o valor do censo não fosse considerado razoável
+COLS_88888: []
+
+# Lista de colunas que devem ser adicionadas ao de-para
+COLS_DEPARA: []
+
+# Dicionário de valores de preenchimento fixo de colunas
+PREENCHER_NULOS:
+  "CO_TIPO_ATIVIDADE_1": 0
+  "CO_TIPO_ATIVIDADE_2": 0
+  "CO_TIPO_ATIVIDADE_3": 0
+  "CO_TIPO_ATIVIDADE_4": 0
+  "CO_TIPO_ATIVIDADE_5": 0
+  "CO_TIPO_ATIVIDADE_6": 0
+  "CO_ETAPA_ENSINO": 0
+
+# Schema de colunas que deve ser adotado para todas as bases de dados
+# para garantir uniformidade do carregamento das dados parquet
+DADOS_SCHEMA:
+  "ANO": "int64"
+  "ID_TURMA": "int64"
+  "CO_ENTIDADE": "int64"
+  "NO_TURMA": "object"
+  "CO_TIPO_ATIVIDADE_1": "int64"
+  "CO_TIPO_ATIVIDADE_2": "int64"
+  "CO_TIPO_ATIVIDADE_3": "int64"
+  "CO_TIPO_ATIVIDADE_4": "int64"
+  "CO_TIPO_ATIVIDADE_5": "int64"
+  "CO_TIPO_ATIVIDADE_6": "int64"
+  "CO_ETAPA_ENSINO": "int64"
+  "CO_CURSO_EDUC_PROFISSIONAL": "float64"
+  "TX_HR_INICIAL": "float64"
+  "TX_MI_INICIAL": "float64"
+  "NU_DURACAO_TURMA": "float64"
+  "NU_DIAS_ATIVIDADE": "float32"
+  "IN_DIA_SEMANA_DOMINGO": "float32"
+  "IN_DIA_SEMANA_SEGUNDA": "float32"
+  "IN_DIA_SEMANA_TERCA": "float32"
+  "IN_DIA_SEMANA_QUARTA": "float32"
+  "IN_DIA_SEMANA_QUINTA": "float32"
+  "IN_DIA_SEMANA_SEXTA": "float32"
+  "IN_DIA_SEMANA_SABADO": "float32"
+  "IN_ESPECIAL_EXCLUSIVA": "float32"
+  "IN_DISC_LINGUA_PORTUGUESA": "float32"
+  "IN_DISC_EDUCACAO_FISICA": "float32"
+  "IN_DISC_ARTES": "float32"
+  "IN_DISC_LINGUA_INGLES": "float32"
+  "IN_DISC_LINGUA_ESPANHOL": "float32"
+  "IN_DISC_LINGUA_FRANCES": "float32"
+  "IN_DISC_LINGUA_OUTRA": "float32"
+  "IN_DISC_LIBRAS": "float32"
+  "IN_DISC_LINGUA_INDIGENA": "float32"
+  "IN_DISC_PORT_SEGUNDA_LINGUA": "float32"
+  "IN_DISC_MATEMATICA": "float32"
+  "IN_DISC_CIENCIAS": "float32"
+  "IN_DISC_FISICA": "float32"
+  "IN_DISC_QUIMICA": "float32"
+  "IN_DISC_BIOLOGIA": "float32"
+  "IN_DISC_HISTORIA": "float32"
+  "IN_DISC_GEOGRAFIA": "float32"
+  "IN_DISC_SOCIOLOGIA": "float32"
+  "IN_DISC_FILOSOFIA": "float32"
+  "IN_DISC_ESTUDOS_SOCIAIS": "float32"
+  "IN_DISC_EST_SOCIAIS_SOCIOLOGIA": "float32"
+  "IN_DISC_INFORMATICA_COMPUTACAO": "float32"
+  "IN_DISC_ENSINO_RELIGIOSO": "float32"
+  "IN_DISC_PROFISSIONALIZANTE": "float32"
+  "IN_DISC_ESTAGIO_SUPERVISIONADO": "float32"
+  "IN_DISC_PEDAGOGICAS": "float32"
+  "IN_DISC_OUTRAS": "float32"
+  "IN_MAIS_EDUCACAO": "float32"
+  "IN_BRAILLE": "float32"
+  "IN_RECURSOS_BAIXA_VISAO": "float32"
+  "IN_PROCESSOS_MENTAIS": "float32"
+  "IN_ORIENTACAO_MOBILIDADE": "float32"
+  "IN_SINAIS": "float32"
+  "IN_COMUNICACAO_ALT_AUMENT": "float32"
+  "IN_ENRIQ_CURRICULAR": "float32"
+  "IN_SOROBAN": "float32"
+  "IN_INFORMATICA_ACESSIVEL": "float32"
+  "IN_PORT_ESCRITA": "float32"
+  "IN_AUTONOMIA_ESCOLAR": "float32"
+  "IN_DISC_ATENDIMENTO_ESPECIAIS": "float32"
+  "IN_DISC_DIVER_SOCIO_CULTURAL": "float32"
+  "IN_DIDATICA_METODOLOGIA": "float32"
+  "IN_FUNDAMENTOS_EDUCACAO": "float32"
+  "TP_MEDIACAO_DIDATICO_PEDAGO": "pd.CategoricalDtype(categories=['PRESENCIAL', 'SEMIPRESENCIAL', 'EAD'], ordered=False)"
+  "TP_TIPO_ATENDIMENTO_TURMA": "pd.CategoricalDtype(categories=['ESCOLARIZAÇÃO', 'ESCOLARIZAÇÃO E AE', 'AE', 'AEE'], ordered=False)"
+  "TP_TIPO_LOCAL_TURMA": "pd.CategoricalDtype(categories=['NENHUM', 'SALA ANEXA', 'SOCIOEDUCATIVO', 'PRISIONAL'], ordered=False)"
+  "TP_MOD_ENSINO": "pd.CategoricalDtype(categories=['REGULAR', 'ESPECIAL - SUBSTITUTIVA', 'JOVENS E ADULTOS'], ordered=False)"
+  "TP_TIPO_TURMA": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'HOSPITALAR', 'INTERNAÇÃO', 'PRISIONAL', 'COMPLEMENTAR', 'AEE'], ordered=False)"
+
+DEPARA_SCHEMA: {}

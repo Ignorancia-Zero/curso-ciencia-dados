@@ -1,13 +1,12 @@
-import requests
-from pathlib import Path
-import typing
 import typing
 from pathlib import Path
 
 import requests
 
 
-def download_dados_web(caminho: typing.Union[str, Path], url: str) -> None:
+def download_dados_web(
+    caminho: typing.Union[str, Path, typing.IO[bytes], typing.BinaryIO], url: str
+) -> typing.Union[typing.IO[bytes], typing.BinaryIO]:
     """
     Realiza o download dos dados em um link da Web
 
@@ -15,5 +14,10 @@ def download_dados_web(caminho: typing.Union[str, Path], url: str) -> None:
     :param url: endereço do site a ser baixado
     """
     r = requests.get(url, stream=True)
-    with open(caminho, "wb") as arq:
-        arq.write(r.content)
+    if isinstance(caminho, str) or isinstance(caminho, Path):
+        arq: typing.Union[typing.IO[bytes], typing.BinaryIO] = open(caminho, "wb")
+    else:
+        arq = caminho
+    arq.write(r.content)
+    arq.close()
+    return arq

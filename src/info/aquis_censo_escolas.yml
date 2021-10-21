@@ -1,0 +1,493 @@
+COL_ID: "CO_ENTIDADE"
+
+# Dicionário que configura como fazer o tratamento de variáveis
+# indicadoras. Cada chave corresponde ao nome de uma coluna que
+# contém uma lista com dois valores. O primeiro da expressão regular
+# que será utilizada para selecionar os campos de origem; o segundo
+# com o tipo de comparação que será feito com o valor 0 para converter
+# o resultado da operação numa flag
+TRATAMENTO_IN:
+  IN_EQUIP_NENHUM:
+    - "^(IN_EQUIP_)(PARABOLICA|SCANNER|COPIADORA|IMPRESSORA|IMPRESSORA_BRAILE|IMPRESSORA_MULT|FAX)"
+    - "="
+  IN_MATERIAL_PED_NENHUM:
+    - "^(IN_MATERIAL_PED_)"
+    - "="
+  IN_ENERGIA_GERADOR:
+    - "^(IN_ENERGIA_)(RENOVAVEL|GERADOR_FOSSIL)"
+    - ">"
+  IN_DEPENDENCIAS_PNE:
+    - "^(IN_ACESSIBILIDADE_)"
+    - ">"
+  IN_BANHEIRO:
+    - "^(IN_BANHEIRO_)"
+    - ">"
+  IN_DESKTOP:
+    - "^(QT_DESKTOP_ADM)"
+    - ">"
+  IN_BIBLIOTECA_SALA_LEITURA:
+    - "^(IN_)(BIBLIOTECA|SALA_LEITURA)"
+    - ">"
+  IN_QUADRA_ESPORTES:
+    - "^(IN_QUADRA_ESPORTES_)(COBERTA|DESCOBERTA)"
+    - ">"
+  IN_LOCAL_FUNC_PREDIO_ESCOLAR:
+    - "^(TP_OCUPACAO_PREDIO_ESCOLAR)"
+    - ">"
+
+# De-para entre o valor de item dentro de uma coluna TP e
+# a categoria em texto equivalente
+DEPARA_TP:
+  "TP_CATEGORIA_ESCOLA_PRIVADA":
+    0: "PÚBLICA"
+    1: "PARTICULAR"
+    2: "COMUNITÁRIA"
+    3: "CONFESSIONAL"
+    4: "FILANTRÓPICA"
+
+  "TP_REDE_LOCAL":
+    0: "NÃO HÁ REDE LOCAL INTERLIGANDO COMPUTADORES"
+    1: "A CABO"
+    2: "WIRELESS"
+    3: "A CABO E WIRELESS"
+    9: "NÃO INFORMADO"
+
+  "TP_REGULAMENTACAO":
+    0: "NÃO"
+    1: "SIM"
+    2: "EM TRAMITAÇÃO"
+
+  "TP_RESPONSAVEL_REGULAMENTACAO":
+    1: "FEDERAL"
+    2: "ESTADUAL"
+    3: "MUNICIPAL"
+    4: "ESTADUAL E MUNICIPAL"
+    5: "FEDERAL E ESTADUAL"
+    6: "FEDERAL ESTADUAL E MUNICIPAL"
+    9: "NÃO INFORMADO"
+
+  "TP_OCUPACAO_GALPAO":
+    0: "NÃO"
+    1: "PRÓPRIO"
+    2: "ALUGADO"
+    3: "CEDIDO"
+    4: "NÃO INFORMADO"
+    9: "NÃO INFORMADO"
+
+  "TP_LOCALIZACAO":
+    1: "URBANA"
+    2: "RURAL"
+
+  "TP_CONVENIO_PODER_PUBLICO":
+    0: "PÚBLICA"
+    1: "MUNICIPAL"
+    2: "ESTADUAL"
+    3: "ESTADUAL E MUNICIPAL"
+
+  "TP_PROPOSTA_PEDAGOGICA":
+    0: "NÃO"
+    1: "SIM"
+    2: "A ESCOLA NÃO POSSUI PROJETO POLÍTICO PEDAGÓGICO/PROPOSTA PEDAGÓGICA"
+    9: "NÃO INFORMADO"
+
+  "TP_DEPENDENCIA":
+    1: "FEDERAL"
+    2: "ESTADUAL"
+    3: "MUNICIPAL"
+    4: "PRIVADA"
+
+  "TP_LOCALIZACAO_DIFERENCIADA":
+    0: "A ESCOLA NÃO ESTÁ EM ÁREA DE LOCALIZAÇÃO DIFERENCIADA"
+    1: "ÁREA DE ASSENTAMENTO"
+    2: "TERRA INDÍGENA"
+    3: "ÁREA REMANESCENTE DE QUILOMBOS"
+    4: "ÁREA DE ASSENTAMENTO"
+    5: "TERRA INDÍGENA"
+    6: "ÁREA REMANESCENTE DE QUILOMBOS"
+
+  "TP_INDIGENA_LINGUA":
+    0: "SEM EDUCAÇÃO INDÍGENA"
+    1: "SOMENTE EM LÍNGUA INDÍGENA"
+    2: "SOMENTE EM LÍNGUA PORTUGUESA"
+    3: "EM LÍNGUA INDÍGENA E EM LÍNGUA PORTUGUESA"
+
+  "TP_SITUACAO_FUNCIONAMENTO":
+    "1": "EM ATIVIDADE"
+    "2": "PARALISADA"
+    "3": "EXTINTA"
+    "4": "EXTINTA"
+
+  "TP_OCUPACAO_PREDIO_ESCOLAR":
+    0: "NÃO"
+    1: "PRÓPRIO"
+    2: "ALUGADO"
+    3: "CEDIDO"
+
+# Lista de colunas que devem ser exclusivamente preenchidas
+# para escolar particulares
+COLS_PARTICULAR:
+  - "TP_CATEGORIA_ESCOLA_PRIVADA"
+  - "IN_CONVENIADA_PP"
+  - "IN_MANT_ESCOLA_PRIVADA_EMP"
+  - "IN_MANT_ESCOLA_PRIVADA_ONG"
+  - "IN_MANT_ESCOLA_PRIVADA_OSCIP"
+  - "IN_MANT_ESCOLA_PRIV_ONG_OSCIP"
+  - "IN_MANT_ESCOLA_PRIVADA_SIND"
+  - "IN_MANT_ESCOLA_PRIVADA_SIST_S"
+  - "IN_MANT_ESCOLA_PRIVADA_S_FINS"
+
+# Colunas de quantidades que foram preenchidas com os valores
+# de 88888 caso o valor do censo não fosse considerado razoável
+COLS_88888:
+  - "QT_EQUIP_DVD"
+  - "QT_EQUIP_SOM"
+  - "QT_EQUIP_TV"
+  - "QT_EQUIP_MULTIMIDIA"
+    
+
+# Lista de colunas que devem ser adicionadas ao de-para
+COLS_DEPARA: {}
+
+# Lista de colunas que devem ser preenchidas com valores anteriores
+# ou posteriores para uma determinada escola
+COLS_FBFILL:
+  - "TP_DEPENDENCIA"
+  - "TP_CATEGORIA_ESCOLA_PRIVADA"
+  - "TP_CONVENIADA_PP"
+  - "TP_MANT_ESCOLA_PRIVADA_EMP"
+  - "TP_MANT_ESCOLA_PRIVADA_ONG"
+  - "TP_MANT_ESCOLA_PRIVADA_SIND" # não existem o censo de 2007 e 2008
+  - "TP_MANT_ESCOLA_PRIVADA_S_FINS" # não existem o censo de 2007 e 2008
+  - "TP_REGULAMENTACAO"
+  - "IN_LOCAL_FUNC_PREDIO_ESCOLAR"
+  - "IN_LOCAL_FUNC_PRISIONAL_SOCIO"
+  - "IN_LOCAL_FUNC_GALPAO"
+  - "IN_LOCAL_FUNC_SALAS_OUTRA_ESC"
+  - "IN_LOCAL_FUNC_OUTROS"
+  - "IN_PREDIO_COMPARTILHADO"
+  - "IN_AGUA_REDE_PUBLICA"
+  - "IN_AGUA_POCO_ARTESIANO"
+  - "IN_AGUA_CACIMBA"
+  - "IN_AGUA_FONTE_RIO"
+  - "IN_AGUA_INEXISTENTE"
+  - "IN_ENERGIA_REDE_PUBLICA"
+  - "IN_ENERGIA_INEXISTENTE"
+  - "IN_ENERGIA_GERADOR"
+  - "IN_ENERGIA_OUTROS"
+  - "IN_ESGOTO_REDE_PUBLICA"
+  - "IN_ESGOTO_FOSSA"
+  - "IN_ESGOTO_INEXISTENTE"
+  - "IN_LIXO_SERVICO_COLETA"
+  - "IN_LIXO_QUEIMA"
+  - "IN_LIXO_DESCARTA_OUTRA_AREA"
+  - "IN_TRATAMENTO_LIXO_RECICLAGEM"
+  - "IN_LIXO_ENTERRA"
+  - "IN_LIXO_DESTINO_FINAL_PUBLICO"
+  - "IN_BANHEIRO_PNE"
+  - "IN_BIBLIOTECA_SALA_LEITURA"
+  - "IN_COZINHA"
+  - "IN_LABORATORIO_CIENCIAS"
+  - "IN_LABORATORIO_INFORMATICA"
+  - "IN_PARQUE_INFANTIL"
+  - "IN_QUADRA_ESPORTES"
+  - "IN_SALA_DIRETORIA"
+  - "IN_SALA_PROFESSOR"
+  - "IN_SALA_ATENDIMENTO_ESPECIAL"
+  - "IN_DEPENDENCIAS_OUTRAS"
+  - "QT_SALAS_UTILIZADAS"
+  - "IN_EQUIP_TV"
+  - "IN_EQUIP_DVD"
+  - "IN_EQUIP_PARABOLICA"
+  - "IN_EQUIP_COPIADORA"
+  - "IN_EQUIP_IMPRESSORA"
+  - "IN_DESKTOP"
+  - "IN_INTERNET"
+  - "IN_ALIMENTACAO"
+  - "IN_EDUCACAO_INDIGENA"
+  - "TP_INDIGENA_LINGUA"
+  - "IN_MATERIAL_PED_ETNICO"
+  - "IN_MATERIAL_PED_NENHUM"
+  - "IN_MATERIAL_PED_INDIGENA"
+  - "IN_LOCAL_FUNC_SALAS_EMPRESA" # não existem o censo de 2019 e 2020
+  - "IN_LOCAL_FUNC_TEMPLO_IGREJA" # não existem o censo de 2019 e 2020
+  - "IN_LOCAL_FUNC_CASA_PROFESSOR" # não existem o censo de 2019 e 2020
+  - "IN_BANHEIRO_FORA_PREDIO" # não existem o censo de 2019 e 2020
+  - "IN_BANHEIRO_DENTRO_PREDIO" # não existem o censo de 2019 e 2020
+  - "IN_EQUIP_RETRO" # não existem o censo de 2019 e 2020
+  - "IN_EQUIP_VIDEOCASSETE" # não existem o censo de 2019 e 2020
+  - "IN_BANHEIRO_EI" # não existem o censo de 2007 e 2008
+  - "IN_SALA_LEITURA" # não existem o censo de 2007 e 2008
+  - "IN_BIBLIOTECA" # não existem o censo de 2007 e 2008
+  - "IN_BANDA_LARGA" # não existem em 2007
+  - "IN_BERCARIO" # não existem em 2007 2008 2019 2020
+  - "IN_QUADRA_ESPORTES_COBERTA" # não existem antes de 2011
+  - "IN_QUADRA_ESPORTES_DESCOBERTA" # não existem antes de 2011
+  - "TP_OCUPACAO_PREDIO_ESCOLAR" # não existem antes de 2011
+  - "IN_PATIO_DESCOBERTO" # não existem antes de 2012
+  - "TP_MANT_ESCOLA_PRIVADA_SIST_S" # não existem antes de 2012
+  - "IN_AREA_VERDE" # não existem antes de 2012
+  - "IN_DORMITORIO_PROFESSOR" # não existem antes de 2012
+  - "IN_PATIO_COBERTO" # não existem antes de 2012
+  - "IN_AUDITORIO" # não existem antes de 2012
+  - "IN_ALMOXARIFADO" # não existem antes de 2012
+  - "IN_DESPENSA" # não existem antes de 2012
+  - "IN_REFEITORIO" # não existem antes de 2012
+  - "IN_BANHEIRO_CHUVEIRO" # não existem antes de 2012
+  - "IN_SECRETARIA" # não existem antes de 2012
+  - "IN_DORMITORIO_ALUNO" # não existem antes de 2012
+  - "IN_EQUIP_SOM" # não existem antes de 2012
+  - "IN_EQUIP_MULTIMIDIA" # não existem antes de 2012
+  - "IN_LOCAL_FUNC_SOCIOEDUCATIVO" # não existem antes de 2012
+  - "IN_EQUIP_FAX" # só existe de 2012 a 2018
+  - "IN_FINAL_SEMANA" # só existe de 2012 a 2018
+  - "IN_BRASIL_ALFABETIZADO" # só existe de 2012 a 2018
+  - "IN_EQUIP_FOTO" # só existe de 2012 a 2018
+  - "IN_LAVANDERIA" # só existe de 2012 a 2018
+  - "IN_EQUIP_IMPRESSORA_MULT" # só existe de 2015 em diante
+  - "TP_OCUPACAO_GALPAO" # só existe de 2012 em diante
+
+# Dicionário de valores de preenchimento fixo de colunas
+PREENCHER_NULOS:
+  "TP_INDIGENA_LINGUA": "SEM EDUCAÇÃO INDÍGENA"
+  "CO_DISTRITO": 0
+
+# Schema de colunas que deve ser adotado para todas as bases de dados
+# para garantir uniformidade do carregamento das dados parquet
+DADOS_SCHEMA:
+  "ANO": "int64"
+  "CO_ENTIDADE": "int64"
+  "CO_MUNICIPIO": "int64"
+  "CO_DISTRITO": "int64"
+  "CO_ESCOLA_SEDE_VINCULADA": "float64"
+  "CO_IES_OFERTANTE": "float64"
+  "CO_LINGUA_INDIGENA_1": "float64"
+  "CO_LINGUA_INDIGENA_2": "float64"
+  "CO_LINGUA_INDIGENA_3": "float64"
+  "DT_ANO_LETIVO_INICIO": "datetime64[ns]"
+  "DT_ANO_LETIVO_TERMINO": "datetime64[ns]"
+  "IN_ACESSIBILIDADE_CORRIMAO": "float64"
+  "IN_ACESSIBILIDADE_ELEVADOR": "float64"
+  "IN_ACESSIBILIDADE_INEXISTENTE": "float64"
+  "IN_ACESSIBILIDADE_PISOS_TATEIS": "float64"
+  "IN_ACESSIBILIDADE_RAMPAS": "float64"
+  "IN_ACESSIBILIDADE_SINAL_SONORO": "float64"
+  "IN_ACESSIBILIDADE_SINAL_TATIL": "float64"
+  "IN_ACESSIBILIDADE_SINAL_VISUAL": "float64"
+  "IN_ACESSIBILIDADE_VAO_LIVRE": "float64"
+  "IN_ACESSO_INTERNET_COMPUTADOR": "float64"
+  "IN_ACES_INTERNET_DISP_PESSOAIS": "float64"
+  "IN_AGUA_CACIMBA": "float64"
+  "IN_AGUA_FONTE_RIO": "float64"
+  "IN_AGUA_INEXISTENTE": "float64"
+  "IN_AGUA_POCO_ARTESIANO": "float64"
+  "IN_AGUA_POTAVEL": "float64"
+  "IN_AGUA_REDE_PUBLICA": "float64"
+  "IN_ALIMENTACAO": "float64"
+  "IN_ALMOXARIFADO": "float64"
+  "IN_AREA_VERDE": "float64"
+  "IN_AUDITORIO": "float64"
+  "IN_BANDA_LARGA": "float64"
+  "IN_BANHEIRO": "float64"
+  "IN_BANHEIRO_CHUVEIRO": "float64"
+  "IN_BANHEIRO_DENTRO_PREDIO": "float64"
+  "IN_BANHEIRO_EI": "float64"
+  "IN_BANHEIRO_FORA_PREDIO": "float64"
+  "IN_BANHEIRO_FUNCIONARIOS": "float64"
+  "IN_BANHEIRO_PNE": "float64"
+  "IN_BERCARIO": "float64"
+  "IN_BIBLIOTECA": "float64"
+  "IN_BIBLIOTECA_SALA_LEITURA": "float64"
+  "IN_BRASIL_ALFABETIZADO": "float64"
+  "IN_COMP_PORTATIL_ALUNO": "float64"
+  "IN_COZINHA": "float64"
+  "IN_DEPENDENCIAS_OUTRAS": "float64"
+  "IN_DEPENDENCIAS_PNE": "float64"
+  "IN_DESKTOP": "float64"
+  "IN_DESKTOP_ALUNO": "float64"
+  "IN_DESPENSA": "float64"
+  "IN_DORMITORIO_ALUNO": "float64"
+  "IN_DORMITORIO_PROFESSOR": "float64"
+  "IN_EDUCACAO_INDIGENA": "float64"
+  "IN_EJA_ANUAL": "float64"
+  "IN_EJA_SEM": "float64"
+  "IN_ENERGIA_GERADOR": "float64"
+  "IN_ENERGIA_GERADOR_FOSSIL": "float64"
+  "IN_ENERGIA_INEXISTENTE": "float64"
+  "IN_ENERGIA_OUTROS": "float64"
+  "IN_ENERGIA_REDE_PUBLICA": "float64"
+  "IN_ENERGIA_RENOVAVEL": "float64"
+  "IN_EQUIP_COPIADORA": "float64"
+  "IN_EQUIP_DVD": "float64"
+  "IN_EQUIP_FAX": "float64"
+  "IN_EQUIP_FOTO": "float64"
+  "IN_EQUIP_IMPRESSORA": "float64"
+  "IN_EQUIP_IMPRESSORA_BRAILE": "float64"
+  "IN_EQUIP_IMPRESSORA_MULT": "float64"
+  "IN_EQUIP_LOUSA_DIGITAL": "float64"
+  "IN_EQUIP_MULTIMIDIA": "float64"
+  "IN_EQUIP_NENHUM": "float64"
+  "IN_EQUIP_PARABOLICA": "float64"
+  "IN_EQUIP_RETRO": "float64"
+  "IN_EQUIP_SCANNER": "float64"
+  "IN_EQUIP_SOM": "float64"
+  "IN_EQUIP_TV": "float64"
+  "IN_EQUIP_VIDEOCASSETE": "float64"
+  "IN_ESGOTO_FOSSA": "float64"
+  "IN_ESGOTO_FOSSA_COMUM": "float64"
+  "IN_ESGOTO_FOSSA_SEPTICA": "float64"
+  "IN_ESGOTO_INEXISTENTE": "float64"
+  "IN_ESGOTO_REDE_PUBLICA": "float64"
+  "IN_ESPACO_ATIVIDADE": "float64"
+  "IN_ESPACO_EQUIPAMENTO": "float64"
+  "IN_EXAME_SELECAO": "float64"
+  "IN_FINAL_SEMANA": "float64"
+  "IN_FORMACAO_ALTERNANCIA": "float64"
+  "IN_FUNDAMENTAL_CICLOS": "float64"
+  "IN_GRUPOS_NAO_SERIADOS": "float64"
+  "IN_INTERNET": "float64"
+  "IN_INTERNET_ADMINISTRATIVO": "float64"
+  "IN_INTERNET_ALUNOS": "float64"
+  "IN_INTERNET_APRENDIZAGEM": "float64"
+  "IN_INTERNET_COMUNIDADE": "float64"
+  "IN_LABORATORIO_CIENCIAS": "float64"
+  "IN_LABORATORIO_INFORMATICA": "float64"
+  "IN_LAVANDERIA": "float64"
+  "IN_LIXO_DESCARTA_OUTRA_AREA": "float64"
+  "IN_LIXO_DESTINO_FINAL_PUBLICO": "float64"
+  "IN_LIXO_ENTERRA": "float64"
+  "IN_LIXO_QUEIMA": "float64"
+  "IN_LIXO_SERVICO_COLETA": "float64"
+  "IN_LOCAL_FUNC_CASA_PROFESSOR": "float64"
+  "IN_LOCAL_FUNC_GALPAO": "float64"
+  "IN_LOCAL_FUNC_OUTROS": "float64"
+  "IN_LOCAL_FUNC_PREDIO_ESCOLAR": "float64"
+  "IN_LOCAL_FUNC_PRISIONAL_SOCIO": "float64"
+  "IN_LOCAL_FUNC_SALAS_EMPRESA": "float64"
+  "IN_LOCAL_FUNC_SALAS_OUTRA_ESC": "float64"
+  "IN_LOCAL_FUNC_SOCIOEDUCATIVO": "float64"
+  "IN_LOCAL_FUNC_TEMPLO_IGREJA": "float64"
+  "IN_LOCAL_FUNC_UNID_PRISIONAL": "float64"
+  "IN_MATERIAL_PED_ARTISTICAS": "float64"
+  "IN_MATERIAL_PED_CAMPO": "float64"
+  "IN_MATERIAL_PED_CEGOS": "float64"
+  "IN_MATERIAL_PED_CIENTIFICO": "float64"
+  "IN_MATERIAL_PED_DESPORTIVA": "float64"
+  "IN_MATERIAL_PED_DIFUSAO": "float64"
+  "IN_MATERIAL_PED_ETNICO": "float64"
+  "IN_MATERIAL_PED_INDIGENA": "float64"
+  "IN_MATERIAL_PED_INFANTIL": "float64"
+  "IN_MATERIAL_PED_JOGOS": "float64"
+  "IN_MATERIAL_PED_MULTIMIDIA": "float64"
+  "IN_MATERIAL_PED_MUSICAL": "float64"
+  "IN_MATERIAL_PED_NENHUM": "float64"
+  "IN_MATERIAL_PED_SURDOS": "float64"
+  "IN_MODULOS": "float64"
+  "IN_ORGAO_ASS_PAIS": "float64"
+  "IN_ORGAO_ASS_PAIS_MESTRES": "float64"
+  "IN_ORGAO_CONSELHO_ESCOLAR": "float64"
+  "IN_ORGAO_GREMIO_ESTUDANTIL": "float64"
+  "IN_ORGAO_NENHUM": "float64"
+  "IN_ORGAO_OUTROS": "float64"
+  "IN_PARQUE_INFANTIL": "float64"
+  "IN_PATIO_COBERTO": "float64"
+  "IN_PATIO_DESCOBERTO": "float64"
+  "IN_PERIODOS_SEMESTRAIS": "float64"
+  "IN_PISCINA": "float64"
+  "IN_PREDIO_COMPARTILHADO": "float64"
+  "IN_QUADRA_ESPORTES": "float64"
+  "IN_QUADRA_ESPORTES_COBERTA": "float64"
+  "IN_QUADRA_ESPORTES_DESCOBERTA": "float64"
+  "IN_REDES_SOCIAIS": "float64"
+  "IN_REFEITORIO": "float64"
+  "IN_RESERVA_NENHUMA": "float64"
+  "IN_RESERVA_OUTROS": "float64"
+  "IN_RESERVA_PCD": "float64"
+  "IN_RESERVA_PPI": "float64"
+  "IN_RESERVA_PUBLICA": "float64"
+  "IN_RESERVA_RENDA": "float64"
+  "IN_SALA_ATELIE_ARTES": "float64"
+  "IN_SALA_ATENDIMENTO_ESPECIAL": "float64"
+  "IN_SALA_DIRETORIA": "float64"
+  "IN_SALA_ESTUDIO_DANCA": "float64"
+  "IN_SALA_LEITURA": "float64"
+  "IN_SALA_MULTIUSO": "float64"
+  "IN_SALA_MUSICA_CORAL": "float64"
+  "IN_SALA_PROFESSOR": "float64"
+  "IN_SALA_REPOUSO_ALUNO": "float64"
+  "IN_SECRETARIA": "float64"
+  "IN_SERIE_ANO": "float64"
+  "IN_TABLET_ALUNO": "float64"
+  "IN_TERREIRAO": "float64"
+  "IN_TRATAMENTO_LIXO_INEXISTENTE": "float64"
+  "IN_TRATAMENTO_LIXO_RECICLAGEM": "float64"
+  "IN_TRATAMENTO_LIXO_REUTILIZA": "float64"
+  "IN_TRATAMENTO_LIXO_SEPARACAO": "float64"
+  "IN_VINCULO_OUTRO_ORGAO": "float64"
+  "IN_VINCULO_SECRETARIA_EDUCACAO": "float64"
+  "IN_VINCULO_SECRETARIA_SAUDE": "float64"
+  "IN_VINCULO_SEGURANCA_PUBLICA": "float64"
+  "IN_VIVEIRO": "float64"
+  "NO_ENTIDADE": "object"
+  "QT_COMP_PORTATIL_ALUNO": "float64"
+  "QT_DESKTOP": "float64"
+  "QT_DESKTOP_ADM": "float64"
+  "QT_DESKTOP_ALUNO": "float64"
+  "QT_EQUIP_COPIADORA": "float64"
+  "QT_EQUIP_DVD": "float64"
+  "QT_EQUIP_FAX": "float64"
+  "QT_EQUIP_FOTO": "float64"
+  "QT_EQUIP_IMPRESSORA": "float64"
+  "QT_EQUIP_IMPRESSORA_MULT": "float64"
+  "QT_EQUIP_LOUSA_DIGITAL": "float64"
+  "QT_EQUIP_MULTIMIDIA": "float64"
+  "QT_EQUIP_PARABOLICA": "float64"
+  "QT_EQUIP_RETRO": "float64"
+  "QT_EQUIP_SOM": "float64"
+  "QT_EQUIP_TV": "float64"
+  "QT_EQUIP_VIDEOCASSETE": "float64"
+  "QT_FUNCIONARIOS": "float64"
+  "QT_PROF_ADMINISTRATIVOS": "float64"
+  "QT_PROF_ALIMENTACAO": "float64"
+  "QT_PROF_ASSIST_SOCIAL": "float64"
+  "QT_PROF_BIBLIOTECARIO": "float64"
+  "QT_PROF_COORDENADOR": "float64"
+  "QT_PROF_FONAUDIOLOGO": "float64"
+  "QT_PROF_GESTAO": "float64"
+  "QT_PROF_MONITORES": "float64"
+  "QT_PROF_NUTRICIONISTA": "float64"
+  "QT_PROF_PEDAGOGIA": "float64"
+  "QT_PROF_PSICOLOGO": "float64"
+  "QT_PROF_SAUDE": "float64"
+  "QT_PROF_SECRETARIO": "float64"
+  "QT_PROF_SEGURANCA": "float64"
+  "QT_PROF_SERVICOS_GERAIS": "float64"
+  "QT_SALAS_EXISTENTES": "float64"
+  "QT_SALAS_UTILIZADAS": "float64"
+  "QT_SALAS_UTILIZADAS_ACESSIVEIS": "float64"
+  "QT_SALAS_UTILIZADAS_DENTRO": "float64"
+  "QT_SALAS_UTILIZADAS_FORA": "float64"
+  "QT_SALAS_UTILIZA_CLIMATIZADAS": "float64"
+  "QT_TABLET_ALUNO": "float64"
+  "TP_CATEGORIA_ESCOLA_PRIVADA": "pd.CategoricalDtype(categories=['COMUNITÁRIA', 'CONFESSIONAL', 'FILANTRÓPICA', 'PARTICULAR', 'PÚBLICA'], ordered=False)"
+  "TP_CONVENIADA_PP": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_CONVENIO_PODER_PUBLICO": "pd.CategoricalDtype(categories=['ESTADUAL', 'ESTADUAL E MUNICIPAL', 'MUNICIPAL', 'PÚBLICA'], ordered=False)"
+  "TP_DEPENDENCIA": "pd.CategoricalDtype(categories=['ESTADUAL', 'FEDERAL', 'MUNICIPAL', 'PRIVADA'], ordered=False)"
+  "TP_INDIGENA_LINGUA": "pd.CategoricalDtype(categories=['EM LÍNGUA INDÍGENA E EM LÍNGUA PORTUGUESA', 'SEM EDUCAÇÃO INDÍGENA', 'SOMENTE EM LÍNGUA INDÍGENA', 'SOMENTE EM LÍNGUA PORTUGUESA'], ordered=False)"
+  "TP_LOCALIZACAO": "pd.CategoricalDtype(categories=['RURAL', 'URBANA'], ordered=False)"
+  "TP_LOCALIZACAO_DIFERENCIADA": "pd.CategoricalDtype(categories=['A ESCOLA NÃO ESTÁ EM ÁREA DE LOCALIZAÇÃO DIFERENCIADA', 'TERRA INDÍGENA', 'ÁREA DE ASSENTAMENTO', 'ÁREA REMANESCENTE DE QUILOMBOS'], ordered=False)"
+  "TP_MANT_ESCOLA_PRIVADA_EMP": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_MANT_ESCOLA_PRIVADA_ONG": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_MANT_ESCOLA_PRIVADA_OSCIP": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_MANT_ESCOLA_PRIVADA_SIND": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_MANT_ESCOLA_PRIVADA_SIST_S": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_MANT_ESCOLA_PRIVADA_S_FINS": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_MANT_ESCOLA_PRIV_ONG_OSCIP": "pd.CategoricalDtype(categories=['PÚBLICA', 'NÃO', 'SIM'], ordered=False)"
+  "TP_OCUPACAO_GALPAO": "pd.CategoricalDtype(categories=['NÃO', 'PRÓPRIO', 'ALUGADO', 'CEDIDO', 'NÃO INFORMADO'], ordered=False)"
+  "TP_OCUPACAO_PREDIO_ESCOLAR": "pd.CategoricalDtype(categories=['ALUGADO', 'CEDIDO', 'NÃO', 'PRÓPRIO'], ordered=False)"
+  "TP_PROPOSTA_PEDAGOGICA": "pd.CategoricalDtype(categories=['A ESCOLA NÃO POSSUI PROJETO POLÍTICO PEDAGÓGICO/PROPOSTA PEDAGÓGICA', 'NÃO', 'NÃO INFORMADO', 'SIM'], ordered=False)"
+  "TP_REDE_LOCAL": "pd.CategoricalDtype(categories=['A CABO', 'A CABO E WIRELESS', 'NÃO HÁ REDE LOCAL INTERLIGANDO COMPUTADORES', 'NÃO INFORMADO', 'WIRELESS'], ordered=False)"
+  "TP_REGULAMENTACAO": "pd.CategoricalDtype(categories=['EM TRAMITAÇÃO', 'NÃO', 'SIM'], ordered=False)"
+  "TP_RESPONSAVEL_REGULAMENTACAO": "pd.CategoricalDtype(categories=['ESTADUAL', 'ESTADUAL E MUNICIPAL', 'FEDERAL', 'FEDERAL E ESTADUAL', 'FEDERAL ESTADUAL E MUNICIPAL', 'MUNICIPAL', 'NÃO INFORMADO'], ordered=False)"
+  "TP_SITUACAO_FUNCIONAMENTO": "pd.CategoricalDtype(categories=['EM ATIVIDADE', 'EXTINTA', 'PARALISADA'], ordered=False)"
+
+DEPARA_SCHEMA: {}

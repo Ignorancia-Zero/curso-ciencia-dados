@@ -58,6 +58,20 @@ class CatalogoAquisicao:
         }
     )
 
+    ALUNO = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "aluno.parquet",
+        }
+    )
+
+    MATRICULA = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "matricula.parquet",
+        }
+    )
+
 
 @dataclass
 class CatalogoInfo:

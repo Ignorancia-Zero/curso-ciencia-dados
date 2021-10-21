@@ -9,6 +9,7 @@ from tqdm import tqdm
 from src.aquisicao.inep.base_inep import BaseINEPETL
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
+from src.utils.info import carrega_excel
 from src.utils.info import carrega_yaml
 
 
@@ -21,6 +22,11 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
     _ano: typing.Union[str, int]
     _tabela: str
     _configs: typing.Dict[str, typing.Any]
+    _regioes: str
+    _carrega_cols: typing.List[str]
+    _dtype: typing.Dict[str, str]
+    _rename: typing.Dict[str, str]
+    _cols_in: typing.List[str]
 
     def __init__(
         self,
@@ -29,6 +35,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
         reprocessar: bool = False,
+        regioes: typing.Sequence[str] = ("CO", "NORDESTE", "NORTE", "SUDESTE", "SUL"),
     ) -> None:
         """
         Instância o objeto de ETL Censo Escolar
@@ -38,6 +45,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
+        :param regioes: lista de regiões que devem ser processadas
         """
         super().__init__(
             ds,
@@ -47,7 +55,43 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             reprocessar=reprocessar,
         )
         self._tabela = tabela
+
+        # carrega o arquivo YAML de configurações
         self._configs = carrega_yaml(f"aquis_censo_{tabela}.yml")
+
+        # gera um regex de seleção de regiões
+        self._regioes = "|".join([f"_{r.lower()}|_{r.upper()}" for r in regioes])
+
+        # obtém a lista de colunas que devem ser extraídas da base
+        ano = self.ano
+        while ano > 2006:
+            try:
+                self._carrega_cols = (
+                    carrega_excel(
+                        f"aquis_censo_{tabela}_cols.xlsx", sheet_name=str(ano)
+                    )
+                    .loc[lambda f: f["USAR"] == 1, "COLUNA"]
+                    .to_list()
+                )
+            except NameError:
+                self._logger.warning(
+                    f"Ano {ano} não encontrado na configuração de colunas, utilizando ano anteiror"
+                )
+                ano -= 1
+            else:
+                break
+
+        # obtém o de-para de tipo e de nome
+        dtype = carrega_excel(f"aquis_censo_{tabela}_cols.xlsx", sheet_name="dtype")
+        self._dtype = dict(zip(dtype["COLUNA"].to_list(), dtype["DTYPE"].to_list()))
+        self._rename = dict(zip(dtype["COLUNA"].to_list(), dtype["RENAME"].to_list()))
+
+        # gera uma lista com todas as colunas do tipo IN_
+        self._cols_in = (
+            dtype.loc[lambda f: f["RENAME"].str.startswith("IN_"), "RENAME"]
+            .drop_duplicates()
+            .to_list()
+        )
 
     def extract(self) -> None:
         """
@@ -61,30 +105,35 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
 
         # para cada arquivo do censo demográfico
         for censo in tqdm(self.documentos_entrada):
-            censo.obtem_dados(
+            conf = dict(
                 como_df=True,
                 padrao_comp=(
                     f"({self._tabela.lower()}|{self._tabela.upper()}|{self._tabela.lower().title()})"
-                    f"(_co|_CO|_nordeste|_NORDESTE|_norte|_NORTE|_sudeste|_SUDESTE|_sul|_SUL)?"
+                    f"({self._regioes})?"
                     f"[.](csv|CSV|rar|RAR|zip|ZIP)"
                 ),
                 sep="|",
                 encoding="latin-1",
-                dtype={
-                    "FK_COD_AREA_OCDE_1": "str",
-                    "FK_COD_AREA_OCDE_2": "str",
-                    "FK_COD_AREA_OCDE_3": "str",
-                    "PK_COD_AREA_OCDE_1": "str",
-                    "PK_COD_AREA_OCDE_2": "str",
-                    "PK_COD_AREA_OCDE_3": "str",
-                    "CO_CURSO_1": "str",
-                    "CO_CURSO_2": "str",
-                    "CO_CURSO_3": "str",
-                },
             )
+
+            # carrega uma versão dummy dos dados e compara contra os valores reais
+            dummy = self._ds.carrega_como_objeto(documento=censo, nrows=10, **conf)
+            if isinstance(dummy, dict):
+                dummy = pd.concat(list(dummy.values()))
+            total_cols = set(dummy.columns)
+            if len(total_cols - set(self._dtype)) > 0:
+                self._logger.warning(
+                    f"As colunas {total_cols - set(self._dtype)} foram adicionadas ao dataset, avalie se não é necessário adiciona-las ao arquivo de configuração"
+                )
+
+            conf["usecols"] = self._carrega_cols
+            conf["dtype"] = self._dtype
+            censo.obtem_dados(**conf)
+
             if censo._data is not None:
                 if isinstance(censo.data, dict):
                     censo.data = pd.concat(list(censo.data.values()))
+                censo.data.rename(columns=self._rename, inplace=True)
                 self._dados_entrada.append(censo)
 
         if len(self._dados_entrada) == 0:
@@ -152,14 +201,6 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
                 func = BaseCensoEscolarETL.obtem_operacao(operacao)
                 base[coluna] = func(base, colunas_origem).astype("int")
 
-    def renomeia_colunas(self, base: Documento) -> None:
-        """
-        Renomea as colunas da base de entrada
-
-        :param base: documento com os dados a serem tratados
-        """
-        base.data.rename(columns=self._configs["RENOMEIA_COLUNAS"], inplace=True)
-
     def gera_dt_nascimento(self, base: Documento) -> None:
         """
         Cria a coluna de data de nascimento do gestor
@@ -173,25 +214,16 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         ):
             if "NU_DIA" in base.data:
                 base.data["DT_NASCIMENTO"] = pd.to_datetime(
-                    base.data["NU_ANO"] * 10000
-                    + base.data["NU_MES"] * 100
-                    + base.data["NU_DIA"],
+                    base.data["NU_ANO"].astype(str)
+                    + base.data["NU_MES"].astype(str)
+                    + base.data["NU_DIA"].astype(str),
                     format="%Y%m%d",
                 )
             else:
                 base.data["DT_NASCIMENTO"] = pd.to_datetime(
-                    base.data["NU_ANO"] * 100 + base.data["NU_MES"], format="%Y%m"
+                    base.data["NU_ANO"].astype(str) + base.data["NU_MES"].astype(str),
+                    format="%Y%m",
                 )
-
-    def dropa_colunas(self, base: Documento) -> None:
-        """
-        Remove colunas que são redundantes com outras bases
-
-        :param base: documento com os dados a serem tratados
-        """
-        base.data.drop(
-            columns=self._configs["DROPAR_COLUNAS"], inplace=True, errors="ignore"
-        )
 
     def processa_dt(self, base: Documento) -> None:
         """
@@ -225,8 +257,8 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         """
         # gera a lista de todas as colunas existentes
         in_atual = [c for c in base.data if c.startswith("IN_")]
-        cols = set(self._configs["IN_COLS"] + in_atual)
-        dif = set(in_atual) - set(self._configs["IN_COLS"])
+        cols = set(self._cols_in + in_atual)
+        dif = set(in_atual) - set(self._cols_in)
         if len(dif) > 0:
             self._logger.warning(
                 f"Há novas colunas IN que foram adicionadas -> {dif}"
@@ -358,14 +390,8 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         Transforma os dados e os adequa para os formatos de
         saída de interesse
         """
-        self._logger.info("Renomeando colunas")
-        self.renomeia_colunas(self.dados_entrada[0])
-
         self._logger.info("Gera DT nascimento")
         self.gera_dt_nascimento(self.dados_entrada[0])
-
-        self._logger.info("Remove colunas não utilizadas")
-        self.dropa_colunas(self.dados_entrada[0])
 
         self._logger.info("Processando colunas DT_")
         self.processa_dt(self.dados_entrada[0])

@@ -1,79 +1,5 @@
 COL_ID: "ID_GESTOR"
 
-# Dicionário que renomeia as colunas de diferentes anos de dados
-# para garantir que as bases entre nomes tenham o mesmo conteúdo
-RENOMEIA_COLUNAS:
-  "NU_ANO_CENSO": "ANO"
-
-# Lista de colunas que serão dropadas entre todas as bases
-DROPAR_COLUNAS:
-  - "NU_MES"
-  - "NU_ANO"
-  - "NU_IDADE_REFERENCIA"
-  - "CO_UF_NASC"
-  - "CO_AREA_CURSO_1"
-  - "CO_AREA_CURSO_2"
-  - "TP_TIPO_IES_1"
-  - "TP_TIPO_IES_2"
-  - "IN_LICENCIATURA_1"
-  - "IN_LICENCIATURA_2"
-  - "CO_REGIAO"
-  - "CO_MESORREGIAO"
-  - "CO_MICRORREGIAO"
-  - "CO_UF"
-  - "CO_MUNICIPIO"
-  - "CO_DISTRITO"
-  - "TP_DEPENDENCIA"
-  - "TP_LOCALIZACAO"
-  - "TP_CATEGORIA_ESCOLA_PRIVADA"
-  - "IN_CONVENIADA_PP"
-  - "TP_CONVENIO_PODER_PUBLICO"
-  - "IN_MANT_ESCOLA_PRIVADA_EMP"
-  - "IN_MANT_ESCOLA_PRIVADA_ONG"
-  - "IN_MANT_ESCOLA_PRIVADA_OSCIP"
-  - "IN_MANT_ESCOLA_PRIV_ONG_OSCIP"
-  - "IN_MANT_ESCOLA_PRIVADA_SIND"
-  - "IN_MANT_ESCOLA_PRIVADA_SIST_S"
-  - "IN_MANT_ESCOLA_PRIVADA_S_FINS"
-  - "TP_REGULAMENTACAO"
-  - "TP_LOCALIZACAO_DIFERENCIADA"
-  - "IN_EDUCACAO_INDIGENA"
-
-# Lista de colunas IN_ que podemos mapear contra uma coluna QT
-IN_COLS:
-  - "IN_DEF_FISICA"
-  - "IN_SUPERDOTACAO"
-  - "IN_ESPECIFICO_ANOS_INICIAIS"
-  - "IN_ESPECIFICO_EJA"
-  - "IN_ESPECIALIZACAO"
-  - "IN_ESPECIFICO_NENHUM"
-  - "IN_AUTISMO"
-  - "IN_ESPECIFICO_AMBIENTAL"
-  - "IN_ESPECIFICO_CRECHE"
-  - "IN_ESPECIFICO_AFRO"
-  - "IN_MESTRADO"
-  - "IN_ESPECIFICO_PRE_ESCOLA"
-  - "IN_ESPECIFICO_ED_INDIGENA"
-  - "IN_ESPECIFICO_ED_ESPECIAL"
-  - "IN_DEF_INTELECTUAL"
-  - "IN_SURDOCEGUEIRA"
-  - "IN_ESPECIFICO_OUTROS"
-  - "IN_ESPECIFICO_GESTAO"
-  - "IN_POS_NENHUM"
-  - "IN_SURDEZ"
-  - "IN_NECESSIDADE_ESPECIAL"
-  - "IN_ESPECIFICO_DIR_ADOLESC"
-  - "IN_BAIXA_VISAO"
-  - "IN_DEF_MULTIPLA"
-  - "IN_ESPECIFICO_CAMPO"
-  - "IN_ESPECIFICO_ANOS_FINAIS"
-  - "IN_DOUTORADO"
-  - "IN_ESPECIFICO_DIV_SEXUAL"
-  - "IN_DEF_AUDITIVA"
-  - "IN_ESPECIFICO_ENS_MEDIO"
-  - "IN_ESPECIFICO_DIR_HUMANOS"
-  - "IN_CEGUEIRA"
-
 # Dicionário que configura como fazer o tratamento de variáveis
 # indicadoras. Cada chave corresponde ao nome de uma coluna que
 # contém uma lista com dois valores. O primeiro da expressão regular
@@ -86,8 +12,8 @@ TRATAMENTO_IN: {}
 # a categoria em texto equivalente
 DEPARA_TP:
   "TP_SEXO":
-    1: "MASCULINO"
-    2: "FEMININO"
+    "1": "MASCULINO"
+    "2": "FEMININO"
 
   "TP_COR_RACA":
     0: "NÃO DECLARADA"
@@ -242,7 +168,6 @@ DADOS_SCHEMA:
   "TP_NACIONALIDADE": "pd.CategoricalDtype(categories=['BRASILEIRO', 'NATURALIZADO OU NASCIDO NO EXTERIOR', 'ESTRANGEIRO'], ordered=False)"
   "TP_ESCOLARIDADE": "pd.CategoricalDtype(categories=['FUNDAMENTAL INCOMPLETO', 'FUNDAMENTAL COMPLETO', 'MÉDIO COMPLETO', 'SUPERIOR COMPLETO'], ordered=True)"
   "TP_ENSINO_MEDIO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'GERAL', 'NORMAL', 'TÉCNICO', 'INDÍGENA'], ordered=False)"
-
 
 DEPARA_SCHEMA:
   "ANO": "uint16"

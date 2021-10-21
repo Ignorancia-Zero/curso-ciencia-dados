@@ -1,7 +1,21 @@
 import typing
 from pathlib import Path
+import urllib.request
 
+import bs4
 import requests
+
+
+def obtem_pagina(url: str) -> bs4.BeautifulSoup:
+    """
+    Lê uma página Web utilizando a biblioteca resquests
+
+    :param url: url para processar
+    :return: objeto BeautifulSoup com resultado da página
+    """
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    res = urllib.request.urlopen(req).read()
+    return bs4.BeautifulSoup(res)
 
 
 def download_dados_web(

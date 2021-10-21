@@ -1,6 +1,6 @@
 import typing
 
-from src.aquisicao.inep.base_censo import BaseCensoEscolarETL
+from src.aquisicao.inep._censo_escolar import BaseCensoEscolarETL
 from src.io.data_store import CatalogoAquisicao
 from src.io.data_store import DataStore
 from src.io.data_store import Documento

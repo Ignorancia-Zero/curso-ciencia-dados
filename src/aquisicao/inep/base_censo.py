@@ -9,8 +9,8 @@ from tqdm import tqdm
 from src.aquisicao.inep.base_inep import BaseINEPETL
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
-from src.utils.info import carrega_yaml
 from src.utils.info import carrega_excel
+from src.utils.info import carrega_yaml
 
 
 class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):

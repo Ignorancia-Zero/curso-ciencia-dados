@@ -42,7 +42,7 @@ class _MatriculaRegiaoETL(BaseCensoEscolarETL):
             ano=ano,
             criar_caminho=criar_caminho,
             reprocessar=reprocessar,
-            regioes=[regiao]
+            regioes=[regiao],
         )
         self.reg = regiao.upper()
 
@@ -103,7 +103,11 @@ class MatriculaETL(BaseCensoEscolarETL):
         :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
         super().__init__(
-            ds, "matricula", ano=ano, criar_caminho=criar_caminho, reprocessar=reprocessar
+            ds,
+            "matricula",
+            ano=ano,
+            criar_caminho=criar_caminho,
+            reprocessar=reprocessar,
         )
         self._etls = [
             _MatriculaRegiaoETL(

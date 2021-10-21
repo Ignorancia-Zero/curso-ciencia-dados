@@ -14,6 +14,8 @@ finally:
     from src.aquisicao.inep.censo_gestor import GestorETL
     from src.aquisicao.inep.censo_turma import TurmaETL
     from src.aquisicao.inep.censo_docente import DocenteETL
+    from src.aquisicao.inep.censo_matricula import MatriculaETL
+    from src.aquisicao.inep.censo_matricula import _MatriculaRegiaoETL
     from src.io.data_store import DataStore, Documento
 
 
@@ -84,6 +86,42 @@ def turma_etl(dados_path):
 @pytest.fixture(scope="session")
 def docente_etl(dados_path):
     etl = DocenteETL(ds=DataStore("teste"), ano="ultimo")
+    etl._inep = {
+        Documento(
+            etl._ds,
+            referencia=dict(
+                nome=k,
+                colecao=COLECAO_DADOS_WEB,
+                pasta=etl._base,
+            ),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
+    }
+
+    return etl
+
+
+@pytest.fixture(scope="session")
+def matricula_reg_etl(dados_path):
+    etl = _MatriculaRegiaoETL(ds=DataStore("teste"), regiao="CO", ano="ultimo")
+    etl._inep = {
+        Documento(
+            etl._ds,
+            referencia=dict(
+                nome=k,
+                colecao=COLECAO_DADOS_WEB,
+                pasta=etl._base,
+            ),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
+    }
+
+    return etl
+
+
+@pytest.fixture(scope="session")
+def matricula_etl(dados_path):
+    etl = MatriculaETL(ds=DataStore("teste"), ano="ultimo")
     etl._inep = {
         Documento(
             etl._ds,

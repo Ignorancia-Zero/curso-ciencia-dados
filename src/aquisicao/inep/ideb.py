@@ -21,7 +21,6 @@ class IDEBETL(BaseETL, abc.ABC):
 
     URL: str = "https://www.gov.br/inep/pt-br/areas-de-atuacao/pesquisas-estatisticas-e-indicadores/ideb/resultados"
     _links: typing.Dict[Documento, str]
-    _doc_saida: Documento
 
     def __init__(
         self,
@@ -37,10 +36,7 @@ class IDEBETL(BaseETL, abc.ABC):
         :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
         super().__init__(ds, criar_caminho, reprocessar)
-        self._doc_saida = Documento(
-            self._ds,
-            referencia=CatalogoAquisicao.IDEB
-        )
+        self._dados_saida = [Documento(self._ds, referencia=CatalogoAquisicao.IDEB)]
 
     @property
     def links(self) -> typing.Dict[Documento, str]:
@@ -93,7 +89,7 @@ class IDEBETL(BaseETL, abc.ABC):
 
         :return: lista de documentos de saída
         """
-        return [self._doc_saida]
+        return self._dados_saida
 
     def extract(self) -> None:
         """
@@ -109,9 +105,7 @@ class IDEBETL(BaseETL, abc.ABC):
         for ideb in tqdm(self.documentos_entrada):
             ideb.obtem_dados(
                 como_df=True,
-                padrao_comp=(
-                    f"({os.path.basename(ideb.nome)})" f"[.](xlsx|XLSX|xls|XLS)"
-                ),
+                padrao_comp=f"({os.path.splitext(ideb.nome)[0]})[.](xlsx|XLSX|xls|XLS)",
                 skiprows=9,
             )
             self._dados_entrada.append(ideb)
@@ -182,11 +176,11 @@ class IDEBETL(BaseETL, abc.ABC):
             t = c.replace(f"{m}_{a}", "")
             if t.startswith("_"):
                 if "SI" in t:
-                    m = f"{m}_AF"
+                    m = f"{m}_{turma}"
                 else:
-                    m = f"{m}_AF{t}"
+                    m = f"{m}_{turma}{t}"
             else:
-                m = f"{m}_AF"
+                m = f"{m}_{turma}"
 
             # ajustado os dados do campo
             m = m.replace("VL_", "").replace("INDICADOR_", "")
@@ -271,4 +265,4 @@ class IDEBETL(BaseETL, abc.ABC):
             saidas.append(df)
 
         self._logger.info("Concatenando saídas")
-        self._doc_saida.data = self.concatena_saidas(saidas)
+        self._dados_saida[0].data = self.concatena_saidas(saidas)

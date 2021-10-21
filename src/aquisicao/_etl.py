@@ -2,10 +2,9 @@ import abc
 import logging
 import tempfile
 import typing
-from pathlib import Path
 
-from src.io.caminho import obtem_objeto_caminho
 from src.io.caminho import CaminhoLocal
+from src.io.caminho import obtem_objeto_caminho
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
 from src.utils.web import download_dados_web

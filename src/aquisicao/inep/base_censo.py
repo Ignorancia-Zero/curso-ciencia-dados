@@ -334,7 +334,9 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
 
         return base_id
 
-    def gera_documento_saida(self, base: Documento, base_id: Documento) -> None:
+    def gera_documento_saida(
+        self, base: Documento, base_id: typing.Union[None, Documento]
+    ) -> None:
         """
         Concatena as bases de dados em uma saída única
 

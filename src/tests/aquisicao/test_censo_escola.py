@@ -18,37 +18,6 @@ def test_extract(escola_etl) -> None:
 
 
 @pytest.mark.run(order=2)
-def test_renomeia_colunas(escola_etl) -> None:
-    renomear = {
-        d.nome: set(escola_etl._configs["RENOMEIA_COLUNAS"]).intersection(
-            set(d.data.columns)
-        )
-        for d in escola_etl.dados_entrada
-    }
-
-    for base in escola_etl.dados_entrada:
-        escola_etl.renomeia_colunas(base)
-
-    i = 0
-    for k, cols in renomear.items():
-        for c in cols:
-            d = escola_etl.dados_entrada[i]
-            assert c not in d.data
-            assert escola_etl._configs["RENOMEIA_COLUNAS"][c] in d.data
-        i += 1
-
-
-@pytest.mark.run(order=3)
-def test_dropa_colunas(escola_etl) -> None:
-    for base in escola_etl.dados_entrada:
-        escola_etl.dropa_colunas(base)
-
-    for d in escola_etl.dados_entrada:
-        for c in escola_etl._configs["DROPAR_COLUNAS"]:
-            assert c not in d.data
-
-
-@pytest.mark.run(order=4)
 def test_processa_dt(escola_etl) -> None:
     for base in escola_etl.dados_entrada:
         escola_etl.processa_dt(base)
@@ -59,7 +28,7 @@ def test_processa_dt(escola_etl) -> None:
                 assert d.data[c].dtype == "datetime64[ns]"
 
 
-@pytest.mark.run(order=5)
+@pytest.mark.run(order=3)
 def test_processa_qt(escola_etl) -> None:
     for base in escola_etl.dados_entrada:
         escola_etl.processa_qt(base)
@@ -71,7 +40,7 @@ def test_processa_qt(escola_etl) -> None:
                     assert 88888 not in d.data[c].values
 
 
-@pytest.mark.run(order=6)
+@pytest.mark.run(order=4)
 def test_processa_in(escola_etl) -> None:
     cols = set([c for d in escola_etl.dados_entrada for c in d.data])
     criar_qt = [
@@ -117,7 +86,7 @@ def test_processa_in(escola_etl) -> None:
                 assert {0, 1, np.nan}, set(d.data[c].unique())
 
 
-@pytest.mark.run(order=7)
+@pytest.mark.run(order=5)
 def test_processa_tp(escola_etl) -> None:
     for base in escola_etl.dados_entrada:
         escola_etl.processa_tp(base)
@@ -142,14 +111,14 @@ def test_processa_tp(escola_etl) -> None:
                 assert "category" == d.data[c].dtype
 
 
-@pytest.mark.run(order=8)
+@pytest.mark.run(order=6)
 def test_remove_duplicatas(escola_etl) -> None:
     base_id = escola_etl.remove_duplicatas(escola_etl.documentos_entrada[0])
 
     assert base_id is None
 
 
-@pytest.mark.run(order=9)
+@pytest.mark.run(order=7)
 def test_gera_documento_saida(escola_etl) -> None:
     escola_etl.gera_documento_saida(escola_etl.documentos_entrada[0], None)
     assert len(escola_etl.dados_saida) == 1
@@ -159,7 +128,7 @@ def test_gera_documento_saida(escola_etl) -> None:
     )
 
 
-@pytest.mark.run(order=10)
+@pytest.mark.run(order=8)
 def test_ajusta_schema(escola_etl) -> None:
     escola_etl.ajusta_schema(
         base=escola_etl.documentos_saida[0],

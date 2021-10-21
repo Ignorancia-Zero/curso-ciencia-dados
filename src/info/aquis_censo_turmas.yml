@@ -60,7 +60,6 @@ PREENCHER_NULOS:
   "CO_TIPO_ATIVIDADE_5": 0
   "CO_TIPO_ATIVIDADE_6": 0
   "CO_ETAPA_ENSINO": 0
-  "QT_MATRICULAS": -1
 
 # Schema de colunas que deve ser adotado para todas as bases de dados
 # para garantir uniformidade do carregamento das dados parquet

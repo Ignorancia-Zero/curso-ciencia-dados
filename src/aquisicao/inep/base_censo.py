@@ -63,7 +63,7 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
         self._regioes = "|".join([f"_{r.lower()}|_{r.upper()}" for r in regioes])
 
         # obtém a lista de colunas que devem ser extraídas da base
-        ano = self._ano
+        ano = self.ano
         while ano > 2006:
             try:
                 self._carrega_cols = (

@@ -16,27 +16,6 @@ def test_extract(docente_etl) -> None:
 
 
 @pytest.mark.run(order=2)
-def test_renomeia_colunas(docente_etl) -> None:
-    renomear = {
-        d.nome: set(docente_etl._configs["RENOMEIA_COLUNAS"]).intersection(
-            set(d.data.columns)
-        )
-        for d in docente_etl.dados_entrada
-    }
-
-    for base in docente_etl.dados_entrada:
-        docente_etl.renomeia_colunas(base)
-
-    i = 0
-    for k, cols in renomear.items():
-        for c in cols:
-            d = docente_etl.dados_entrada[i]
-            assert c not in d.data
-            assert docente_etl._configs["RENOMEIA_COLUNAS"][c] in d.data
-        i += 1
-
-
-@pytest.mark.run(order=3)
 def test_gera_dt_nascimento(docente_etl) -> None:
     for base in docente_etl.dados_entrada:
         docente_etl.gera_dt_nascimento(base)
@@ -46,17 +25,7 @@ def test_gera_dt_nascimento(docente_etl) -> None:
         assert d.data["DT_NASCIMENTO"].dtype == "datetime64[ns]"
 
 
-@pytest.mark.run(order=4)
-def test_dropa_colunas(docente_etl) -> None:
-    for base in docente_etl.dados_entrada:
-        docente_etl.dropa_colunas(base)
-
-    for d in docente_etl.dados_entrada:
-        for c in docente_etl._configs["DROPAR_COLUNAS"]:
-            assert c not in d.data
-
-
-@pytest.mark.run(order=5)
+@pytest.mark.run(order=3)
 def test_processa_in(docente_etl) -> None:
     for base in docente_etl.dados_entrada:
         docente_etl.processa_in(base)
@@ -69,7 +38,7 @@ def test_processa_in(docente_etl) -> None:
             assert "IN_INTERCULTURAL_OUTROS" not in base.data
 
 
-@pytest.mark.run(order=6)
+@pytest.mark.run(order=4)
 def test_processa_tp(docente_etl) -> None:
     for base in docente_etl.dados_entrada:
         docente_etl.processa_tp(base)
@@ -85,7 +54,7 @@ def test_processa_tp(docente_etl) -> None:
                 assert "category" == d.data[c].dtype
 
 
-@pytest.mark.run(order=7)
+@pytest.mark.run(order=5)
 def test_remove_duplicatas_gera_documento_saida(docente_etl) -> None:
     base_id = docente_etl.remove_duplicatas(docente_etl.documentos_entrada[0])
 
@@ -99,7 +68,7 @@ def test_remove_duplicatas_gera_documento_saida(docente_etl) -> None:
     )
 
 
-@pytest.mark.run(order=8)
+@pytest.mark.run(order=6)
 def test_ajusta_schema(docente_etl) -> None:
     docente_etl.ajusta_schema(
         base=docente_etl.documentos_saida[0],

@@ -81,9 +81,19 @@ def processa_turmas(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
         how="left"
     )
 
-    # TODO: Incorporar as colunas de ETAPA ENSINO E EDUC_PROFISSIONAL
-    # "CO_ETAPA_ENSINO": "uint8"
-    # "CO_CURSO_EDUC_PROFISSIONAL": "float64"
+    # adiciona os dados de etapa ensino, e gera as colunas informando
+    # os tipos de turmas disponíveis
+    df_qt = turma.merge(ds.df_ee, how="left").groupby(["ID_ESCOLA"])[[
+        "INFANTIL", "FUNDAMENTAL", "AI", "AF", "MEDIO", "TECNICO", "EJA", "FIC"
+    ]].sum()
+    df_in = df_qt[df_qt > 0].astype("uint8")
+    df_in.columns = "QT_TURMA_" + df_in.columns
+    df_qt.columns = "QT_TURMA_" + df_qt.columns
+    res = res.merge(df_in.reset_index(), how="left")
+    res = res.merge(df_qt.reset_index(), how="left")
+
+    # adiciona os dados ao datamart
+    dm = dm.merge(res, how="left")
 
     return dm
 

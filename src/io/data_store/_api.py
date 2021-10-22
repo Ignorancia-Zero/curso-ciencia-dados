@@ -10,11 +10,14 @@ import geopandas as gpd
 import pandas as pd
 
 from src.io.caminho import CaminhoSQLite
+from src.io.caminho import CaminhoLocal
 from src.io.caminho import obtem_objeto_caminho
 from src.io.caminho._base import _CaminhoBase
 from src.io.configs import DS_ENVS, EXTENSOES_TEXTO
 from src.io.le_dados import le_dados_comprimidos
 from src.utils.interno import obtem_extencao
+from src.utils.info import CAMINHO_INFO
+from ._catalogo import CatalogoInfo
 
 
 class Documento(Hashable):
@@ -231,6 +234,8 @@ class DataStore:
     caminho_base: _CaminhoBase
     _logger: logging.Logger
 
+    _df_ee: pd.DataFrame
+
     def __init__(self, env: str = "local_completo") -> None:
         """
         Gera uma instância do data store
@@ -240,6 +245,21 @@ class DataStore:
         self._env = env
         self._logger = logging.getLogger(__name__)
         self.caminho_base = obtem_objeto_caminho(DS_ENVS[env])
+
+    @property
+    def df_ee(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de ETAPA de ENSINO e
+        suas características
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_ee"):
+            self._df_ee = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.ETAPA_ENSINO)),
+                como_df=True
+            )
+        return self._df_ee
 
     def _obtem_caminho(self, data: Documento = None, colecao: Colecao = None) -> str:
         """
@@ -264,6 +284,23 @@ class DataStore:
         if colecao.pasta != "":
             lista_cam += colecao.pasta.split("/")
 
+        # verifica se a coleção é uma pasta interna da ferramenta
+        if colecao.nome.startswith("__") and colecao.nome.endswith("__"):
+            # obtém o nome interno da pasta
+            nome_interno = colecao.nome[2:-2]
+
+            # corrige a pasta dentro da coleção
+            if colecao.pasta != "":
+                lista_cam = colecao.pasta.split("/")
+            else:
+                lista_cam = []
+
+            # obtém o caminho adequado
+            if nome_interno == "info":
+                return CaminhoLocal(str(CAMINHO_INFO)).obtem_caminho(lista_cam)
+            else:
+                raise NotImplementedError(f"Não conhecemos a pasta {nome_interno}")
+
         return self.caminho_base.obtem_caminho(lista_cam)
 
     def gera_caminho(
@@ -281,7 +318,7 @@ class DataStore:
         :param criar_caminho: flag se o caminho deve ser criado
         :return: caminho para a coleção
         """
-        return self.caminho_base.__class__(
+        return obtem_objeto_caminho(
             self._obtem_caminho(documento, colecao), criar_caminho=criar_caminho
         )
 

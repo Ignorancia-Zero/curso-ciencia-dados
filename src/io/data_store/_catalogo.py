@@ -17,8 +17,8 @@ class CatalogoInfo:
     a pasta 'info' como parte da ferramenta
     """
 
-    CONFIG_AQUIS_ESCOLA = frozendict(
-        {"colecao": "info", "nome": "aquis_censo_escola", "tipo": "yml"}
+    ETAPA_ENSINO = frozendict(
+        {"colecao": "__info__", "nome": "censo_escolar_etapa_ensino.xslx"}
     )
 
 

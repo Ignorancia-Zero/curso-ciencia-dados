@@ -66,6 +66,18 @@ class _MatriculaRegiaoETL(BaseCensoEscolarETL):
             ]
         return self._documentos_saida
 
+    def processa_tp(self, base: Documento) -> None:
+        """
+        Realiza o processamento das colunas de tipo
+
+        :param base: documento com os dados a serem tratados
+        """
+        if "TP_ZONA_RESIDENCIAL" in base.data:
+            if base.data["TP_ZONA_RESIDENCIAL"].min() == 0:
+                base.data["TP_ZONA_RESIDENCIAL"] += 1
+
+        super(_MatriculaRegiaoETL, self).processa_tp(base)
+
     def load(self) -> None:
         """
         Exporta os dados transformados

@@ -17,7 +17,7 @@ def ideb_etl(ds, dados_path):
             etl._ds,
             referencia=dict(nome=k, colecao=COLECAO_DADOS_WEB, pasta="ideb"),
         ): ""
-        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/ideb")
+        for k in sorted(os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/ideb"))
     }
 
     return etl

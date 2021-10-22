@@ -1,5 +1,4 @@
 ENV_DS = "local_completo"
 COLECAO_DADOS_WEB = "externo"
 COLECAO_AQUISCAO = "aquisicao"
-COLECAO_DATAMART = "datamart"
 PASTA_DADOS = "dados"

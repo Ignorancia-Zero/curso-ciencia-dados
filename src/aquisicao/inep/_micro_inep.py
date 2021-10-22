@@ -1,17 +1,11 @@
 import abc
-import tempfile
 import typing
-from pathlib import Path
-from urllib.request import urlopen
 
-from bs4 import BeautifulSoup
-
-from src.aquisicao.base_etl import BaseETL
+from src.aquisicao._etl import BaseETL
 from src.configs import COLECAO_DADOS_WEB
-from src.io.caminho import obtem_objeto_caminho
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
-from src.utils.web import download_dados_web
+from src.utils.web import obtem_pagina
 
 
 class BaseINEPETL(BaseETL, abc.ABC):
@@ -34,6 +28,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
         base: str,
         ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
+        reprocessar: bool = False,
     ) -> None:
         """
         Instância o objeto de ETL INEP
@@ -42,8 +37,9 @@ class BaseINEPETL(BaseETL, abc.ABC):
         :param base: Nome da base que vai na URL do INEP
         :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
+        :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
-        super().__init__(ds, criar_caminho)
+        super().__init__(ds, criar_caminho, reprocessar)
 
         self._base = base.replace("-", "_")
         self._ano = ano
@@ -57,8 +53,7 @@ class BaseINEPETL(BaseETL, abc.ABC):
         :return: dicionário com nome do arquivo e link para a página
         """
         if not hasattr(self, "_inep"):
-            html = urlopen(self._url).read()
-            soup = BeautifulSoup(html, features="html.parser")
+            soup = obtem_pagina(self._url)
             self._inep = {
                 Documento(
                     self._ds,
@@ -118,17 +113,6 @@ class BaseINEPETL(BaseETL, abc.ABC):
         :return: lista de documentos de saída
         """
         raise NotImplementedError("É preciso implementar o método")
-
-    def download_conteudo(self) -> None:
-        """
-        Realiza o download dos dados INEP para uma pasta local
-        """
-        for doc, link in self.dicionario_para_baixar().items():
-            with tempfile.TemporaryFile() as temp:
-                download_dados_web(temp, link)
-                cam1 = obtem_objeto_caminho(str(Path(temp.name).parent))
-                cam2 = self._ds.gera_caminho(doc)
-                cam1.copia_conteudo(temp.name, cam2)
 
     @abc.abstractmethod
     def extract(self) -> None:

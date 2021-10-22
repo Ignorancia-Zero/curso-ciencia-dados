@@ -201,7 +201,7 @@ def le_dados_comprimidos(
 
             # lê os arquivos para o dicionários
             objs = {
-                arq: converte_buffer_em_objeto(z.open(arq), ext, **kwargs)
+                arq: converte_buffer_em_objeto(open(arq, "rb"), ext, **kwargs)
                 for arq in arqs
             }
 

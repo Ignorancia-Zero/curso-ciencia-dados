@@ -1,47 +1,19 @@
-# Dicionário que renomeia as colunas de diferentes anos de dados
-# para garantir que as bases entre nomes tenham o mesmo conteúdo
-RENOMEIA_COLUNAS:
-  "NU_ANO_CENSO": "ANO"
+COL_ID: "ID_GESTOR"
 
-# Lista de colunas que serão dropadas entre todas as bases
-DROPAR_COLUNAS:
-  - "NU_MES"
-  - "NU_ANO"
-  - "NU_IDADE_REFERENCIA"
-  - "CO_UF_NASC"
-  - "CO_AREA_CURSO_1"
-  - "CO_AREA_CURSO_2"
-  - "TP_TIPO_IES_1"
-  - "TP_TIPO_IES_2"
-  - "IN_LICENCIATURA_1"
-  - "IN_LICENCIATURA_2"
-  - "CO_MESORREGIAO"
-  - "CO_MICRORREGIAO"
-  - "CO_UF"
-  - "CO_MUNICIPIO"
-  - "CO_DISTRITO"
-  - "TP_DEPENDENCIA"
-  - "TP_LOCALIZACAO"
-  - "TP_CATEGORIA_ESCOLA_PRIVADA"
-  - "IN_CONVENIADA_PP"
-  - "TP_CONVENIO_PODER_PUBLICO"
-  - "IN_MANT_ESCOLA_PRIVADA_EMP"
-  - "IN_MANT_ESCOLA_PRIVADA_ONG"
-  - "IN_MANT_ESCOLA_PRIVADA_OSCIP"
-  - "IN_MANT_ESCOLA_PRIV_ONG_OSCIP"
-  - "IN_MANT_ESCOLA_PRIVADA_SIND"
-  - "IN_MANT_ESCOLA_PRIVADA_SIST_S"
-  - "IN_MANT_ESCOLA_PRIVADA_S_FINS"
-  - "TP_REGULAMENTACAO"
-  - "TP_LOCALIZACAO_DIFERENCIADA"
-  - "IN_EDUCACAO_INDIGENA"
+# Dicionário que configura como fazer o tratamento de variáveis
+# indicadoras. Cada chave corresponde ao nome de uma coluna que
+# contém uma lista com dois valores. O primeiro da expressão regular
+# que será utilizada para selecionar os campos de origem; o segundo
+# com o tipo de comparação que será feito com o valor 0 para converter
+# o resultado da operação numa flag
+TRATAMENTO_IN: {}
 
 # De-para entre o valor de item dentro de uma coluna TP e
 # a categoria em texto equivalente
 DEPARA_TP:
   "TP_SEXO":
-    1: "MASCULINO"
-    2: "FEMININO"
+    "1": "MASCULINO"
+    "2": "FEMININO"
 
   "TP_COR_RACA":
     0: "NÃO DECLARADA"
@@ -90,11 +62,23 @@ DEPARA_TP:
     3: "TERCEIRIZADO"
     4: "CLT"
 
+# Colunas de quantidades que foram preenchidas com os valores
+# de 88888 caso o valor do censo não fosse considerado razoável
+COLS_88888: []
+
+# Lista de colunas que devem ser adicionadas ao de-para
+COLS_DEPARA:
+  - "ID_ESCOLA"
+  - "TP_CARGO_GESTOR"
+  - "TP_TIPO_ACESSO_CARGO"
+  - "TP_TIPO_CONTRATACAO"
 
 # Dicionário de valores de preenchimento fixo de colunas
 PREENCHER_NULOS:
   "CO_IES_1": 0
   "CO_IES_2": 0
+  "NU_ANO_CONCLUSAO_1": 0
+  "NU_ANO_CONCLUSAO_2": 0
   "CO_MUNICIPIO_NASC": 0
   "IN_NECESSIDADE_ESPECIAL": -1
   "IN_BAIXA_VISAO": -1
@@ -134,15 +118,16 @@ PREENCHER_NULOS:
 
 # Schema de colunas que deve ser adotado para todas as bases de dados
 # para garantir uniformidade do carregamento das dados parquet
-DS_SCHEMA:
+DADOS_SCHEMA:
   "ANO": "uint16"
   "ID_GESTOR": "object"
-  "CO_ENTIDADE": "uint32"
   "CO_PAIS_ORIGEM": "uint32"
   "CO_IES_1": "uint32"
   "CO_CURSO_1": "object"
+  "NU_ANO_CONCLUSAO_1": "uint16"
   "CO_IES_2": "uint32"
   "CO_CURSO_2": "object"
+  "NU_ANO_CONCLUSAO_2": "uint16"
   "CO_MUNICIPIO_NASC": "uint32"
   "DT_NASCIMENTO": "datetime64[ns]"
   "NU_IDADE": "uint8"
@@ -183,6 +168,11 @@ DS_SCHEMA:
   "TP_NACIONALIDADE": "pd.CategoricalDtype(categories=['BRASILEIRO', 'NATURALIZADO OU NASCIDO NO EXTERIOR', 'ESTRANGEIRO'], ordered=False)"
   "TP_ESCOLARIDADE": "pd.CategoricalDtype(categories=['FUNDAMENTAL INCOMPLETO', 'FUNDAMENTAL COMPLETO', 'MÉDIO COMPLETO', 'SUPERIOR COMPLETO'], ordered=True)"
   "TP_ENSINO_MEDIO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'GERAL', 'NORMAL', 'TÉCNICO', 'INDÍGENA'], ordered=False)"
+
+DEPARA_SCHEMA:
+  "ANO": "uint16"
+  "ID_GESTOR": "object"
+  "ID_ESCOLA": "uint32"
   "TP_CARGO_GESTOR": "pd.CategoricalDtype(categories=['DIRETOR', 'OUTRO CARGO'], ordered=False)"
   "TP_TIPO_ACESSO_CARGO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'PROPRIETÁRIO', 'INDICAÇÃO', 'PROCESSO SELETIVO', 'CONCURSO', 'ELEITORAL SEM COMUNIDADE', 'ELEITORAL COM COMUNIDADE', 'OUTRO'], ordered=False)"
   "TP_TIPO_CONTRATACAO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'ESTÁVEL', 'TEMPORÁRIO', 'TERCEIRIZADO', 'CLT'], ordered=False)"

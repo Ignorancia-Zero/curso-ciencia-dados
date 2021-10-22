@@ -1,9 +1,13 @@
 import abc
 import logging
+import tempfile
 import typing
 
+from src.io.caminho import CaminhoLocal
+from src.io.caminho import obtem_objeto_caminho
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
+from src.utils.web import download_dados_web
 
 
 class BaseETL(abc.ABC):
@@ -63,6 +67,29 @@ class BaseETL(abc.ABC):
         """
         raise NotImplementedError("É preciso implementar o método")
 
+    def dicionario_para_baixar(self) -> typing.Dict[Documento, str]:
+        """
+        Le os conteúdos da pasta de dados e seleciona apenas os arquivos
+        a serem baixados como complementares
+
+        :return: dicionário com nome do arquivo e link para a página
+        """
+        raise NotImplementedError("Você deve implementar o método para a classe filha")
+
+    def download_conteudo(self) -> None:
+        """
+        Realiza o download dos dados de algum local remoto
+        """
+        for doc, link in self.dicionario_para_baixar().items():
+            cam = self._ds.gera_caminho(doc)
+            if isinstance(cam, CaminhoLocal):
+                download_dados_web(cam.obtem_caminho(doc.nome), link)
+            else:
+                with tempfile.TemporaryDirectory() as temp:
+                    cam2 = obtem_objeto_caminho(temp)
+                    download_dados_web(cam2.obtem_caminho(doc.nome), link)
+                    cam2.copia_conteudo(doc.nome, cam)
+
     @property
     def dados_entrada(self) -> typing.List[Documento]:
         """
@@ -111,6 +138,13 @@ class BaseETL(abc.ABC):
         """
         Executa o pipeline completo de tratamento de dados
         """
+        if (
+            all([doc.exists() for doc in self.documentos_saida])
+            and not self._reprocessar
+        ):
+            self._logger.info(f"DADOS DE {self} JÁ FORAM PROCESSADOS")
+            return
+
         self._logger.info(f"EXTRAINDO DADOS {self}")
         self.extract()
 

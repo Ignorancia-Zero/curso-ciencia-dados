@@ -1,0 +1,182 @@
+COL_ID: "ID_ALUNO"
+
+# Dicionário que configura como fazer o tratamento de variáveis
+# indicadoras. Cada chave corresponde ao nome de uma coluna que
+# contém uma lista com dois valores. O primeiro da expressão regular
+# que será utilizada para selecionar os campos de origem; o segundo
+# com o tipo de comparação que será feito com o valor 0 para converter
+# o resultado da operação numa flag
+TRATAMENTO_IN: {}
+
+# De-para entre o valor de item dentro de uma coluna TP e
+# a categoria em texto equivalente
+DEPARA_TP:
+  "TP_SEXO":
+    "1": "MASCULINO"
+    "2": "FEMININO"
+    "M": "MASCULINO"
+    "F": "FEMININO"
+
+  "TP_COR_RACA":
+    0: "NÃO DECLARADA"
+    1: "BRANCA"
+    2: "PRETA"
+    3: "PARDA"
+    4: "AMARELA"
+    5: "INDÍGENA"
+
+  "TP_NACIONALIDADE":
+    1: "BRASILEIRO"
+    2: "NATURALIZADO OU NASCIDO NO EXTERIOR"
+    3: "ESTRANGEIRO"
+
+  "TP_ZONA_RESIDENCIAL":
+    1: "RURAL"
+    2: "URBANA"
+    9: "NÃO INFORMADO"
+
+  "TP_LOCAL_RESID_DIFERENCIADA":
+    0: "NÃO DIFERENCIADA"
+    1: "QUILOMBOLA"
+    2: "INDÍGENA"
+    3: "ASSENTAMENTO"
+    9: "NÃO INFORMADO"
+
+  "TP_OUTRO_LOCAL_AULA":
+    1: "HOSPITAL"
+    2: "DOMÍCILIO"
+    3: "NÃO APLICÁVEL"
+
+  TP_RESPONSAVEL_TRANSPORTE:
+    0: "NÃO APLICÁVEL"
+    1: "ESTADUAL"
+    2: "MUNICIPAL"
+
+  TP_INGRESSO_FEDERAIS:
+    1: "SEM PROCESSO"
+    2: "SORTEIO"
+    3: "TRANSFERÊNCIA"
+    4: "EXAME - SEM RESERVA"
+    5: "EXAME - VAGA E. PÚB."
+    6: "EXAME - VAGA E. PÚB. + B. REN. + MIN. ÉTN."
+    7: "EXAME - AÇÃO AFIRMATIVA"
+    8: "OUTRO"
+    9: "EXAME - VAGA E. PÚB. + B. REN."
+
+# Colunas de quantidades que foram preenchidas com os valores
+# de 88888 caso o valor do censo não fosse considerado razoável
+COLS_88888: []
+
+# Lista de colunas que devem ser adicionadas ao de-para
+COLS_DEPARA:
+  - "ID_MATRICULA"
+  - "ID_TURMA"
+  - "IN_AEE_LIBRAS"
+  - "IN_AEE_LINGUA_PORTUGUESA"
+  - "IN_AEE_INFORMATICA_ACESSIVEL"
+  - "IN_AEE_BRAILLE"
+  - "IN_AEE_CAA"
+  - "IN_AEE_SOROBAN"
+  - "IN_AEE_VIDA_AUTONOMA"
+  - "IN_AEE_OPTICOS_NAO_OPTICOS"
+  - "IN_AEE_ENRIQ_CURRICULAR"
+  - "IN_AEE_DESEN_COGNITIVO"
+  - "IN_AEE_MOBILIDADE"
+  - "TP_OUTRO_LOCAL_AULA"
+  - "TP_RESPONSAVEL_TRANSPORTE"
+  - "IN_TRANSPORTE_PUBLICO"
+  - "IN_TRANSP_BICICLETA"
+  - "IN_TRANSP_MICRO_ONIBUS"
+  - "IN_TRANSP_ONIBUS"
+  - "IN_TRANSP_TR_ANIMAL"
+  - "IN_TRANSP_VANS_KOMBI"
+  - "IN_TRANSP_OUTRO_VEICULO"
+  - "IN_TRANSP_EMBAR_ATE5"
+  - "IN_TRANSP_EMBAR_5A15"
+  - "IN_TRANSP_EMBAR_15A35"
+  - "IN_TRANSP_EMBAR_35"
+  - "IN_TRANSP_TREM_METRO"
+
+# Dicionário de valores de preenchimento fixo de colunas
+PREENCHER_NULOS:
+  "CO_PAIS_ORIGEM": 0
+  "CO_MUNICIPIO_NASC": 0
+  "CO_MUNICIPIO_END": 0
+  "TP_ZONA_RESIDENCIAL": "NÃO INFORMADO"
+  "TP_RESPONSAVEL_TRANSPORTE": "NÃO APLICÁVEL"
+
+# Schema de colunas que deve ser adotado para todas as bases de dados
+# para garantir uniformidade do carregamento das dados parquet
+DADOS_SCHEMA:
+  "ANO": "uint16"
+  "ID_ALUNO": "str"
+  "DT_NASCIMENTO": "datetime64[ns]"
+  "CO_PAIS_ORIGEM": "uint32"
+  "CO_MUNICIPIO_NASC": "uint32"
+  "CO_MUNICIPIO_END": "uint32"
+  "NU_IDADE": "uint8"
+  "IN_NECESSIDADE_ESPECIAL": "float32"
+  "IN_BAIXA_VISAO": "float32"
+  "IN_CEGUEIRA": "float32"
+  "IN_DEF_AUDITIVA": "float32"
+  "IN_DEF_FISICA": "float32"
+  "IN_DEF_INTELECTUAL": "float32"
+  "IN_SURDEZ": "float32"
+  "IN_SURDOCEGUEIRA": "float32"
+  "IN_DEF_MULTIPLA": "float32"
+  "IN_AUTISMO": "float32"
+  "IN_SUPERDOTACAO": "float32"
+  "IN_SINDROME_ASPERGER": "float32"
+  "IN_SINDROME_RETT": "float32"
+  "IN_TRANSTORNO_DI": "float32"
+  "IN_RECURSO_LEDOR": "float32"
+  "IN_RECURSO_TRANSCRICAO": "float32"
+  "IN_RECURSO_INTERPRETE": "float32"
+  "IN_RECURSO_LIBRAS": "float32"
+  "IN_RECURSO_LABIAL": "float32"
+  "IN_RECURSO_AMPLIADA_18": "float32"
+  "IN_RECURSO_AMPLIADA_16": "float32"
+  "IN_RECURSO_AMPLIADA_20": "float32"
+  "IN_RECURSO_AMPLIADA_24": "float32"
+  "IN_RECURSO_CD_AUDIO": "float32"
+  "IN_RECURSO_PROVA_PORTUGUES": "float32"
+  "IN_RECURSO_VIDEO_LIBRAS": "float32"
+  "IN_RECURSO_BRAILLE": "float32"
+  "IN_RECURSO_NENHUM": "float32"
+  "TP_SEXO": "pd.CategoricalDtype(categories=['MASCULINO', 'FEMININO', 'NÃO INFORMADO'], ordered=False)"
+  "TP_COR_RACA": "pd.CategoricalDtype(categories=['NÃO DECLARADA', 'BRANCA', 'PRETA', 'PARDA', 'AMARELA', 'INDÍGENA'], ordered=False)"
+  "TP_NACIONALIDADE": "pd.CategoricalDtype(categories=['BRASILEIRO', 'NATURALIZADO OU NASCIDO NO EXTERIOR', 'ESTRANGEIRO'], ordered=False)"
+  "TP_ZONA_RESIDENCIAL": "pd.CategoricalDtype(categories=['NÃO INFORMADO', 'RURAL', 'URBANA'], ordered=False)"
+  "TP_LOCAL_RESID_DIFERENCIADA": "pd.CategoricalDtype(categories=['NÃO DIFERENCIADA', 'QUILOMBOLA', 'INDÍGENA', 'ASSENTAMENTO', 'NÃO INFORMADO'], ordered=False)"
+  "TP_INGRESSO_FEDERAIS": "pd.CategoricalDtype(categories=['SEM PROCESSO', 'SORTEIO', 'TRANSFERÊNCIA', 'EXAME - SEM RESERVA', 'EXAME - VAGA E. PÚB.', 'EXAME - VAGA E. PÚB. + B. REN. + MIN. ÉTN.', 'EXAME - AÇÃO AFIRMATIVA', 'OUTRO', 'EXAME - VAGA E. PÚB. + B. REN.'], ordered=False)"
+
+DEPARA_SCHEMA:
+  "ANO": "uint16"
+  "ID_ALUNO": "str"
+  "ID_MATRICULA": "uint32"
+  "ID_TURMA": "object"
+  "IN_AEE_LIBRAS": "float32"
+  "IN_AEE_LINGUA_PORTUGUESA": "float32"
+  "IN_AEE_INFORMATICA_ACESSIVEL": "float32"
+  "IN_AEE_BRAILLE": "float32"
+  "IN_AEE_CAA": "float32"
+  "IN_AEE_SOROBAN": "float32"
+  "IN_AEE_VIDA_AUTONOMA": "float32"
+  "IN_AEE_OPTICOS_NAO_OPTICOS": "float32"
+  "IN_AEE_ENRIQ_CURRICULAR": "float32"
+  "IN_AEE_DESEN_COGNITIVO": "float32"
+  "IN_AEE_MOBILIDADE": "float32"
+  "IN_TRANSPORTE_PUBLICO": "float32"
+  "IN_TRANSP_BICICLETA": "float32"
+  "IN_TRANSP_MICRO_ONIBUS": "float32"
+  "IN_TRANSP_ONIBUS": "float32"
+  "IN_TRANSP_TR_ANIMAL": "float32"
+  "IN_TRANSP_VANS_KOMBI": "float32"
+  "IN_TRANSP_OUTRO_VEICULO": "float32"
+  "IN_TRANSP_EMBAR_ATE5": "float32"
+  "IN_TRANSP_EMBAR_5A15": "float32"
+  "IN_TRANSP_EMBAR_15A35": "float32"
+  "IN_TRANSP_EMBAR_35": "float32"
+  "IN_TRANSP_TREM_METRO": "float32"
+  "TP_OUTRO_LOCAL_AULA": "pd.CategoricalDtype(categories=['HOSPITAL', 'DOMÍCILIO', 'NÃO APLICÁVEL'], ordered=False)"
+  "TP_RESPONSAVEL_TRANSPORTE": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'ESTADUAL', 'MUNICIPAL'], ordered=False)"

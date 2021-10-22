@@ -36,7 +36,9 @@ class IDEBETL(BaseETL, abc.ABC):
         :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
         """
         super().__init__(ds, criar_caminho, reprocessar)
-        self._dados_saida = [Documento(self._ds, referencia=CatalogoAquisicao.IDEB)]
+        self._dados_saida = [
+            Documento(self._ds, referencia=dict(CatalogoAquisicao.IDEB))
+        ]
 
     @property
     def links(self) -> typing.Dict[Documento, str]:
@@ -162,7 +164,9 @@ class IDEBETL(BaseETL, abc.ABC):
         :param turma: anos sendo processado (AI, AF, EM)
         :return: data frame com de-para
         """
-        proc = dict(COLUNA=list(), METRICA=list(), ANO=list())
+        proc: typing.Dict[str, typing.List[typing.Union[str, int]]] = dict(
+            COLUNA=list(), METRICA=list(), ANO=list()
+        )
         for c in df.columns[1:]:
             i = c.find("_20")
 
@@ -234,9 +238,9 @@ class IDEBETL(BaseETL, abc.ABC):
         :param saidas: lista com bases de IDEB
         :return: base concatenada única
         """
-        df = None
+        df = pd.DataFrame()
         for s in saidas:
-            if df is None:
+            if df.shape[0] == 0:
                 df = s
             else:
                 df = df.merge(s, on=["ID_ESCOLA", "ANO"], how="outer")

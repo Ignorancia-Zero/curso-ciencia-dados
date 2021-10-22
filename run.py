@@ -1,15 +1,11 @@
 import click
 
 import src.configs as conf_geral
-from src.aquisicao.executa import executa_etl_inep
-from src.aquisicao.opcoes import INEP_ETL
-from src.datamart.config import DM_GRAN
-from src.io.data_store import DataStore
-from src.utils.logs import configura_logs
 from src.aquisicao.executa import executa_etl
 from src.aquisicao.executa import executa_etl_microdado_inep
 from src.aquisicao.opcoes import ETL
 from src.aquisicao.opcoes import MicroINEPETL
+from src.datamart.config import DM_GRAN
 from src.io.data_store import DataStore
 from src.utils.logs import configura_logs
 

@@ -6,15 +6,31 @@ from src.io.data_store import CatalogoAquisicao
 
 
 def processa_censo_escola(ds: DataStore, ano: int) -> pd.DataFrame:
-    doc = Documento(ds, CatalogoAquisicao.CENSO_ESCOLA)
+    """
+    Carrega os dados de escola filtrados para escolas em atividade
+
+    :param ds: instância do data store
+    :param ano: ano de processamento da base
+    :return: data frame de escolas em atividade
+    """
+    doc = Documento(ds, CatalogoAquisicao.ESCOLA)
     dm = ds.carrega_como_objeto(doc, filters=[("ANO", "=", ano)])
-    return dm.loc[lambda f: f["TP_ATIVIDADE"] == "EM ATIVIDADE", ["CO_ENTIDADE", "ANO"]]
+    return dm.loc[lambda f: f["TP_ATIVIDADE"] == "EM ATIVIDADE"]
 
 
 def processa_turmas(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
-    doc = Documento(ds, CatalogoAquisicao.CENSO_TURMA)
-    turma = ds.carrega_como_objeto(doc, filters=[("ANO", "=", ano)])
+    """
+    Carrega a base de turmas e gera as seguintes métricas:
+    - XXX
+    - XXX
 
+    :param dm: datamart em seu estado atual
+    :param ds: instância do data store
+    :param ano: ano de processamento da base
+    :return: data frame de escolas com dados de turma adicionados
+    """
+    doc = Documento(ds, CatalogoAquisicao.TURMA)
+    turma = ds.carrega_como_objeto(doc, filters=[("ANO", "=", ano)])
 
     return dm
 
@@ -33,14 +49,10 @@ def controi_datamart_escola(ds: DataStore, ano: int) -> None:
     dm = processa_docentes(dm, ds, ano)
     dm = processa_gestor(dm, ds, ano)
     dm = processa_matricula(dm, ds, ano)
-    dm = processa_prova_brasil(dm, ds, ano)
     dm = gera_metricas_ideb(dm, ds, ano)
-    dm = preenche_nulos(dm, ds, ano)
 
     # exportar dados
-    doc = Documento(
-        ds, referencia=CatalogoDatamart.ESCOLA, data=dm
-    )
+    doc = Documento(ds, referencia=CatalogoDatamart.ESCOLA, data=dm)
     doc.pasta = f"{doc.nome}/ANO={ano}"
     doc.nome = f"{ano}.parquet"
     doc.data.drop(columns=["ANO"], inplace=True)

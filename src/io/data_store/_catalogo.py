@@ -21,6 +21,7 @@ class CatalogoInfo:
         {"colecao": "info", "nome": "aquis_censo_escola", "tipo": "yml"}
     )
 
+
 @dataclass
 class CatalogoAquisicao:
     """
@@ -28,68 +29,19 @@ class CatalogoAquisicao:
     aquisição que são colocados no DataStore
     """
 
-    ESCOLA = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "escola.parquet",
-        }
-    )
-
-    GESTOR = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "gestor.parquet",
-        }
-    )
-
+    ESCOLA = frozendict({"colecao": COLECAO_AQUISICAO, "nome": "escola.parquet"})
+    GESTOR = frozendict({"colecao": COLECAO_AQUISICAO, "nome": "gestor.parquet"})
     GESTOR_ESCOLA = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "depara_gestor_escola.parquet",
-        }
+        {"colecao": COLECAO_AQUISICAO, "nome": "depara_gestor_escola.parquet"}
     )
-
-    TURMA = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "turma.parquet",
-        }
-    )
-
-    DOCENTE = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "docente.parquet",
-        }
-    )
-
+    TURMA = frozendict({"colecao": COLECAO_AQUISICAO, "nome": "turma.parquet"})
+    DOCENTE = frozendict({"colecao": COLECAO_AQUISICAO, "nome": "docente.parquet"})
     DOCENTE_TURMA = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "depara_docente_turma.parquet",
-        }
+        {"colecao": COLECAO_AQUISICAO, "nome": "depara_docente_turma.parquet"}
     )
-
-    ALUNO = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "aluno.parquet",
-        }
-    )
-
-    MATRICULA = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "matricula.parquet",
-        }
-    )
-
-    IDEB = frozendict(
-        {
-            "colecao": COLECAO_AQUISICAO,
-            "nome": "ideb.parquet",
-        }
-    )
+    ALUNO = frozendict({"colecao": COLECAO_AQUISICAO, "nome": "aluno.parquet"})
+    MATRICULA = frozendict({"colecao": COLECAO_AQUISICAO, "nome": "matricula.parquet"})
+    IDEB = frozendict({"colecao": COLECAO_AQUISICAO, "nome": "ideb.parquet"})
 
 
 @dataclass
@@ -98,9 +50,4 @@ class CatalogoDatamart:
     Catalogo com os datamarts por nível de granularidade
     """
 
-    ESCOLA = frozendict(
-        {
-            "colecao": COLECAO_DATAMART,
-            "nome": "dm_escola.parquet",
-        }
-    )
+    ESCOLA = frozendict({"colecao": COLECAO_DATAMART, "nome": "dm_escola.parquet"})

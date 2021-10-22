@@ -5,7 +5,8 @@ from src.aquisicao.executa import executa_etl
 from src.aquisicao.executa import executa_etl_microdado_inep
 from src.aquisicao.opcoes import ETL
 from src.aquisicao.opcoes import MicroINEPETL
-from src.datamart.config import DM_GRAN
+from src.datamart.config import DMGran
+from src.datamart.executa import executa_datamart
 from src.io.data_store import DataStore
 from src.utils.logs import configura_logs
 
@@ -95,6 +96,7 @@ def processa_microdado_inep(
         etl=etl, ds=ds, ano=ano, criar_caminho=criar_caminho, reprocessar=reprocessar
     )
 
+
 @cli.group()
 def datamart():
     """
@@ -106,7 +108,7 @@ def datamart():
 @datamart.command()
 @click.option(
     "--granularidade",
-    type=click.Choice([s.value for s in DM_GRAN]),
+    type=click.Choice([s.value for s in DMGran]),
     help="Nome do ETL a ser executado",
 )
 @click.option(
@@ -122,17 +124,16 @@ def datamart():
 )
 def processa_datamart(etl: str, ano: str, criar_caminho: bool, env: str) -> None:
     """
-    Executa o pipeline de ETL de uma determinada fonte
+    Constrói um datamart a um determinado nível de granularidade para um
+    dado ano de dados
 
-    :param etl: nome do ETL a ser executado
+    :param granularidade: nível do datamart a ser gerado
     :param ano: Ano dos dados a serem processados (pode ser int ou 'ultimo')
     :param env: ambiente do data store
-    :param criar_caminho: flag indicando se devemos criar os caminhos
     """
     configura_logs()
     ds = DataStore(env)
-    executa_etl_inep(etl, ds, ano, criar_caminho)
-
+    executa_datamart(etl, ds, ano)
 
 
 if __name__ == "__main__":

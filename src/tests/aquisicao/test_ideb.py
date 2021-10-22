@@ -1,7 +1,26 @@
+import os
 import unittest
 
 import pandas as pd
 import pytest
+
+from src.aquisicao.inep.ideb import IDEBETL
+from src.configs import COLECAO_DADOS_WEB
+from src.io.data_store import Documento
+
+
+@pytest.fixture(scope="module")
+def ideb_etl(ds, dados_path):
+    etl = IDEBETL(ds=ds)
+    etl._links = {
+        Documento(
+            etl._ds,
+            referencia=dict(nome=k, colecao=COLECAO_DADOS_WEB, pasta="ideb"),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/ideb")
+    }
+
+    return etl
 
 
 @pytest.fixture(scope="module")

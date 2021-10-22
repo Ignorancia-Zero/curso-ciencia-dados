@@ -1,7 +1,26 @@
+import os
 import unittest
 
 import pandas as pd
 import pytest
+
+from src.aquisicao.inep.censo_turma import TurmaETL
+from src.configs import COLECAO_DADOS_WEB
+from src.io.data_store import Documento
+
+
+@pytest.fixture(scope="module")
+def turma_etl(ds, dados_path):
+    etl = TurmaETL(ds=ds, ano="ultimo")
+    etl._inep = {
+        Documento(
+            etl._ds,
+            referencia=dict(nome=k, colecao=COLECAO_DADOS_WEB, pasta=etl._base),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
+    }
+
+    return etl
 
 
 @pytest.mark.run(order=1)
@@ -75,7 +94,9 @@ def test_ajusta_schema(turma_etl) -> None:
 
     assert set(turma_etl.dados_saida[0].data) == set(turma_etl._configs["DADOS_SCHEMA"])
     for col, dtype in turma_etl._configs["DADOS_SCHEMA"].items():
-        if not dtype.startswith("pd."):
+        if dtype == "str":
+            assert turma_etl.dados_saida[0].data[col].dtype == "object"
+        elif not dtype.startswith("pd."):
             assert turma_etl.dados_saida[0].data[col].dtype == dtype
 
 

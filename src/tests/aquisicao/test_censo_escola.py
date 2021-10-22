@@ -1,9 +1,28 @@
+import os
 import re
 import unittest
 
 import numpy as np
 import pandas as pd
 import pytest
+
+from src.aquisicao.inep.censo_escola import EscolaETL
+from src.configs import COLECAO_DADOS_WEB
+from src.io.data_store import Documento
+
+
+@pytest.fixture(scope="module")
+def escola_etl(ds, dados_path):
+    etl = EscolaETL(ds=ds, ano="ultimo")
+    etl._inep = {
+        Documento(
+            etl._ds,
+            referencia=dict(nome=k, colecao=COLECAO_DADOS_WEB, pasta=etl._base),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
+    }
+
+    return etl
 
 
 @pytest.mark.run(order=1)
@@ -124,7 +143,7 @@ def test_gera_documento_saida(escola_etl) -> None:
     assert len(escola_etl.dados_saida) == 1
     assert (
         escola_etl.dados_saida[0].data.shape[0]
-        == escola_etl.dados_saida[0].data["CO_ENTIDADE"].nunique()
+        == escola_etl.dados_saida[0].data["ID_ESCOLA"].nunique()
     )
 
 
@@ -146,7 +165,9 @@ def test_ajusta_schema(escola_etl) -> None:
         escola_etl._configs["DADOS_SCHEMA"]
     )
     for col, dtype in escola_etl._configs["DADOS_SCHEMA"].items():
-        if not dtype.startswith("pd."):
+        if dtype == "str":
+            assert escola_etl.dados_saida[0].data[col].dtype == "object"
+        elif not dtype.startswith("pd."):
             assert escola_etl.dados_saida[0].data[col].dtype == dtype
 
 

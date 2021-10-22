@@ -39,9 +39,7 @@ def aquisicao():
     default=conf_geral.ENV_DS,
     help="String com caminho para pasta de entrada",
 )
-def processa_dado(
-    etl: str, criar_caminho: bool, reprocessar: bool, env: str
-) -> None:
+def processa_dado(etl: str, criar_caminho: bool, reprocessar: bool, env: str) -> None:
     """
     Executa o pipeline de ETL de uma determinada fonte
 
@@ -52,9 +50,7 @@ def processa_dado(
     """
     configura_logs()
     ds = DataStore(env)
-    executa_etl(
-        etl=etl, ds=ds, criar_caminho=criar_caminho, reprocessar=reprocessar
-    )
+    executa_etl(etl=etl, ds=ds, criar_caminho=criar_caminho, reprocessar=reprocessar)
 
 
 @aquisicao.command()

@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from src.aquisicao.inep.base_inep import BaseINEPETL
+from src.aquisicao.inep._micro_inep import BaseINEPETL
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
 from src.utils.info import carrega_excel

@@ -1,7 +1,26 @@
+import os
 import unittest
 
 import pandas as pd
 import pytest
+
+from src.aquisicao.inep.censo_gestor import GestorETL
+from src.configs import COLECAO_DADOS_WEB
+from src.io.data_store import Documento
+
+
+@pytest.fixture(scope="module")
+def gestor_etl(ds, dados_path):
+    etl = GestorETL(ds=ds, ano="ultimo")
+    etl._inep = {
+        Documento(
+            etl._ds,
+            referencia=dict(nome=k, colecao=COLECAO_DADOS_WEB, pasta=etl._base),
+        ): ""
+        for k in os.listdir(dados_path / f"{COLECAO_DADOS_WEB}/censo_escolar")
+    }
+
+    return etl
 
 
 @pytest.mark.run(order=1)

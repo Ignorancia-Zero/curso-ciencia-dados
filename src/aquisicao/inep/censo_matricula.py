@@ -1,6 +1,6 @@
 import typing
 
-from src.aquisicao.inep.base_censo import BaseCensoEscolarETL
+from src.aquisicao.inep._censo_escolar import BaseCensoEscolarETL
 from src.io.data_store import CatalogoAquisicao
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
@@ -66,6 +66,18 @@ class _MatriculaRegiaoETL(BaseCensoEscolarETL):
             ]
         return self._documentos_saida
 
+    def processa_tp(self, base: Documento) -> None:
+        """
+        Realiza o processamento das colunas de tipo
+
+        :param base: documento com os dados a serem tratados
+        """
+        if "TP_ZONA_RESIDENCIAL" in base.data:
+            if base.data["TP_ZONA_RESIDENCIAL"].min() == 0:
+                base.data["TP_ZONA_RESIDENCIAL"] += 1
+
+        super(_MatriculaRegiaoETL, self).processa_tp(base)
+
     def load(self) -> None:
         """
         Exporta os dados transformados
@@ -90,17 +102,17 @@ class MatriculaETL(BaseCensoEscolarETL):
     def __init__(
         self,
         ds: DataStore,
-        ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
         reprocessar: bool = False,
+        ano: typing.Union[int, str] = "ultimo",
     ) -> None:
         """
         Instância o objeto de ETL de dados de Matrícula
 
         :param ds: instância de objeto data store
-        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
+        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         """
         super().__init__(
             ds,

@@ -72,6 +72,13 @@ class CatalogoAquisicao:
         }
     )
 
+    IDEB = frozendict(
+        {
+            "colecao": COLECAO_AQUISCAO,
+            "nome": "ideb.parquet",
+        }
+    )
+
 
 @dataclass
 class CatalogoInfo:

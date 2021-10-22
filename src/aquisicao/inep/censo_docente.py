@@ -2,7 +2,7 @@ import typing
 
 import numpy as np
 
-from src.aquisicao.inep.base_censo import BaseCensoEscolarETL
+from src.aquisicao.inep._censo_escolar import BaseCensoEscolarETL
 from src.io.data_store import CatalogoAquisicao
 from src.io.data_store import DataStore
 from src.io.data_store import Documento
@@ -19,17 +19,17 @@ class DocenteETL(BaseCensoEscolarETL):
     def __init__(
         self,
         ds: DataStore,
-        ano: typing.Union[int, str] = "ultimo",
         criar_caminho: bool = True,
         reprocessar: bool = False,
+        ano: typing.Union[int, str] = "ultimo",
     ) -> None:
         """
         Instância o objeto de ETL de dados de Docente
 
         :param ds: instância de objeto data store
-        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         :param criar_caminho: flag indicando se devemos criar os caminhos
         :param reprocessar: flag se devemos reprocessar o conteúdo do ETL
+        :param ano: ano da pesquisa a ser processado (pode ser um inteiro ou 'ultimo')
         """
         super().__init__(
             ds,

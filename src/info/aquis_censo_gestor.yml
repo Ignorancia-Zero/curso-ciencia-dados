@@ -68,7 +68,7 @@ COLS_88888: []
 
 # Lista de colunas que devem ser adicionadas ao de-para
 COLS_DEPARA:
-  - "CO_ENTIDADE"
+  - "ID_ESCOLA"
   - "TP_CARGO_GESTOR"
   - "TP_TIPO_ACESSO_CARGO"
   - "TP_TIPO_CONTRATACAO"
@@ -172,7 +172,7 @@ DADOS_SCHEMA:
 DEPARA_SCHEMA:
   "ANO": "uint16"
   "ID_GESTOR": "object"
-  "CO_ENTIDADE": "uint32"
+  "ID_ESCOLA": "uint32"
   "TP_CARGO_GESTOR": "pd.CategoricalDtype(categories=['DIRETOR', 'OUTRO CARGO'], ordered=False)"
   "TP_TIPO_ACESSO_CARGO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'PROPRIETÁRIO', 'INDICAÇÃO', 'PROCESSO SELETIVO', 'CONCURSO', 'ELEITORAL SEM COMUNIDADE', 'ELEITORAL COM COMUNIDADE', 'OUTRO'], ordered=False)"
   "TP_TIPO_CONTRATACAO": "pd.CategoricalDtype(categories=['NÃO APLICÁVEL', 'ESTÁVEL', 'TEMPORÁRIO', 'TERCEIRIZADO', 'CLT'], ordered=False)"

@@ -241,6 +241,29 @@ def processa_docentes(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame
     return dm
 
 
+def processa_ideb(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
+    """
+    Adiciona os dados de IDEB do último censo a base de escola
+
+    :param dm: datamart em seu estado atual
+    :param ds: instância do data store
+    :param ano: ano de processamento da base
+    :return: datamart com os dados de IDEB incorporados
+    """
+    # carrega os dados de ideb, entretanto se o ano for par
+    # nós vamos pegar os dados do ano anterior, caso contrário
+    # vamos pegar do ano em si. Isso é feito porque o IDEB ocorre
+    # a cada 2 anos e apenas em anos ímpares
+    ano = ano if ano % 2 == 1 else ano - 1
+    ideb = ds.carrega_como_objeto(
+        Documento(ds, CatalogoAquisicao.IDEB),
+        como_df=True,
+        filters=[("ANO", "=", ano)],
+    ).drop(columns="ANO")
+
+    return dm.merge(ideb, how="left")
+
+
 def controi_datamart_escola(ds: DataStore, ano: int) -> None:
     """
     Constrói o datamart de escola para o ano selecionado e exporta
@@ -256,11 +279,10 @@ def controi_datamart_escola(ds: DataStore, ano: int) -> None:
     dm = processa_gestor(dm, ds, ano)
     dm = processa_matricula(dm, ds, ano)
     dm = processa_ideb(dm, ds, ano)
-    dm = gera_metricas_ideb(dm, ds, ano)
+    dm = gera_metricas_adicionais(dm, ds, ano)
 
     # exportar dados
     doc = Documento(ds, referencia=CatalogoDatamart.ESCOLA, data=dm)
-    doc.pasta = f"{doc.nome}/ANO={ano}"
-    doc.nome = f"{ano}.parquet"
-    doc.data.drop(columns=["ANO"], inplace=True)
-    ds.salva_documento(doc)
+    ds.salva_documento(
+        doc, partition_cols=["ANO", "CO_REGIAO", "CO_UF", "CO_MUNICIPIO", "ID_ESCOLA"]
+    )

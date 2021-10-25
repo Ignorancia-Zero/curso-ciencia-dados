@@ -338,8 +338,10 @@ class DataStore:
 
         # obtém a extenção do arquivo
         if "ext" not in kwargs:
-            kwargs["ext"] = documento.tipo
-        ext = kwargs["ext"]
+            ext = documento.tipo
+        else:
+            ext = kwargs["ext"]
+            del kwargs["ext"]
 
         # se o caminho for de SQL, nós lemos o dataframe diretamente
         if isinstance(cam, CaminhoSQLite) or ext == "sql":
@@ -348,13 +350,14 @@ class DataStore:
         # se a extenção do arquivo for zip
         elif ext == "zip":
             # nós vamos processar o zip lendo diversos arquivos
-            del kwargs["ext"]
             return le_dados_comprimidos(
                 cam.buffer_para_arquivo(documento.nome), ext, **kwargs
             )
 
         # checa se como_df está ativado
         elif kwargs.get("como_df"):
+            del kwargs["como_df"]
+
             # se estiver carrega os dados com o pandas
             if ext == "parquet":
                 return cam.read_parquet(nome_arq=documento.nome, **kwargs)
@@ -385,6 +388,8 @@ class DataStore:
 
         # checa se como_gdf está ativado
         elif kwargs.get("como_gdf"):
+            del kwargs["como_gdf"]
+
             # se estiver carrega os dados com o geopandas
             if ext == "parquet":
                 return cam.gpd_read_parquet(nome_arq=documento.nome, **kwargs)
@@ -402,6 +407,9 @@ class DataStore:
 
         # caso contrário
         else:
+            kwargs.pop("como_df", None)
+            kwargs.pop("como_gdf", None)
+
             # tenta alguma das extenções restantes
             if ext == "json":
                 return cam.load_json(nome_arq=documento.nome, **kwargs)

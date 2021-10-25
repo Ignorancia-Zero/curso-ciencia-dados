@@ -18,7 +18,7 @@ class CatalogoInfo:
     """
 
     ETAPA_ENSINO = frozendict(
-        {"colecao": "__info__", "nome": "censo_escolar_etapa_ensino.xslx"}
+        {"colecao": "__info__", "nome": "censo_escolar_etapa_ensino.xlsx"}
     )
 
 

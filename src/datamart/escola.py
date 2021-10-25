@@ -241,6 +241,69 @@ def processa_docentes(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame
     return dm
 
 
+def processa_gestor(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
+    """
+    Incorpora os dados de gestores ao datamart de escola
+
+    :param dm: datamart em seu estado atual
+    :param ds: instância do data store
+    :param ano: ano de processamento da base
+    :return: datamart de escola com os dados de gestor
+    """
+    # carrega os dados de gestor
+    gestor = ds.carrega_como_objeto(
+        Documento(ds, CatalogoAquisicao.GESTOR),
+        como_df=True,
+        filters=[("ANO", "=", ano)],
+    )
+    depara = ds.carrega_como_objeto(
+        Documento(ds, CatalogoAquisicao.GESTOR_ESCOLA),
+        como_df=True,
+        filters=[("ANO", "=", ano)],
+    )
+    gestor = gestor.merge(
+        depara[["ID_GESTOR", "ID_ESCOLA"]].drop_duplicates(), how="left"
+    )
+
+    # soma todas as turmas
+    res = gestor.groupby(["ID_ESCOLA"]).agg({"ID_GESTOR": "count"}).reset_index()
+    res.columns = ["ID_ESCOLA", "QT_GESTORES"]
+
+    # processa as colunas IN_
+    res = res.merge(
+        fn.processa_coluna_in(gestor, "ID_ESCOLA", "ID_GESTOR", "GESTOR", perc=False),
+        how="left",
+    )
+
+    # obtém a área do curso do gestor
+    gestor = gestor.merge(
+        ds.df_cr, left_on=["CO_CURSO_1"], right_on=["CO_CURSO"], how="left"
+    ).drop(columns=["CO_CURSO"])
+
+    # processa as colunas TP
+    for (tp_col, pf, df) in [
+        ("TP_SEXO", "GESTOR_SEXO", gestor),
+        ("TP_COR_RACA", "GESTOR_COR", gestor),
+        ("TP_NACIONALIDADE", "GESTOR", gestor),
+        ("TP_ESCOLARIDADE", "GESTOR", gestor),
+        ("TP_ENSINO_MEDIO", "GESTOR_EM", gestor),
+        ("TP_AREA_CURSO", "GESTOR_FORMACAO", gestor),
+        ("TP_CARGO_GESTOR", "GESTOR_CARGO", depara),
+        ("TP_TIPO_ACESSO_CARGO", "GESTOR_ACESSO", depara),
+        ("TP_TIPO_CONTRATACAO", "GESTOR_CONT", depara),
+    ]:
+        res = res.merge(
+            fn.processa_coluna_tp(df, "ID_ESCOLA", tp_col, "ID_GESTOR", pf, recriar=False),
+            on="ID_ESCOLA",
+            how="left",
+        )
+
+    # adiciona os dados ao datamart
+    dm = dm.merge(res, how="left")
+
+    return dm
+
+
 def processa_ideb(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
     """
     Adiciona os dados de IDEB do último censo a base de escola
@@ -264,6 +327,17 @@ def processa_ideb(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
     return dm.merge(ideb, how="left")
 
 
+def gera_metricas_adicionais(dm: pd.DataFrame) -> pd.DataFrame:
+
+    return dm.assign(
+        NU_ALUNO_POR_TURMA=lambda f: f["QT_ALUNOS"] / f["QT_TURMAS"],
+        NU_ALUNO_POR_DOCENTE=lambda f: f["QT_ALUNOS"] / f["QT_DOCENTES"],
+
+        CO_REGIAO=lambda f: f["CO_MUNICIPIO"] // 1000000,
+        CO_UF=lambda f: f["CO_MUNICIPIO"] // 100000,
+    )
+
+
 def controi_datamart_escola(ds: DataStore, ano: int) -> None:
     """
     Constrói o datamart de escola para o ano selecionado e exporta
@@ -272,14 +346,14 @@ def controi_datamart_escola(ds: DataStore, ano: int) -> None:
     :param ds: instância do data store
     :param ano: ano de processamento da base
     """
-    # carregar dados
+    # carrega e processa as bases de dados
     dm = processa_censo_escola(ds, ano)
     dm = processa_turmas(dm, ds, ano)
     dm = processa_docentes(dm, ds, ano)
     dm = processa_gestor(dm, ds, ano)
     dm = processa_matricula(dm, ds, ano)
     dm = processa_ideb(dm, ds, ano)
-    dm = gera_metricas_adicionais(dm, ds, ano)
+    dm = gera_metricas_adicionais(dm)
 
     # exportar dados
     doc = Documento(ds, referencia=CatalogoDatamart.ESCOLA, data=dm)

@@ -235,6 +235,9 @@ class DataStore:
     _logger: logging.Logger
 
     _df_ee: pd.DataFrame
+    _df_cr: pd.DataFrame
+    _df_ep: pd.DataFrame
+    _df_cp: pd.DataFrame
 
     def __init__(self, env: str = "local_completo") -> None:
         """
@@ -260,6 +263,55 @@ class DataStore:
                 como_df=True
             )
         return self._df_ee
+
+    @property
+    def df_cp(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de complementação pedagógica
+        e a área e nome do curso
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_cp"):
+            self._df_cp = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.COMPL_PEDAGOGICA)),
+                como_df=True
+            )
+        return self._df_cp
+
+    @property
+    def df_ep(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de educação profissional
+        e o nome e área
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_ep"):
+            self._df_ep = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.EDUC_PROF)),
+                como_df=True
+            )
+        return self._df_ep
+
+    @property
+    def df_cr(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de curso de educação
+        superior e a área e nome do curso
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_cr"):
+            self._df_cr = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.CURSOS)),
+                como_df=True
+            ).assign(
+                NO_CURSO=lambda f: f["NO_CURSO"].astype("category"),
+                TP_GRAU_ACADEMICO=lambda f: f["TP_GRAU_ACADEMICO"].astype("category"),
+                TP_AREA_CURSO=lambda f: f["TP_AREA_CURSO"].astype("category"),
+            )
+        return self._df_cr
 
     def _obtem_caminho(self, data: Documento = None, colecao: Colecao = None) -> str:
         """

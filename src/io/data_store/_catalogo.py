@@ -20,6 +20,15 @@ class CatalogoInfo:
     ETAPA_ENSINO = frozendict(
         {"colecao": "__info__", "nome": "censo_escolar_etapa_ensino.xlsx"}
     )
+    CURSOS = frozendict(
+        {"colecao": "__info__", "nome": "censo_escolar_cursos.xlsx"}
+    )
+    COMPL_PEDAGOGICA = frozendict(
+        {"colecao": "__info__", "nome": "censo_escolar_compl_pedagogica.xlsx"}
+    )
+    EDUC_PROF = frozendict(
+        {"colecao": "__info__", "nome": "censo_escolar_educ_profissional.xlsx"}
+    )
 
 
 @dataclass

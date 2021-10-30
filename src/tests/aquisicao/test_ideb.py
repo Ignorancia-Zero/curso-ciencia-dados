@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 import pytest
 
-from src.aquisicao.inep.ideb import IDEBETL
+from src.aquisicao import IDEBETL
 from src.configs import COLECAO_DADOS_WEB
 from src.io.data_store import Documento
 

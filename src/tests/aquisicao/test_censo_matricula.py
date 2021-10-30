@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 import pytest
 
-from src.aquisicao.inep.censo_matricula import MatriculaETL
+from src.aquisicao import MatriculaETL
 from src.aquisicao.inep.censo_matricula import _MatriculaRegiaoETL
 from src.configs import COLECAO_DADOS_WEB
 from src.io.data_store import Documento

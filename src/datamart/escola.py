@@ -1,5 +1,8 @@
+import logging
+
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import src.datamart.funcoes as fn
 from src.io.data_store import CatalogoAquisicao
@@ -54,7 +57,7 @@ def processa_turmas(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
 
     # processa as colunas TP
     for (tp_col, pf) in [
-        ("TP_MEDIACAO_DIDATICO_PEDAGO", "TURMA"),
+        ("TP_MEDIACAO_DIDATICO_PEDAGO", "TURMA_MEDIACAO"),
         ("TP_TIPO_ATENDIMENTO_TURMA", "TURMA_ATEND"),
         ("TP_TIPO_LOCAL_TURMA", "TURMA_LOCAL"),
         ("TP_MOD_ENSINO", "TURMA_MOD"),
@@ -173,13 +176,13 @@ def processa_docentes(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame
     for (tp_col, pf, df) in [
         ("TP_SEXO", "DOCENTE_SEXO", docente),
         ("TP_COR_RACA", "DOCENTE_COR", docente),
-        ("TP_NACIONALIDADE", "DOCENTE", docente),
+        ("TP_NACIONALIDADE", "DOCENTE_NASC", docente),
         ("TP_ZONA_RESIDENCIAL", "DOCENTE_ZONA", docente),
         ("TP_LOCAL_RESID_DIFERENCIADA", "DOCENTE_LDIF", docente),
-        ("TP_ESCOLARIDADE", "DOCENTE", docente),
+        ("TP_ESCOLARIDADE", "DOCENTE_ESC", docente),
         ("TP_ENSINO_MEDIO", "DOCENTE_EM", docente),
-        ("TP_TIPO_CONTRATACAO", "DOCENTE", depara),
-        ("TP_TIPO_DOCENTE", "DOCENTE", depara),
+        ("TP_TIPO_CONTRATACAO", "DOCENTE_CONT", depara),
+        ("TP_TIPO_DOCENTE", "DOCENTE_TIPO", depara),
     ]:
         res = res.merge(
             fn.processa_coluna_tp(
@@ -265,7 +268,7 @@ def processa_gestor(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
         depara[["ID_GESTOR", "ID_ESCOLA"]].drop_duplicates(), how="left"
     )
 
-    # soma todas as turmas
+    # soma todos os gestores
     res = gestor.groupby(["ID_ESCOLA"]).agg({"ID_GESTOR": "count"}).reset_index()
     res.columns = ["ID_ESCOLA", "QT_GESTORES"]
 
@@ -284,8 +287,8 @@ def processa_gestor(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
     for (tp_col, pf, df) in [
         ("TP_SEXO", "GESTOR_SEXO", gestor),
         ("TP_COR_RACA", "GESTOR_COR", gestor),
-        ("TP_NACIONALIDADE", "GESTOR", gestor),
-        ("TP_ESCOLARIDADE", "GESTOR", gestor),
+        ("TP_NACIONALIDADE", "GESTOR_NASC", gestor),
+        ("TP_ESCOLARIDADE", "GESTOR_ESC", gestor),
         ("TP_ENSINO_MEDIO", "GESTOR_EM", gestor),
         ("TP_AREA_CURSO", "GESTOR_FORMACAO", gestor),
         ("TP_CARGO_GESTOR", "GESTOR_CARGO", depara),
@@ -293,10 +296,154 @@ def processa_gestor(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
         ("TP_TIPO_CONTRATACAO", "GESTOR_CONT", depara),
     ]:
         res = res.merge(
-            fn.processa_coluna_tp(df, "ID_ESCOLA", tp_col, "ID_GESTOR", pf, recriar=False),
+            fn.processa_coluna_tp(
+                df, "ID_ESCOLA", tp_col, "ID_GESTOR", pf, recriar=False
+            ),
             on="ID_ESCOLA",
             how="left",
         )
+
+    # adiciona os dados ao datamart
+    dm = dm.merge(res, how="left")
+
+    return dm
+
+
+def processa_matricula(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
+    """
+    Incorpora os dados de alunos e matrículas ao datamart de escola
+
+    :param dm: datamart em seu estado atual
+    :param ds: instância do data store
+    :param ano: ano de processamento da base
+    :return: datamart de escola com os dados de alunos e matriculas
+    """
+    # carrega o depara de turma e escola
+    turma_escola = ds.carrega_como_objeto(
+        Documento(ds, CatalogoAquisicao.TURMA),
+        como_df=True,
+        filters=[("ANO", "=", ano)],
+        columns=["ID_TURMA", "ID_ESCOLA"],
+    )
+
+    dados = list()
+    for regiao in tqdm(["CO", "NORDESTE", "NORTE", "SUDESTE", "SUL"]):
+        # carrega os dados de aluno
+        aluno = ds.carrega_como_objeto(
+            Documento(ds, CatalogoAquisicao.ALUNO),
+            como_df=True,
+            filters=[("ANO", "=", ano), ("REGIAO", "=", regiao)],
+        )
+        matricula = ds.carrega_como_objeto(
+            Documento(ds, CatalogoAquisicao.MATRICULA),
+            como_df=True,
+            filters=[("ANO", "=", ano), ("REGIAO", "=", regiao)],
+        )
+
+        # adiciona a informação de escola a base de alunos
+        matricula = matricula.merge(turma_escola)
+        aluno = aluno.merge(matricula[["ID_ALUNO", "ID_ESCOLA"]].drop_duplicates())
+
+        # soma todos os alunos e matriculas
+        res = aluno.groupby(["ID_ESCOLA"]).agg({"ID_ALUNO": "count"}).reset_index()
+        res.columns = ["ID_ESCOLA", "QT_ALUNOS"]
+        res = res.merge(
+            matricula.groupby(["ID_ESCOLA"])
+            .agg({"ID_MATRICULA": "nunique"})
+            .reset_index()
+            .rename(columns={"ID_MATRICULA": "QT_MATRICULAS"}),
+            how="left",
+        )
+
+        # processa as colunas IN_
+        res = res.merge(
+            fn.processa_coluna_in(aluno, "ID_ESCOLA", "ID_ALUNO", "ALUNO", perc=True),
+            how="left",
+        )
+
+        # processa as colunas de transporte
+        res = res.merge(
+            fn.processa_coluna_in(
+                df=matricula[
+                    ["ID_ALUNO", "ID_ESCOLA"]
+                    + [c for c in matricula.columns if c.startswith("IN_TRANSP")]
+                ].drop_duplicates(),
+                id_col="ID_ESCOLA",
+                val_col="ID_ALUNO",
+                prefixo="ALUNO",
+                perc=True,
+            ),
+            how="left",
+        )
+
+        # processa as colunas de matriculas AEE
+        res = res.merge(
+            fn.processa_coluna_in(
+                df=matricula[
+                    ["ID_MATRICULA", "ID_ESCOLA"]
+                    + [c for c in matricula.columns if c.startswith("IN_AEE_")]
+                ].drop_duplicates(),
+                id_col="ID_ESCOLA",
+                val_col="ID_MATRICULA",
+                prefixo="MATRICULA",
+                perc=True,
+            ),
+            how="left",
+        )
+
+        # processa as colunas TP
+        for (tp_col, pf, df) in [
+            ("TP_SEXO", "ALUNO_SEXO", aluno),
+            ("TP_COR_RACA", "ALUNO_COR", aluno),
+            ("TP_NACIONALIDADE", "ALUNO_NASC", aluno),
+            ("TP_ZONA_RESIDENCIAL", "ALUNO_ZONA", aluno),
+            ("TP_LOCAL_RESID_DIFERENCIADA", "ALUNO_LDIF", aluno),
+            ("TP_INGRESSO_FEDERAIS", "ALUNO_INGRESSO", aluno),
+            ("TP_RESPONSAVEL_TRANSPORTE", "RESP_TRANSP", matricula),
+        ]:
+            res = res.merge(
+                fn.processa_coluna_tp(
+                    df, "ID_ESCOLA", tp_col, "ID_ALUNO", pf, recriar=False
+                ),
+                on="ID_ESCOLA",
+                how="left",
+            )
+
+        # verifica docentes que estão em municipios diferentes da escola
+        if aluno["CO_MUNICIPIO_END"].count() > 0:
+            res = res.merge(
+                aluno[["ID_ALUNO", "ID_ESCOLA", "CO_MUNICIPIO_END"]]
+                .merge(dm[["ID_ESCOLA", "CO_MUNICIPIO"]], how="left")
+                .assign(
+                    QT_ALUNO_MUN_DIF=lambda f: (
+                        (f["CO_MUNICIPIO_END"] != f["CO_MUNICIPIO"])
+                        & (f["CO_MUNICIPIO_END"].notnull())
+                    ).astype("int")
+                )
+                .groupby(["ID_ESCOLA"])["QT_ALUNO_MUN_DIF"]
+                .sum()
+                .reset_index(),
+                how="left",
+            )
+        else:
+            res["QT_ALUNO_MUN_DIF"] = np.nan
+
+        # gera a dispersão de idade
+        res = res.merge(
+            fn.processa_coluna_qt_nu(
+                df=aluno,
+                id_col="ID_ESCOLA",
+                prefixo="ALUNO",
+                metricas=("min", "q1", "mean", "median", "q3", "max"),
+            ),
+            how="left",
+        )
+
+        # adiciona a lista de dados
+        dados.append(res)
+
+    # concatena os dados
+    res = pd.concat(dados)
 
     # adiciona os dados ao datamart
     dm = dm.merge(res, how="left")
@@ -328,11 +475,41 @@ def processa_ideb(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
 
 
 def gera_metricas_adicionais(dm: pd.DataFrame) -> pd.DataFrame:
+    """
+    Gera métricas cruzando dados da base de escola com as
+    demais informações do censo
 
+    :param dm: datamart em seu estado atual
+    :return: datamart com métricas adicionais
+    """
     return dm.assign(
-        NU_ALUNO_POR_TURMA=lambda f: f["QT_ALUNOS"] / f["QT_TURMAS"],
+        NU_COMP_PORTATIL_ALUNO=lambda f: f["QT_COMP_PORTATIL_ALUNO"] / f["QT_ALUNOS"],
+        NU_DESKTOP_TOTAL_POR_ALUNO=lambda f: f["QT_DESKTOP"] / f["QT_ALUNOS"],
+        NU_DESKTOP_ADM_POR_ALUNO=lambda f: f["QT_DESKTOP_ADM"] / f["QT_ALUNOS"],
+        NU_DESKTOP_ALUNO_POR_ALUNO=lambda f: f["QT_DESKTOP_ALUNO"] / f["QT_ALUNOS"],
+        NU_TABLET_POR_ALUNO=lambda f: f["QT_TABLET_ALUNO"] / f["QT_ALUNOS"],
+        NU_EQUIP_COPIADORA_POR_ALUNO=lambda f: f["QT_EQUIP_COPIADORA"] / f["QT_ALUNOS"],
+        NU_EQUIP_DVD_POR_ALUNO=lambda f: f["QT_EQUIP_DVD"] / f["QT_ALUNOS"],
+        NU_EQUIP_FAX_POR_ALUNO=lambda f: f["QT_EQUIP_FAX"] / f["QT_ALUNOS"],
+        NU_EQUIP_FOTO_POR_ALUNO=lambda f: f["QT_EQUIP_FOTO"] / f["QT_ALUNOS"],
+        NU_EQUIP_IMPRESSORA_POR_ALUNO=lambda f: f["QT_EQUIP_IMPRESSORA"] / f["QT_ALUNOS"],
+        NU_EQUIP_IMPRESSORA_MULT_POR_ALUNO=lambda f: f["QT_EQUIP_IMPRESSORA_MULT"] / f["QT_ALUNOS"],
+        NU_EQUIP_LOUSA_DIGITAL_POR_ALUNO=lambda f: f["QT_EQUIP_LOUSA_DIGITAL"] / f["QT_ALUNOS"],
+        NU_EQUIP_MULTIMIDIA_POR_ALUNO=lambda f: f["QT_EQUIP_MULTIMIDIA"] / f["QT_ALUNOS"],
+        NU_EQUIP_PARABOLICA_POR_ALUNO=lambda f: f["QT_EQUIP_PARABOLICA"] / f["QT_ALUNOS"],
+        NU_EQUIP_RETRO_POR_ALUNO=lambda f: f["QT_EQUIP_RETRO"] / f["QT_ALUNOS"],
+        NU_EQUIP_SOM_POR_ALUNO=lambda f: f["QT_EQUIP_SOM"] / f["QT_ALUNOS"],
+        NU_EQUIP_TV_POR_ALUNO=lambda f: f["QT_EQUIP_TV"] / f["QT_ALUNOS"],
+        NU_EQUIP_VIDEOCASSETE_POR_ALUNO=lambda f: f["QT_EQUIP_VIDEOCASSETE"] / f["QT_ALUNOS"],
+        NU_FUNCIONARIOS_POR_ALUNO=lambda f: f["QT_FUNCIONARIOS"] / f["QT_ALUNOS"],
+        NU_SALAS_POR_ALUNO=lambda f: f["QT_SALAS_EXISTENTES"] / f["QT_ALUNOS"],
+        NU_SALAS_UTILIZADAS_POR_ALUNO=lambda f: f["QT_SALAS_UTILIZADAS"] / f["QT_ALUNOS"],
+        NU_SALAS_UTILIZADAS_ACESSIVEIS_POR_ALUNO=lambda f: f["QT_SALAS_UTILIZADAS_ACESSIVEIS"] / f["QT_ALUNOS"],
+        NU_SALAS_UTILIZADAS_DENTRO_POR_ALUNO=lambda f: f["QT_SALAS_UTILIZADAS_DENTRO"] / f["QT_ALUNOS"],
+        NU_SALAS_UTILIZADAS_FORA_POR_ALUNO=lambda f: f["QT_SALAS_UTILIZADAS_FORA"] / f["QT_ALUNOS"],
+        NU_SALAS_UTILIZA_CLIMATIZADAS_POR_ALUNO=lambda f: f["QT_SALAS_UTILIZA_CLIMATIZADAS"] / f["QT_ALUNOS"],
+        NU_ALUNO_POR_TURMA=lambda f: f["QT_MATRICULAS"] / f["QT_TURMAS"],
         NU_ALUNO_POR_DOCENTE=lambda f: f["QT_ALUNOS"] / f["QT_DOCENTES"],
-
         CO_REGIAO=lambda f: f["CO_MUNICIPIO"] // 1000000,
         CO_UF=lambda f: f["CO_MUNICIPIO"] // 100000,
     )
@@ -346,17 +523,38 @@ def controi_datamart_escola(ds: DataStore, ano: int) -> None:
     :param ds: instância do data store
     :param ano: ano de processamento da base
     """
+    logger = logging.getLogger(__name__)
+
     # carrega e processa as bases de dados
+    logger.info("Carregando base de escola")
     dm = processa_censo_escola(ds, ano)
+
+    logger.info("Adicionando dados de turmas")
     dm = processa_turmas(dm, ds, ano)
+
+    logger.info("Adicionando dados de docentes")
     dm = processa_docentes(dm, ds, ano)
+
+    logger.info("Adicionando dados de gestor")
     dm = processa_gestor(dm, ds, ano)
+
+    logger.info("Adicionando dados de matricula")
     dm = processa_matricula(dm, ds, ano)
+
+    logger.info("Adicionando dados do IDEB")
     dm = processa_ideb(dm, ds, ano)
+
+    logger.info("Gerando métricas adicionais")
     dm = gera_metricas_adicionais(dm)
 
-    # exportar dados
+    logger.info("Remove float16")
+    for c in dm:
+        if dm[c].dtype == "float16":
+            dm[c] = dm[c].astype("float32")
+
+    logger.info("Exportando datamart")
     doc = Documento(ds, referencia=CatalogoDatamart.ESCOLA, data=dm)
-    ds.salva_documento(
-        doc, partition_cols=["ANO", "CO_REGIAO", "CO_UF", "CO_MUNICIPIO", "ID_ESCOLA"]
-    )
+    doc.pasta = f"{doc.nome}/ANO={ano}"
+    doc.nome = f"{ano}.parquet"
+    doc.data.drop(columns=["ANO"], inplace=True)
+    ds.salva_documento(doc)

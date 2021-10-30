@@ -122,7 +122,7 @@ def datamart():
     default=conf_geral.ENV_DS,
     help="String com caminho para pasta de entrada",
 )
-def processa_datamart(etl: str, ano: str, criar_caminho: bool, env: str) -> None:
+def processa_datamart(granularidade: str, ano: str, env: str) -> None:
     """
     Constrói um datamart a um determinado nível de granularidade para um
     dado ano de dados
@@ -133,7 +133,7 @@ def processa_datamart(etl: str, ano: str, criar_caminho: bool, env: str) -> None
     """
     configura_logs()
     ds = DataStore(env)
-    executa_datamart(etl, ds, ano)
+    executa_datamart(granularidade, ds, ano)
 
 
 if __name__ == "__main__":

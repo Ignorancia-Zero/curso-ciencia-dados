@@ -9,14 +9,14 @@ from collections.abc import Hashable
 import geopandas as gpd
 import pandas as pd
 
-from src.io.caminho import CaminhoSQLite
 from src.io.caminho import CaminhoLocal
+from src.io.caminho import CaminhoSQLite
 from src.io.caminho import obtem_objeto_caminho
 from src.io.caminho._base import _CaminhoBase
 from src.io.configs import DS_ENVS, EXTENSOES_TEXTO
 from src.io.le_dados import le_dados_comprimidos
-from src.utils.interno import obtem_extencao
 from src.utils.info import CAMINHO_INFO
+from src.utils.interno import obtem_extencao
 from ._catalogo import CatalogoInfo
 
 
@@ -491,8 +491,10 @@ class DataStore:
 
         # obtém a extenção do arquivo
         if "ext" not in kwargs:
-            kwargs["ext"] = documento.tipo
-        ext = kwargs["ext"]
+            ext = documento.tipo
+        else:
+            ext = kwargs["ext"]
+            del kwargs["ext"]
 
         # se o caminho for de SQL
         if isinstance(cam, CaminhoSQLite) or ext == "sql":

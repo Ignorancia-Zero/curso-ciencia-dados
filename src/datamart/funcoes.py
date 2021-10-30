@@ -51,7 +51,13 @@ def processa_coluna_in(
 
 
 def processa_coluna_tp(
-    df: pd.DataFrame, id_col: str, tp_col: str, val_col: str, prefixo: str, recriar: bool = True
+    df: pd.DataFrame,
+    id_col: str,
+    tp_col: str,
+    val_col: str,
+    prefixo: str,
+    recriar: bool = True,
+    perc: bool = True,
 ) -> pd.DataFrame:
     """
     Processa uma coluna {tp_col} de forma a obter colunas com a quantidade
@@ -64,12 +70,21 @@ def processa_coluna_tp(
     :param val_col: coluna usada para calcular os valor
     :param prefixo: prefixo a ser aplicado no nome da coluna final
     :param recriar: flag se devemos recriar as colunas TP a partir das pivôs
+    :param perc: flag para criar colunas percentuais
     :return: data frame com coluna {tp_col} processada por {id_col}
     """
-    # se esse for o caso faz a pivô da coluna
-    tp = df.pivot_table(index=id_col, columns=tp_col, values=val_col, aggfunc="nunique")
+    # realiza o pivô da coluna TP
+    sub = df.reindex(columns=[id_col, tp_col, val_col])
+    cat = pd.CategoricalDtype(
+        list(df[tp_col].dtype.categories) + ["NULO"], ordered=df[tp_col].dtype.ordered
+    )
+    sub[tp_col] = sub[tp_col].astype(cat).fillna("NULO")
+    tp = sub.pivot_table(
+        index=id_col, columns=tp_col, values=val_col, aggfunc="nunique"
+    )
     if df[tp_col].count() == 0:
-        tp.replace({0: np.nan}, inplace=True)
+        for c in tp.columns:
+            tp[c] = np.nan
 
     # renomeia as coluna de acordo com o sufixo
     replace = f"QT_{prefixo}_" + (
@@ -88,6 +103,13 @@ def processa_coluna_tp(
         ser = pd.Series(data=ser, name=tp_col, index=tp.index)
         ser = ser.replace({"nan": None}).astype("category")
         tp[tp_col] = ser
+
+    # cria as colunas com valores percentuais do total
+    if perc:
+        total = df.groupby(id_col)[val_col].nunique()
+        perc = tp[replace].divide(total, axis=0)
+        perc.columns = [f"PC_{c[3:]}" for c in perc.columns]
+        tp = pd.concat([tp, perc], axis=1)
 
     # retorna os dados gerados
     return tp.reset_index()
@@ -120,7 +142,7 @@ def processa_coluna_qt_nu(
         "mean": "mean",
         "q3": lambda x: x.quantile(0.75),
         "max": "max",
-        "std": "std"
+        "std": "std",
     }
 
     # realiza a agregação dos dados

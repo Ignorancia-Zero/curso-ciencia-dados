@@ -25,3 +25,8 @@ def dados_path(test_path):
 @pytest.fixture(scope="session")
 def ds():
     return DataStore("teste")
+
+
+@pytest.fixture(scope="session")
+def ano():
+    return 2020

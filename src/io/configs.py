@@ -10,6 +10,7 @@ from src.configs import PASTA_DADOS
 # caminhos para ambientes
 PATH_LOCAL = str(Path(__file__).parent.parent.parent)
 PATH_GDRIVE = "Projetos/IZ/Cursos/Ciência de Dados/Compartilhar"
+PATH_DRIVE_LOCAL = f"C:/Users/pedro.forli/Google Drive/{PATH_GDRIVE}"
 
 # Dicionário com as configurações dos ambientes de DS
 DS_ENVS: typing.Dict[str, str] = {

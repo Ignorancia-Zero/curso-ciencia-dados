@@ -86,18 +86,21 @@ cd Suporte/Pacotes Windows
 conda update -n base -c defaults conda
 conda install -c anaconda beautifulsoup4==4.9.3
 conda install -c conda-forge black==21.9b0
+conda install -c anaconda boto3==1.18.21
 pip install charamel==1.0.0
 conda install -c anaconda click==7.1.2
+conda install -c conda-forge frozendict==2.0.3
 conda install -c anaconda jupyter==1.0.0
 conda install -c conda-forge jupyter_contrib_nbextensions==0.5.1
 conda install -c anaconda lxml==4.6.3
+conda install -c anaconda openpyxl==3.0.9
 conda install -c anaconda pandas==1.3.3
 conda install -c conda-forge patool==1.12
 conda install -c conda-forge pyarrow==5.0.0
 conda install -c conda-forge pydrive2==1.10.0
+conda install -c anaconda pytest==6.2.4
 pip install pyunpack==0.2.2
 conda install -c anaconda yaml==5.4.1
-conda install -c anjos rarfile==4.0
 conda install -c anaconda requests==2.26.0
 conda install -c conda-forge tqdm==4.62.3
 pip install ./GDAL-3.3.2-cp38-cp38-win_amd64.whl
@@ -105,6 +108,23 @@ pip install ./pyproj-3.2.1-cp38-cp38-win_amd64.whl
 pip install ./Fiona-1.8.20-cp38-cp38-win_amd64.whl
 pip install ./Shapely-1.7.1-cp38-cp38-win_amd64.whl
 pip install ./geopandas-0.9.0-py3-none-any.whl
+pip install rarfile==4.0
+conda install -c conda-forge mypy==0.910
+conda install -c conda-forge boto3-stubs==1.18.63
+pip install botocore-stubs==1.21.63
+conda install -c conda-forge mypy_boto3_ec2==1.18.63
+conda install -c conda-forge mypy_boto3_s3==1.18.63
+conda install -c conda-forge pandas-stubs==1.2.0.29
+conda install -c conda-forge types-frozendict==2.0.1
+conda install -c conda-forge types-requests==2.25.11
+conda install -c conda-forge types-setuptools==57.4.2
+conda install -c conda-forge types-python-dateutil==2.8.2
+conda install -c conda-forge types-pytz==2021.3.0
+conda install -c conda-forge types-pyyaml==5.4.12
+conda install -c conda-forge matplotlib==3.4.3
+conda install -c anaconda seaborn==0.11.0
+conda install -c conda-forge cufflinks-py==0.17.3
+conda install -c plotly plotly==5.3.1
 ```
 
 ### Mac

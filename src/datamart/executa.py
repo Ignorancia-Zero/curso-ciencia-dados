@@ -7,7 +7,7 @@ from src.utils.logs import log_erros
 
 
 @log_erros
-def executa_datamart(granularidade: str, ds: DataStore, ano: int) -> None:
+def executa_datamart(granularidade: str, ds: DataStore, ano: str) -> None:
     """
     Constrói um datamart a um determinado nível de granularidade para um
     dado ano de dados
@@ -17,16 +17,16 @@ def executa_datamart(granularidade: str, ds: DataStore, ano: int) -> None:
     :param ano: ano da pesquisa a ser processado
     """
     # obtém a granularidade
-    granularidade = DMGran(granularidade)
+    gran = DMGran(granularidade)
 
     # obtém o ano
     if ano == "ultimo":
-        cam = ds.gera_caminho(Documento(ds, CatalogoAquisicao.ESCOLA))
+        cam = ds.gera_caminho(Documento(ds, dict(CatalogoAquisicao.ESCOLA)))
         cam = cam.__class__(cam.obtem_caminho(CatalogoAquisicao.ESCOLA["nome"]))
         ano = cam.lista_conteudo()[-1].replace("ANO=", "")
     ano_int = int(ano)
 
-    if granularidade == DMGran.ESCOLA:
+    if gran == DMGran.ESCOLA:
         controi_datamart_escola(ds, ano_int)
     else:
         raise NotImplementedError(

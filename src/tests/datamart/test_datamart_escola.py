@@ -25,7 +25,7 @@ def test_processa_turmas(
     dados: typing.Dict[str, pd.DataFrame], ds: DataStore, ano: int
 ):
     turma = ds.carrega_como_objeto(
-        Documento(ds, CatalogoAquisicao.TURMA),
+        Documento(ds, dict(CatalogoAquisicao.TURMA)),
         como_df=True,
         filters=[("ANO", "=", ano)],
     )
@@ -81,4 +81,4 @@ def test_processa_ideb(dados: typing.Dict[str, pd.DataFrame], ds: DataStore, ano
 
 
 def test_gera_metricas_adicionais(dados: typing.Dict[str, pd.DataFrame]):
-    dados["dm"] = dm_escola.gera_metricas_adicionais(dm)
+    dados["dm"] = dm_escola.gera_metricas_adicionais(dados["dm"])

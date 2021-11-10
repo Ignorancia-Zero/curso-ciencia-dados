@@ -18,7 +18,7 @@ def processa_censo_escola(ds: DataStore, ano: int) -> pd.DataFrame:
     :param ano: ano de processamento da base
     :return: data frame de escolas em atividade
     """
-    doc = Documento(ds, CatalogoAquisicao.ESCOLA)
+    doc = Documento(ds, dict(CatalogoAquisicao.ESCOLA))
     dm = ds.carrega_como_objeto(doc, como_df=True, filters=[("ANO", "=", ano)])
     return dm.loc[lambda f: f["TP_SITUACAO_FUNCIONAMENTO"] == "EM ATIVIDADE"].drop(
         columns=["TP_SITUACAO_FUNCIONAMENTO"]
@@ -39,7 +39,7 @@ def processa_turmas(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
     :return: data frame de escolas com dados de turma adicionados
     """
     # carrega os dados de turma
-    doc = Documento(ds, CatalogoAquisicao.TURMA)
+    doc = Documento(ds, dict(CatalogoAquisicao.TURMA))
     turma = ds.carrega_como_objeto(doc, como_df=True, filters=[("ANO", "=", ano)])
 
     # soma todas as turmas
@@ -137,19 +137,19 @@ def processa_docentes(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame
     """
     # carrega os dados de docente e de turma
     docente = ds.carrega_como_objeto(
-        Documento(ds, CatalogoAquisicao.DOCENTE),
+        Documento(ds, dict(CatalogoAquisicao.DOCENTE)),
         como_df=True,
         filters=[("ANO", "=", ano)],
     )
     depara = (
         ds.carrega_como_objeto(
-            Documento(ds, CatalogoAquisicao.DOCENTE_TURMA),
+            Documento(ds, dict(CatalogoAquisicao.DOCENTE_TURMA)),
             como_df=True,
             filters=[("ANO", "=", ano)],
         )
         .merge(
             ds.carrega_como_objeto(
-                Documento(ds, CatalogoAquisicao.TURMA),
+                Documento(ds, dict(CatalogoAquisicao.TURMA)),
                 como_df=True,
                 filters=[("ANO", "=", ano)],
                 columns=["ID_TURMA", "ID_ESCOLA"],
@@ -255,12 +255,12 @@ def processa_gestor(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
     """
     # carrega os dados de gestor
     gestor = ds.carrega_como_objeto(
-        Documento(ds, CatalogoAquisicao.GESTOR),
+        Documento(ds, dict(CatalogoAquisicao.GESTOR)),
         como_df=True,
         filters=[("ANO", "=", ano)],
     )
     depara = ds.carrega_como_objeto(
-        Documento(ds, CatalogoAquisicao.GESTOR_ESCOLA),
+        Documento(ds, dict(CatalogoAquisicao.GESTOR_ESCOLA)),
         como_df=True,
         filters=[("ANO", "=", ano)],
     )
@@ -320,7 +320,7 @@ def processa_matricula(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFram
     """
     # carrega o depara de turma e escola
     turma_escola = ds.carrega_como_objeto(
-        Documento(ds, CatalogoAquisicao.TURMA),
+        Documento(ds, dict(CatalogoAquisicao.TURMA)),
         como_df=True,
         filters=[("ANO", "=", ano)],
         columns=["ID_TURMA", "ID_ESCOLA"],
@@ -330,12 +330,12 @@ def processa_matricula(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFram
     for regiao in tqdm(["CO", "NORDESTE", "NORTE", "SUDESTE", "SUL"]):
         # carrega os dados de aluno
         aluno = ds.carrega_como_objeto(
-            Documento(ds, CatalogoAquisicao.ALUNO),
+            Documento(ds, dict(CatalogoAquisicao.ALUNO)),
             como_df=True,
             filters=[("ANO", "=", ano), ("REGIAO", "=", regiao)],
         )
         matricula = ds.carrega_como_objeto(
-            Documento(ds, CatalogoAquisicao.MATRICULA),
+            Documento(ds, dict(CatalogoAquisicao.MATRICULA)),
             como_df=True,
             filters=[("ANO", "=", ano), ("REGIAO", "=", regiao)],
         )
@@ -466,7 +466,7 @@ def processa_ideb(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
     # a cada 2 anos e apenas em anos ímpares
     ano = ano if ano % 2 == 1 else ano - 1
     ideb = ds.carrega_como_objeto(
-        Documento(ds, CatalogoAquisicao.IDEB),
+        Documento(ds, dict(CatalogoAquisicao.IDEB)),
         como_df=True,
         filters=[("ANO", "=", ano)],
     ).drop(columns="ANO")
@@ -568,7 +568,7 @@ def controi_datamart_escola(ds: DataStore, ano: int) -> None:
             dm[c] = dm[c].astype("float32")
 
     logger.info("Exportando datamart")
-    doc = Documento(ds, referencia=CatalogoDatamart.ESCOLA, data=dm)
+    doc = Documento(ds, referencia=dict(CatalogoDatamart.ESCOLA), data=dm)
     doc.pasta = f"{doc.nome}/ANO={ano}"
     doc.nome = f"{ano}.parquet"
     doc.data.drop(columns=["ANO"], inplace=True)

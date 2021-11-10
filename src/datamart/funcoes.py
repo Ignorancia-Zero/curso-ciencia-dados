@@ -96,20 +96,20 @@ def processa_coluna_tp(
     # realiza a criação de uma coluna tp equivalente com base
     # nos resultados das colunas
     if recriar:
-        ser = np.array([np.nan] * tp.shape[0])
+        arr = np.array([np.nan] * tp.shape[0])
         for val, c in col_dict.items():
-            ser = np.where((tp[c] >= 1) & (tp[c] == tp.sum(axis=1)), val, ser)
-        ser = np.where((tp.sum(axis=1) > 0) & (ser == "nan"), "MÚLTIPLOS", ser)
-        ser = pd.Series(data=ser, name=tp_col, index=tp.index)
+            arr = np.where((tp[c] >= 1) & (tp[c] == tp.sum(axis=1)), val, arr)
+        arr = np.where((tp.sum(axis=1) > 0) & (arr == "nan"), "MÚLTIPLOS", arr)
+        ser = pd.Series(data=arr, name=tp_col, index=tp.index)
         ser = ser.replace({"nan": None}).astype("category")
         tp[tp_col] = ser
 
     # cria as colunas com valores percentuais do total
     if perc:
         total = df.groupby(id_col)[val_col].nunique()
-        perc = tp[replace].divide(total, axis=0)
-        perc.columns = [f"PC_{c[3:]}" for c in perc.columns]
-        tp = pd.concat([tp, perc], axis=1)
+        perc_df = tp[replace].divide(total, axis=0)
+        perc_df.columns = [f"PC_{c[3:]}" for c in perc_df.columns]
+        tp = pd.concat([tp, perc_df], axis=1)
 
     # retorna os dados gerados
     return tp.reset_index()

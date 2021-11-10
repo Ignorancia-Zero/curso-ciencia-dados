@@ -1,14 +1,10 @@
-import os
 import typing
-import unittest
 
 import pandas as pd
 import pytest
 
-from src.aquisicao import DocenteETL
-from src.configs import COLECAO_DADOS_WEB
-from src.io.data_store import Documento, DataStore, CatalogoAquisicao
 import src.datamart.escola as dm_escola
+from src.io.data_store import Documento, DataStore, CatalogoAquisicao
 
 
 @pytest.fixture(scope="module")

@@ -29,4 +29,6 @@ def executa_datamart(granularidade: str, ds: DataStore, ano: int) -> None:
     if granularidade == DMGran.ESCOLA:
         controi_datamart_escola(ds, ano_int)
     else:
-        raise NotImplementedError(f"Nós ainda temos que desenvolver o datamart para {granularidade}")
+        raise NotImplementedError(
+            f"Nós ainda temos que desenvolver o datamart para {granularidade}"
+        )

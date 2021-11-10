@@ -260,7 +260,7 @@ class DataStore:
         if not hasattr(self, "_df_ee"):
             self._df_ee = self.carrega_como_objeto(
                 Documento(self, referencia=dict(CatalogoInfo.ETAPA_ENSINO)),
-                como_df=True
+                como_df=True,
             )
         return self._df_ee
 
@@ -275,7 +275,7 @@ class DataStore:
         if not hasattr(self, "_df_cp"):
             self._df_cp = self.carrega_como_objeto(
                 Documento(self, referencia=dict(CatalogoInfo.COMPL_PEDAGOGICA)),
-                como_df=True
+                como_df=True,
             )
         return self._df_cp
 
@@ -289,8 +289,7 @@ class DataStore:
         """
         if not hasattr(self, "_df_ep"):
             self._df_ep = self.carrega_como_objeto(
-                Documento(self, referencia=dict(CatalogoInfo.EDUC_PROF)),
-                como_df=True
+                Documento(self, referencia=dict(CatalogoInfo.EDUC_PROF)), como_df=True
             )
         return self._df_ep
 
@@ -304,8 +303,7 @@ class DataStore:
         """
         if not hasattr(self, "_df_cr"):
             self._df_cr = self.carrega_como_objeto(
-                Documento(self, referencia=dict(CatalogoInfo.CURSOS)),
-                como_df=True
+                Documento(self, referencia=dict(CatalogoInfo.CURSOS)), como_df=True
             ).assign(
                 NO_CURSO=lambda f: f["NO_CURSO"].astype("category"),
                 TP_GRAU_ACADEMICO=lambda f: f["TP_GRAU_ACADEMICO"].astype("category"),

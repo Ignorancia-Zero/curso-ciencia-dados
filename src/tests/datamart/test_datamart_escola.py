@@ -34,11 +34,25 @@ def test_processa_turmas(
     assert "QT_TURMAS" in dados["dm"].columns
     assert "PC_TURMA_ESPECIAL_EXCLUSIVA" in dados["dm"].columns
 
-    in_cols = [c for c in turma if c.startswith("IN_")]
-    in_cols += [c.replace("IN_", f"QT_TURMA_") for c in in_cols]
-    print(set(in_cols) - set(dados["dm"].columns))
+    in_cols = [f"IN_TURMA_{c[3:]}" for c in turma if c.startswith("IN_")]
+    in_cols += [c.replace("IN_TURMA_", "QT_TURMA_") for c in in_cols]
     assert set(in_cols).issubset(set(dados["dm"].columns))
 
+    for (tp_col, pf) in [
+        ("TP_MEDIACAO_DIDATICO_PEDAGO", "TURMA_MEDIACAO"),
+        ("TP_TIPO_ATENDIMENTO_TURMA", "TURMA_ATEND"),
+        ("TP_TIPO_LOCAL_TURMA", "TURMA_LOCAL"),
+        ("TP_MOD_ENSINO", "TURMA_MOD"),
+        ("TP_TIPO_TURMA", "TURMA_TIPO"),
+    ]:
+        assert tp_col in dados["dm"].columns
+        for cat in turma[tp_col].dtype.categories:
+            cat = cat.replace(" ", "_").replace("-", "_").replace("___", "_")
+            assert f"QT_{pf}_{cat}" in dados["dm"].columns
+            assert f"PC_{pf}_{cat}" in dados["dm"].columns
+        assert f"QT_{pf}_NULO" in dados["dm"].columns
+
+    assert "PC_TURMA_ESPECIAL_EXCLUSIVA" in dados["dm"].columns
     assert "NU_TURMA_MEAN_DURACAO" in dados["dm"].columns
     assert "NU_TURMA_MEDIAN_DURACAO" in dados["dm"].columns
     assert "QT_TURMA_ATIVIDADE_COMP" in dados["dm"].columns

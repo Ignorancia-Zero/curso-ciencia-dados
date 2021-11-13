@@ -85,7 +85,7 @@ conda activate curso-ciencia-dados
 cd '.\suporte\Pacotes Windows\'
 conda update -n base -c defaults conda
 conda install -c anaconda numpy==1.21.2
-conda install -c anaconda pandas==1.3.4
+conda install -c conda-forge pandas==1.3.4
 conda install -c conda-forge osmnx==1.1.1
 conda install -c conda-forge rtree==0.9.4
 conda install -c conda-forge matplotlib==3.4.3

@@ -75,9 +75,9 @@ def processa_turmas(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFrame:
             turma, "ID_ESCOLA", "TURMA", metricas=("mean", "median")
         ).rename(
             columns={
-                "NU_TURMA_SUM_DURACAO_TURMA": "NU_TURMA_SUM_DURACAO",
-                "NU_TURMA_MEAN_DURACAO_TURMA": "NU_TURMA_MEAN_DURACAO",
-                "NU_TURMA_MEDIAN_DURACAO_TURMA": "NU_TURMA_MEDIAN_DURACAO",
+                "NU_SUM_TURMA_DURACAO_TURMA": "NU_TURMA_SUM_DURACAO",
+                "NU_MEAN_TURMA_DURACAO_TURMA": "NU_TURMA_MEAN_DURACAO",
+                "NU_MEDIAN_TURMA_DURACAO_TURMA": "NU_TURMA_MEDIAN_DURACAO",
             }
         ),
         how="left",

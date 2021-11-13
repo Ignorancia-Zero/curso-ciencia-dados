@@ -5,6 +5,8 @@ from src.aquisicao.executa import executa_etl
 from src.aquisicao.executa import executa_etl_microdado_inep
 from src.aquisicao.opcoes import ETL
 from src.aquisicao.opcoes import MicroINEPETL
+from src.datamart.config import DMGran
+from src.datamart.executa import executa_datamart
 from src.io.data_store import DataStore
 from src.utils.logs import configura_logs
 
@@ -93,6 +95,45 @@ def processa_microdado_inep(
     executa_etl_microdado_inep(
         etl=etl, ds=ds, ano=ano, criar_caminho=criar_caminho, reprocessar=reprocessar
     )
+
+
+@cli.group()
+def datamart():
+    """
+    Grupo de comandos que executam as funções de datamart
+    """
+    pass
+
+
+@datamart.command()
+@click.option(
+    "--granularidade",
+    type=click.Choice([s.value for s in DMGran]),
+    help="Nome do ETL a ser executado",
+)
+@click.option(
+    "--ano",
+    type=click.STRING,
+    default="ultimo",
+    help="Ano dos dados a serem processados (pode ser int ou 'ultimo')",
+)
+@click.option(
+    "--env",
+    default=conf_geral.ENV_DS,
+    help="String com caminho para pasta de entrada",
+)
+def processa_datamart(granularidade: str, ano: str, env: str) -> None:
+    """
+    Constrói um datamart a um determinado nível de granularidade para um
+    dado ano de dados
+
+    :param granularidade: nível do datamart a ser gerado
+    :param ano: Ano dos dados a serem processados (pode ser int ou 'ultimo')
+    :param env: ambiente do data store
+    """
+    configura_logs()
+    ds = DataStore(env)
+    executa_datamart(granularidade, ds, ano)
 
 
 if __name__ == "__main__":

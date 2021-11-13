@@ -1,14 +1,14 @@
 import typing
 from enum import Enum
 
+from src.aquisicao import DocenteETL
+from src.aquisicao import EscolaETL
+from src.aquisicao import GestorETL
+from src.aquisicao import IDEBETL
+from src.aquisicao import MatriculaETL
+from src.aquisicao import TurmaETL
 from src.aquisicao._etl import BaseETL
-from src.aquisicao.inep._micro_inep import BaseINEPETL
-from src.aquisicao.inep.censo_docente import DocenteETL
-from src.aquisicao.inep.censo_escola import EscolaETL
-from src.aquisicao.inep.censo_gestor import GestorETL
-from src.aquisicao.inep.censo_matricula import MatriculaETL
-from src.aquisicao.inep.censo_turma import TurmaETL
-from src.aquisicao.inep.ideb import IDEBETL
+from src.aquisicao.inep import BaseINEPETL
 from src.io.data_store import DataStore
 
 

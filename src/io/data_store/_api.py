@@ -9,12 +9,15 @@ from collections.abc import Hashable
 import geopandas as gpd
 import pandas as pd
 
+from src.io.caminho import CaminhoLocal
 from src.io.caminho import CaminhoSQLite
 from src.io.caminho import obtem_objeto_caminho
 from src.io.caminho._base import _CaminhoBase
 from src.io.configs import DS_ENVS, EXTENSOES_TEXTO
 from src.io.le_dados import le_dados_comprimidos
+from src.utils.info import CAMINHO_INFO
 from src.utils.interno import obtem_extencao
+from ._catalogo import CatalogoInfo
 
 
 class Documento(Hashable):
@@ -231,6 +234,11 @@ class DataStore:
     caminho_base: _CaminhoBase
     _logger: logging.Logger
 
+    _df_ee: pd.DataFrame
+    _df_cr: pd.DataFrame
+    _df_ep: pd.DataFrame
+    _df_cp: pd.DataFrame
+
     def __init__(self, env: str = "local_completo") -> None:
         """
         Gera uma instância do data store
@@ -240,6 +248,68 @@ class DataStore:
         self._env = env
         self._logger = logging.getLogger(__name__)
         self.caminho_base = obtem_objeto_caminho(DS_ENVS[env])
+
+    @property
+    def df_ee(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de ETAPA de ENSINO e
+        suas características
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_ee"):
+            self._df_ee = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.ETAPA_ENSINO)),
+                como_df=True,
+            )
+        return self._df_ee
+
+    @property
+    def df_cp(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de complementação pedagógica
+        e a área e nome do curso
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_cp"):
+            self._df_cp = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.COMPL_PEDAGOGICA)),
+                como_df=True,
+            )
+        return self._df_cp
+
+    @property
+    def df_ep(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de educação profissional
+        e o nome e área
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_ep"):
+            self._df_ep = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.EDUC_PROF)), como_df=True
+            )
+        return self._df_ep
+
+    @property
+    def df_cr(self) -> pd.DataFrame:
+        """
+        Dados de de-para entre o código de curso de educação
+        superior e a área e nome do curso
+
+        :return: data frame com dados
+        """
+        if not hasattr(self, "_df_cr"):
+            self._df_cr = self.carrega_como_objeto(
+                Documento(self, referencia=dict(CatalogoInfo.CURSOS)), como_df=True
+            ).assign(
+                NO_CURSO=lambda f: f["NO_CURSO"].astype("category"),
+                TP_GRAU_ACADEMICO=lambda f: f["TP_GRAU_ACADEMICO"].astype("category"),
+                TP_AREA_CURSO=lambda f: f["TP_AREA_CURSO"].astype("category"),
+            )
+        return self._df_cr
 
     def _obtem_caminho(self, data: Documento = None, colecao: Colecao = None) -> str:
         """
@@ -264,6 +334,23 @@ class DataStore:
         if colecao.pasta != "":
             lista_cam += colecao.pasta.split("/")
 
+        # verifica se a coleção é uma pasta interna da ferramenta
+        if colecao.nome.startswith("__") and colecao.nome.endswith("__"):
+            # obtém o nome interno da pasta
+            nome_interno = colecao.nome[2:-2]
+
+            # corrige a pasta dentro da coleção
+            if colecao.pasta != "":
+                lista_cam = colecao.pasta.split("/")
+            else:
+                lista_cam = []
+
+            # obtém o caminho adequado
+            if nome_interno == "info":
+                return CaminhoLocal(str(CAMINHO_INFO)).obtem_caminho(lista_cam)
+            else:
+                raise NotImplementedError(f"Não conhecemos a pasta {nome_interno}")
+
         return self.caminho_base.obtem_caminho(lista_cam)
 
     def gera_caminho(
@@ -281,7 +368,7 @@ class DataStore:
         :param criar_caminho: flag se o caminho deve ser criado
         :return: caminho para a coleção
         """
-        return self.caminho_base.__class__(
+        return obtem_objeto_caminho(
             self._obtem_caminho(documento, colecao), criar_caminho=criar_caminho
         )
 
@@ -301,8 +388,10 @@ class DataStore:
 
         # obtém a extenção do arquivo
         if "ext" not in kwargs:
-            kwargs["ext"] = documento.tipo
-        ext = kwargs["ext"]
+            ext = documento.tipo
+        else:
+            ext = kwargs["ext"]
+            del kwargs["ext"]
 
         # se o caminho for de SQL, nós lemos o dataframe diretamente
         if isinstance(cam, CaminhoSQLite) or ext == "sql":
@@ -311,13 +400,14 @@ class DataStore:
         # se a extenção do arquivo for zip
         elif ext == "zip":
             # nós vamos processar o zip lendo diversos arquivos
-            del kwargs["ext"]
             return le_dados_comprimidos(
                 cam.buffer_para_arquivo(documento.nome), ext, **kwargs
             )
 
         # checa se como_df está ativado
         elif kwargs.get("como_df"):
+            del kwargs["como_df"]
+
             # se estiver carrega os dados com o pandas
             if ext == "parquet":
                 return cam.read_parquet(nome_arq=documento.nome, **kwargs)
@@ -348,6 +438,8 @@ class DataStore:
 
         # checa se como_gdf está ativado
         elif kwargs.get("como_gdf"):
+            del kwargs["como_gdf"]
+
             # se estiver carrega os dados com o geopandas
             if ext == "parquet":
                 return cam.gpd_read_parquet(nome_arq=documento.nome, **kwargs)
@@ -365,6 +457,9 @@ class DataStore:
 
         # caso contrário
         else:
+            kwargs.pop("como_df", None)
+            kwargs.pop("como_gdf", None)
+
             # tenta alguma das extenções restantes
             if ext == "json":
                 return cam.load_json(nome_arq=documento.nome, **kwargs)
@@ -394,8 +489,10 @@ class DataStore:
 
         # obtém a extenção do arquivo
         if "ext" not in kwargs:
-            kwargs["ext"] = documento.tipo
-        ext = kwargs["ext"]
+            ext = documento.tipo
+        else:
+            ext = kwargs["ext"]
+            del kwargs["ext"]
 
         # se o caminho for de SQL
         if isinstance(cam, CaminhoSQLite) or ext == "sql":

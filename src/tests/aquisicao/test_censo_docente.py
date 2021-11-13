@@ -4,7 +4,7 @@ import unittest
 import pandas as pd
 import pytest
 
-from src.aquisicao.inep.censo_docente import DocenteETL
+from src.aquisicao import DocenteETL
 from src.configs import COLECAO_DADOS_WEB
 from src.io.data_store import Documento
 

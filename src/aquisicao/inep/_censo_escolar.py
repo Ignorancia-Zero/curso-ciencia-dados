@@ -327,10 +327,12 @@ class BaseCensoEscolarETL(BaseINEPETL, abc.ABC):
             ),
             data=base.data.reindex(columns=cols),
         )
+        self._logger.debug(base, base.data.shape)
         base.data.drop(
             columns=self._configs["COLS_DEPARA"], errors="ignore", inplace=True
         )
         base.data.drop_duplicates(inplace=True)
+        self._logger.debug(base, base.data.shape)
 
         return base_id
 

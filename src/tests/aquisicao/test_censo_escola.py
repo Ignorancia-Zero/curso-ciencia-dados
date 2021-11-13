@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.aquisicao.inep.censo_escola import EscolaETL
+from src.aquisicao import EscolaETL
 from src.configs import COLECAO_DADOS_WEB
 from src.io.data_store import Documento
 

@@ -84,12 +84,13 @@ conda create -n curso-ciencia-dados python=3.9
 conda activate curso-ciencia-dados
 cd '.\suporte\Pacotes Windows\'
 conda update -n base -c defaults conda
-conda install -c anaconda numpy==1.21.2
+conda install -c conda-forge numpy==1.21.2
 conda install -c conda-forge pandas==1.3.4
 conda install -c conda-forge osmnx==1.1.1
 conda install -c conda-forge rtree==0.9.4
 conda install -c conda-forge matplotlib==3.4.3
-conda install -c anaconda seaborn==0.11.0
+conda install -c conda-forge matplotlib-venn==0.11.6
+conda install -c conda-forge seaborn==0.11.0
 conda install -c conda-forge pyshp==2.1.3
 conda install -c conda-forge mercantile==1.2.1
 conda install -c conda-forge geographiclib==1.52
@@ -97,28 +98,28 @@ conda install -c conda-forge geopy==2.2.0
 conda install -c conda-forge contextily==1.2.0
 pip install .\Cartopy-0.20.1-cp39-cp39-win_amd64.whl
 pip install geoplot==0.4.4
-conda install -c anaconda jupyter==1.0.0
+conda install -c conda-forge jupyter==1.0.0
 conda install -c conda-forge jupyter_contrib_nbextensions==0.5.1
 conda install -c conda-forge pyarrow==6.0.0
 conda install -c plotly plotly==5.3.1
 conda install -c conda-forge cufflinks-py==0.17.3
-conda install -c anaconda beautifulsoup4==4.9.3
-conda install -c anaconda boto3==1.18.21
+conda install -c conda-forge beautifulsoup4==4.9.3
+conda install -c conda-forge boto3==1.18.21
 pip install charamel==1.0.0
 conda install -c conda-forge click==8.0.3
 conda install -c conda-forge frozendict==2.0.3
-conda install -c anaconda lxml==4.6.3
+conda install -c conda-forge lxml==4.6.3
 conda install -c conda-forge openpyxl==3.0.9
 conda install -c conda-forge patool==1.12
 conda install -c conda-forge pydrive2==1.10.0
 pip install pyunpack==0.2.2
 pip install rarfile==4.0
-conda install -c anaconda yaml==5.4.1
-conda install -c anaconda requests==2.26.0
-conda install -c anaconda statsmodels==0.13.0
+conda install -c conda-forge yaml==5.4.1
+conda install -c conda-forge requests==2.26.0
+conda install -c conda-forge statsmodels==0.13.0
 conda install -c conda-forge tqdm==4.62.3
 conda install -c conda-forge black==21.9b0
-conda install -c anaconda pytest==6.2.4
+conda install -c conda-forge pytest==6.2.4
 conda install -c conda-forge mypy==0.910
 conda install -c conda-forge boto3-stubs==1.19.3
 pip install botocore-stubs==1.22.3

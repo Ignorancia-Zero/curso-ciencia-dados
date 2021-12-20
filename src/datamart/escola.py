@@ -323,7 +323,7 @@ def processa_matricula(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFram
         Documento(ds, dict(CatalogoAquisicao.TURMA)),
         como_df=True,
         filters=[("ANO", "=", ano)],
-        columns=["ID_TURMA", "ID_ESCOLA"],
+        columns=["ID_TURMA", "ID_ESCOLA", "CO_ETAPA_ENSINO"],
     )
 
     dados = list()
@@ -438,6 +438,22 @@ def processa_matricula(dm: pd.DataFrame, ds: DataStore, ano: int) -> pd.DataFram
             ),
             how="left",
         )
+
+        # calcula a quantidade de matriculas por etapa de ensino
+        df_qt = (
+            matricula.reindex(columns=["ID_MATRICULA", "ID_ESCOLA", "CO_ETAPA_ENSINO"])
+            .merge(
+                ds.df_ee.drop(columns=["NO_ETAPA_ENSINO", "TP_ETAPA_ENSINO"]),
+                how="left",
+            )
+            .drop(columns=["ID_MATRICULA", "CO_ETAPA_ENSINO"])
+            .groupby(["ID_ESCOLA"])
+            .sum()
+            .add_prefix("QT_MATRICULA_")
+            .reset_index()
+        )
+        df_qt = res[["ID_ESCOLA"]].merge(df_qt, how="left").fillna(0).astype("uint32")
+        res = res.merge(df_qt, how="left")
 
         # adiciona a lista de dados
         dados.append(res)

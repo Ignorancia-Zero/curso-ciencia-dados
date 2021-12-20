@@ -132,6 +132,8 @@ conda install -c conda-forge types-setuptools==57.4.2
 conda install -c conda-forge types-python-dateutil==2.8.2
 conda install -c conda-forge types-pytz==2021.3.0
 conda install -c conda-forge types-pyyaml==5.4.12
+conda install -c conda-forge nbconvert==6.3.0
+conda install -c conda-forge traitlets==5.1.1
 ```
 
 ### Mac

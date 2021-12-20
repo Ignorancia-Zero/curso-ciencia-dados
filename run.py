@@ -9,6 +9,8 @@ from src.datamart.config import DMGran
 from src.datamart.executa import executa_datamart
 from src.io.data_store import DataStore
 from src.utils.logs import configura_logs
+from src.relatorio.executa import gera_notebook
+from src.relatorio.quantitativo import relatorio_quanti_html
 
 
 @click.group()
@@ -134,6 +136,31 @@ def processa_datamart(granularidade: str, ano: str, env: str) -> None:
     configura_logs()
     ds = DataStore(env)
     executa_datamart(granularidade, ds, ano)
+
+
+@cli.group()
+def relatorio():
+    """
+    Grupo de comandos utilizados para gerar relatórios de análises
+    """
+    pass
+
+
+@relatorio.command()
+@click.option("--var", type=click.STRING, help="Nome da variável a ser processada")
+@click.option("--ano", type=click.INT, help="Ano do censo a ser utilizado")
+@click.option("--env", default=conf_geral.ENV_DS, help="Ambiente a ser utilizado")
+def gera_relatorio_quantitativo(var: str, ano: int, env: str) -> None:
+    """
+    Gera um relatório ao processar uma variável quantitativa do censo escolar
+
+    :param var: Nome da variável a ser processada
+    :param ano: Ano do censo a ser utilizado
+    :param env: Ambiente a ser utilizado
+    """
+    configura_logs()
+    ds = DataStore(env)
+    gera_notebook(ds, dict(var=var, ano=ano), relatorio_quanti_html, "quantitativo")
 
 
 if __name__ == "__main__":
